@@ -7,155 +7,130 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
 
-    :root {
-      --yellow: #FFD60A;
-      --orange: #FF6B00;
-      --red: #FF2D55;
-      --black: #111;
-      --white: #fff;
-    }
-
-    body {
+    html, body {
+      height: 100%;
       font-family: 'Space Grotesk', sans-serif;
-      background: var(--yellow);
-      color: var(--black);
-      overflow-x: hidden;
+      background: #0A0A0A;
+      color: #fff;
+      overflow: hidden;
     }
 
-    /* ── BOLA SVG ── */
-    .ball {
-      width: 100px;
-      height: 100px;
+    /* ── FONS ANIMAT ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .bg-circle {
+      position: absolute;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #FF9500, #FF6B00 50%, #cc4400);
-      box-shadow:
-        inset -8px -8px 20px rgba(0,0,0,0.3),
-        inset 4px 4px 12px rgba(255,220,100,0.4),
-        0 10px 40px rgba(255,107,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      filter: blur(80px);
+      opacity: 0.25;
+      animation: drift 12s ease-in-out infinite;
+    }
+
+    .bg-circle.c1 {
+      width: 600px; height: 600px;
+      background: #FFD60A;
+      top: -200px; left: -200px;
+      animation-delay: 0s;
+    }
+
+    .bg-circle.c2 {
+      width: 500px; height: 500px;
+      background: #FF6B00;
+      bottom: -150px; right: -150px;
+      animation-delay: 4s;
+    }
+
+    .bg-circle.c3 {
+      width: 300px; height: 300px;
+      background: #FF2D55;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: 8s;
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.05); }
+      66% { transform: translate(-20px, 30px) scale(0.95); }
+    }
+
+    /* ── CONTINGUT ── */
+    .wrap {
       position: relative;
-      animation: float 3s ease-in-out infinite;
-      flex-shrink: 0;
-    }
-
-    .ball.small {
-      width: 60px;
-      height: 60px;
-      animation-delay: 0.3s;
-    }
-
-    .ball .star {
-      color: #FF2D55;
-      font-size: 2rem;
-      filter: drop-shadow(0 0 4px rgba(255,45,85,0.6));
-      line-height: 1;
-    }
-
-    .ball.small .star { font-size: 1.2rem; }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0) rotate(-3deg); }
-      50% { transform: translateY(-12px) rotate(3deg); }
-    }
-
-    /* ── SCREEN 1 — HERO ── */
-    .screen-1 {
-      min-height: 100vh;
-      background: var(--yellow);
+      z-index: 1;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 2rem;
       text-align: center;
-      padding: 3rem 2rem;
-      position: relative;
-      overflow: hidden;
-      gap: 1.5rem;
+      gap: 0;
     }
 
-    /* Cercles de fons decoratius */
-    .screen-1::before {
-      content: '';
-      position: absolute;
-      width: 600px; height: 600px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,107,0,0.15);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
+    /* LOGO */
+    .logo {
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 3rem;
+      animation: fadeUp 1s ease both;
+      animation-delay: 0.1s;
     }
 
-    .screen-1::after {
-      content: '';
-      position: absolute;
-      width: 900px; height: 900px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,107,0,0.08);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
+    .logo span { color: #FFD60A; }
 
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .logo-text {
-      font-size: clamp(4rem, 14vw, 8rem);
+    /* FRASE PRINCIPAL */
+    .headline {
+      font-size: clamp(3rem, 11vw, 8rem);
       font-weight: 900;
       letter-spacing: -4px;
-      line-height: 1;
-      color: var(--black);
+      line-height: 0.95;
+      margin-bottom: 3rem;
     }
 
-    .tagline {
-      font-size: clamp(1.6rem, 5vw, 3rem);
-      font-weight: 900;
-      line-height: 1.15;
-      letter-spacing: -1.5px;
-      color: var(--black);
-      position: relative;
-      z-index: 1;
+    .headline .line1 {
+      display: block;
+      color: #fff;
+      animation: fadeUp 1s ease both;
+      animation-delay: 0.3s;
     }
 
-    .tagline .line2 {
-      background: var(--black);
-      color: var(--yellow);
-      padding: 2px 12px;
-      border-radius: 8px;
-      display: inline-block;
+    .headline .line2 {
+      display: block;
+      color: #fff;
+      animation: fadeUp 1s ease both;
+      animation-delay: 0.5s;
     }
 
-    .sub {
-      font-size: 1.1rem;
-      color: rgba(0,0,0,0.55);
-      font-weight: 500;
-      position: relative;
-      z-index: 1;
+    .headline .line3 {
+      display: block;
+      color: #FFD60A;
+      animation: fadeUp 1s ease both;
+      animation-delay: 0.7s;
     }
 
-    .cta-group {
+    /* BOTONS */
+    .actions {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
       width: 100%;
-      max-width: 340px;
-      position: relative;
-      z-index: 1;
+      max-width: 320px;
+      animation: fadeUp 1s ease both;
+      animation-delay: 1s;
     }
 
-    .btn {
-      width: 100%;
-      padding: 1.15rem 2rem;
+    .btn-main {
+      padding: 1.2rem 2rem;
       border-radius: 100px;
       border: none;
       font-family: 'Space Grotesk', sans-serif;
@@ -166,533 +141,261 @@
       letter-spacing: -0.3px;
     }
 
-    .btn:active { transform: scale(0.97); }
-
-    .btn-black {
-      background: var(--black);
-      color: var(--yellow);
-      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    .btn-yellow {
+      background: #FFD60A;
+      color: #0A0A0A;
+      box-shadow: 0 8px 30px rgba(255,214,10,0.3);
     }
 
-    .btn-black:hover {
-      transform: scale(1.03);
-      box-shadow: 0 10px 32px rgba(0,0,0,0.35);
+    .btn-yellow:hover {
+      transform: scale(1.04);
+      box-shadow: 0 12px 40px rgba(255,214,10,0.5);
     }
 
-    .btn-outline {
+    .btn-ghost {
       background: transparent;
-      color: var(--black);
-      border: 3px solid var(--black);
+      color: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      font-size: 0.9rem;
+      padding: 0.9rem 2rem;
     }
 
-    .btn-outline:hover {
-      background: var(--black);
-      color: var(--yellow);
-      transform: scale(1.03);
+    .btn-ghost:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.4);
+      transform: scale(1.02);
     }
 
-    .scroll-hint {
-      position: absolute;
+    /* BOTTOM */
+    .bottom {
+      position: fixed;
       bottom: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.3rem;
-      color: rgba(0,0,0,0.4);
-      font-size: 0.8rem;
-      font-weight: 600;
-      animation: bounce 2s infinite;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.2);
+      font-weight: 500;
+      animation: fadeUp 1s ease both;
+      animation-delay: 1.3s;
       z-index: 1;
     }
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(8px); }
+    /* ANIMACIÓ */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    /* ── SCREEN 2 — NO / SÍ ── */
-    .screen-2 {
-      min-height: 100vh;
-      background: var(--black);
-      color: var(--white);
+    /* MODAL GLOSSARI */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 4rem 2rem;
-      gap: 3rem;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
     }
 
-    .screen-2 h2 {
-      font-size: clamp(2.5rem, 8vw, 5.5rem);
-      font-weight: 900;
-      letter-spacing: -3px;
-      line-height: 1;
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
     }
 
-    .screen-2 h2 em {
-      font-style: normal;
-      color: var(--yellow);
-    }
-
-    .nosi-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+    .modal {
+      background: #111;
+      border-radius: 28px;
+      padding: 2.5rem 2rem;
+      max-width: 600px;
       width: 100%;
-      max-width: 700px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255,255,255,0.08);
+      transform: translateY(20px);
+      transition: transform 0.3s;
     }
 
-    @media (max-width: 500px) {
-      .nosi-grid { grid-template-columns: 1fr; }
+    .modal-overlay.open .modal {
+      transform: translateY(0);
     }
 
-    .nosi-col h3 {
-      font-size: 1rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-
-    .nosi-col.si h3 { color: var(--yellow); opacity: 1; }
-    .nosi-col.no h3 { color: #FF2D55; opacity: 1; }
-
-    .nosi-item {
-      padding: 0.9rem 1.2rem;
-      border-radius: 14px;
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      text-align: left;
-    }
-
-    .nosi-col.si .nosi-item {
-      background: rgba(255,214,10,0.1);
-      border: 1px solid rgba(255,214,10,0.2);
-      color: var(--white);
-    }
-
-    .nosi-col.no .nosi-item {
-      background: rgba(255,45,85,0.08);
-      border: 1px solid rgba(255,45,85,0.15);
-      color: rgba(255,255,255,0.4);
-      text-decoration: line-through;
-    }
-
-    /* ── SCREEN 3 — GLOSSARI ── */
-    .screen-3 {
-      min-height: 100vh;
-      background: var(--white);
+    .modal-header {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .modal-header h3 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+
+    .modal-close {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 4rem 2rem;
-      gap: 2.5rem;
+      transition: background 0.2s;
     }
 
-    .screen-3 h2 {
-      font-size: clamp(2rem, 6vw, 4rem);
-      font-weight: 900;
-      letter-spacing: -2px;
-      line-height: 1.1;
-    }
-
-    .screen-3 h2 span { color: var(--orange); }
+    .modal-close:hover { background: rgba(255,255,255,0.2); }
 
     .gloss-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-      width: 100%;
-      max-width: 900px;
-      text-align: left;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 480px) {
+      .gloss-grid { grid-template-columns: 1fr; }
     }
 
     .gloss-card {
-      border-radius: 20px;
-      padding: 1.4rem;
+      border-radius: 16px;
+      padding: 1.2rem;
       transition: transform 0.2s;
       cursor: default;
     }
 
-    .gloss-card:hover { transform: scale(1.04) rotate(-1deg); }
+    .gloss-card:hover { transform: scale(1.03); }
 
     .gloss-card.c1 { background: #FF2D55; color: #fff; }
-    .gloss-card.c2 { background: var(--yellow); color: #111; }
+    .gloss-card.c2 { background: #FFD60A; color: #111; }
     .gloss-card.c3 { background: #30D158; color: #111; }
     .gloss-card.c4 { background: #0A84FF; color: #fff; }
     .gloss-card.c5 { background: #BF5AF2; color: #fff; }
-    .gloss-card.c6 { background: var(--orange); color: #fff; }
-    .gloss-card.c7 { background: #111; color: var(--yellow); }
-    .gloss-card.c8 { background: #E5E5EA; color: #666; }
+    .gloss-card.c6 { background: #FF6B00; color: #fff; }
+    .gloss-card.c7 { background: #222; color: #FFD60A; border: 1px solid rgba(255,214,10,0.2); }
+    .gloss-card.c8 { background: #1a1a1a; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
 
-    .gloss-card .g-emoji {
-      font-size: 1.8rem;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
+    .gloss-card .g-emoji { font-size: 1.6rem; display: block; margin-bottom: 0.4rem; }
+    .gloss-card .g-word { font-size: 1rem; font-weight: 900; margin-bottom: 0.25rem; }
+    .gloss-card .g-def { font-size: 0.8rem; opacity: 0.85; line-height: 1.4; font-weight: 500; }
 
-    .gloss-card .g-word {
-      font-size: 1.15rem;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-      margin-bottom: 0.3rem;
-    }
-
-    .gloss-card .g-def {
+    /* LINK GLOSSARI */
+    .gloss-link {
+      margin-top: 2rem;
       font-size: 0.85rem;
-      opacity: 0.85;
-      line-height: 1.5;
-      font-weight: 500;
-    }
-
-    /* ── SCREEN 4 — BOLES / CAMINS ── */
-    .screen-4 {
-      min-height: 100vh;
-      background: var(--orange);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 4rem 2rem;
-      gap: 2.5rem;
-    }
-
-    .screen-4 h2 {
-      font-size: clamp(2.5rem, 8vw, 5.5rem);
-      font-weight: 900;
-      letter-spacing: -3px;
-      line-height: 1;
-      color: var(--white);
-    }
-
-    .balls-row {
-      display: flex;
-      gap: 1.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .path-card {
-      background: var(--white);
-      border-radius: 28px;
-      padding: 2rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      text-align: center;
-      width: 280px;
-    }
-
-    .path-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-    }
-
-    .path-card h3 {
-      font-size: 1.6rem;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-    }
-
-    .path-card p {
-      font-size: 0.95rem;
-      color: #666;
-      line-height: 1.5;
-      font-weight: 500;
-    }
-
-    .path-card .p-btn {
-      background: var(--black);
-      color: var(--yellow);
-      border: none;
-      padding: 0.9rem 2rem;
-      border-radius: 100px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      cursor: pointer;
-      width: 100%;
-      transition: transform 0.15s;
-    }
-
-    .path-card .p-btn:hover { transform: scale(1.04); }
-
-    @media (max-width: 620px) {
-      .path-card { width: 100%; max-width: 340px; }
-    }
-
-    /* ── SCREEN 5 — WAITLIST ── */
-    .screen-5 {
-      min-height: 100vh;
-      background: var(--yellow);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 4rem 2rem;
-      gap: 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .screen-5::before {
-      content: '';
-      position: absolute;
-      width: 500px; height: 500px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,107,0,0.2);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-
-    .screen-5 h2 {
-      font-size: clamp(3rem, 10vw, 7rem);
-      font-weight: 900;
-      letter-spacing: -4px;
-      line-height: 0.95;
-      color: var(--black);
-      position: relative;
-      z-index: 1;
-    }
-
-    .screen-5 p {
-      font-size: 1.1rem;
-      color: rgba(0,0,0,0.55);
-      font-weight: 500;
-      max-width: 360px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .waitlist-box {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      width: 100%;
-      max-width: 380px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .waitlist-box input {
-      padding: 1.1rem 1.5rem;
-      border-radius: 100px;
-      border: 3px solid var(--black);
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1rem;
-      font-weight: 600;
-      outline: none;
-      background: var(--white);
-      color: var(--black);
-      transition: box-shadow 0.2s;
-    }
-
-    .waitlist-box input:focus {
-      box-shadow: 0 0 0 4px rgba(0,0,0,0.15);
-    }
-
-    .waitlist-box input::placeholder { color: #aaa; }
-
-    .waitlist-box button {
-      padding: 1.1rem 2rem;
-      border-radius: 100px;
-      border: 3px solid var(--black);
-      background: var(--black);
-      color: var(--yellow);
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 900;
-      font-size: 1.15rem;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-      letter-spacing: -0.3px;
-    }
-
-    .waitlist-box button:hover {
-      transform: scale(1.03);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-    }
-
-    .waitlist-note {
-      font-size: 0.85rem;
-      color: rgba(0,0,0,0.45);
-      font-weight: 500;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* FOOTER */
-    footer {
-      background: var(--black);
       color: rgba(255,255,255,0.3);
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.85rem;
-      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s;
+      animation: fadeUp 1s ease both;
+      animation-delay: 1.2s;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      background: none;
+      border: none;
+      font-family: 'Space Grotesk', sans-serif;
     }
 
-    footer strong { color: var(--yellow); }
+    .gloss-link:hover { color: rgba(255,255,255,0.7); }
   </style>
 </head>
 <body>
 
-  <!-- SCREEN 1 — HERO -->
-  <section class="screen-1">
-    <div class="logo-wrap">
-      <div class="ball">
-        <span class="star">★</span>
-      </div>
-      <div class="logo-text">talpot</div>
-    </div>
+  <!-- FONS -->
+  <div class="bg">
+    <div class="bg-circle c1"></div>
+    <div class="bg-circle c2"></div>
+    <div class="bg-circle c3"></div>
+  </div>
 
-    <p class="tagline">
-      No eres un CV.<br>
-      <span class="line2">Eres un Jackpot.</span>
-    </p>
+  <!-- CONTINGUT PRINCIPAL -->
+  <div class="wrap">
+    <div class="logo">tal<span>pot</span> ⭐</div>
 
-    <p class="sub">Muéstrate como eres. Que te descubran.</p>
+    <h1 class="headline">
+      <span class="line1">La oportunidad</span>
+      <span class="line2">siempre</span>
+      <span class="line3">eres tú.</span>
+    </h1>
 
-    <div class="cta-group">
-      <button class="btn btn-black" onclick="document.querySelector('.screen-4').scrollIntoView({behavior:'smooth'})">
-        🧙 Soy Talpotter
+    <div class="actions">
+      <button class="btn-main btn-yellow" onclick="window.location.href='#'">
+        CREAR
       </button>
-      <button class="btn btn-outline" onclick="document.querySelector('.screen-4').scrollIntoView({behavior:'smooth'})">
-        🔭 Soy Seeker
+      <button class="btn-main btn-ghost" onclick="window.location.href='#'">
+        DESCUBRIR
       </button>
     </div>
 
-    <div class="scroll-hint">
-      ↓ descubre más
-    </div>
-  </section>
+    <button class="gloss-link" onclick="document.querySelector('.modal-overlay').classList.add('open')">
+      ¿No entiendes algo? Aprende el idioma Talpot →
+    </button>
+  </div>
 
-  <!-- SCREEN 2 — NO / SÍ -->
-  <section class="screen-2">
-    <h2>Esto no es<br>un trabajo <em>más.</em></h2>
-    <div class="nosi-grid">
-      <div class="nosi-col si">
-        <h3>✅ En Talpot</h3>
-        <div class="nosi-item">🎬 Vídeos reales que muestran quién eres</div>
-        <div class="nosi-item">🎮 Mini-juegos que revelan tu perfil</div>
-        <div class="nosi-item">⚡ Retos en vivo sin trampa</div>
-        <div class="nosi-item">🔭 Las empresas te encuentran a ti</div>
-        <div class="nosi-item">🏆 Champions: la gran final en vivo</div>
-      </div>
-      <div class="nosi-col no">
-        <h3>❌ Sin esto</h3>
-        <div class="nosi-item">📄 CVs de 2 páginas que nadie lee</div>
-        <div class="nosi-item">📋 Formularios interminables</div>
-        <div class="nosi-item">📮 Ofertas de trabajo genéricas</div>
-        <div class="nosi-item">⏳ Meses sin respuesta</div>
-        <div class="nosi-item">😐 Entrevistas aburridas</div>
-      </div>
-    </div>
-  </section>
+  <div class="bottom">talpot.app · © 2026</div>
 
-  <!-- SCREEN 3 — GLOSSARI -->
-  <section class="screen-3">
-    <h2>El idioma<br><span>Talpot.</span></h2>
-    <div class="gloss-grid">
-      <div class="gloss-card c1">
-        <span class="g-emoji">🧙</span>
-        <div class="g-word">Talpotter</div>
-        <div class="g-def">Tú. El talento. No eres candidato — eres el premio.</div>
+  <!-- MODAL GLOSSARI -->
+  <div class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>El idioma Talpot 🎯</h3>
+        <button class="modal-close" onclick="document.querySelector('.modal-overlay').classList.remove('open')">✕</button>
       </div>
-      <div class="gloss-card c2">
-        <span class="g-emoji">🔭</span>
-        <div class="g-word">Seeker</div>
-        <div class="g-def">La empresa que te busca. Ellos vienen a ti.</div>
-      </div>
-      <div class="gloss-card c3">
-        <span class="g-emoji">✨</span>
-        <div class="g-word">Magic Room</div>
-        <div class="g-def">Tu perfil. Tu escenario. Vídeos, juegos y tú siendo tú.</div>
-      </div>
-      <div class="gloss-card c4">
-        <span class="g-emoji">⚡</span>
-        <div class="g-word">Challenge Room</div>
-        <div class="g-def">Una pregunta. 60 segundos. Sin edición. Sin trampa.</div>
-      </div>
-      <div class="gloss-card c5">
-        <span class="g-emoji">🎬</span>
-        <div class="g-word">Showtime</div>
-        <div class="g-def">El encuentro en directo. No es una entrevista — es tu show.</div>
-      </div>
-      <div class="gloss-card c6">
-        <span class="g-emoji">🏆</span>
-        <div class="g-word">Champions</div>
-        <div class="g-def">La gran final. Al aire libre. Solo llegan los mejores.</div>
-      </div>
-      <div class="gloss-card c7">
-        <span class="g-emoji">⭐</span>
-        <div class="g-word">Jackpot</div>
-        <div class="g-def">Cuando un Seeker te encuentra a ti. Todos ganan.</div>
-      </div>
-      <div class="gloss-card c8">
-        <span class="g-emoji">❌</span>
-        <div class="g-word">CV / Oferta</div>
-        <div class="g-def">No existen aquí. Punto.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SCREEN 4 — DOS CAMINS -->
-  <section class="screen-4">
-    <h2>¿Quién<br>eres tú?</h2>
-    <div class="balls-row">
-      <div class="ball" style="width:80px;height:80px;animation-delay:0s">
-        <span class="star" style="font-size:1.6rem">★</span>
-      </div>
-      <div class="ball" style="width:60px;height:60px;animation-delay:0.4s">
-        <span class="star" style="font-size:1.2rem">★</span>
-      </div>
-      <div class="ball" style="width:70px;height:70px;animation-delay:0.8s">
-        <span class="star" style="font-size:1.4rem">★</span>
-      </div>
-    </div>
-    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;">
-      <div class="path-card">
-        <div class="ball small"><span class="star">★</span></div>
-        <h3>Talpotter 🧙</h3>
-        <p>Tienes talento. Muéstralo en vídeo. Que te descubran las empresas que merecen tenerte.</p>
-        <button class="p-btn" onclick="document.querySelector('.screen-5').scrollIntoView({behavior:'smooth'})">Quiero entrar</button>
-      </div>
-      <div class="path-card">
-        <div class="ball small" style="background:radial-gradient(circle at 35% 35%, #6e6e6e, #333 50%, #111);box-shadow:inset -8px -8px 20px rgba(0,0,0,0.5),0 10px 40px rgba(0,0,0,0.4)">
-          <span class="star" style="color:var(--yellow)">★</span>
+      <div class="gloss-grid">
+        <div class="gloss-card c1">
+          <span class="g-emoji">🧙</span>
+          <div class="g-word">Talpotter</div>
+          <div class="g-def">Tú. El talento. No eres candidato — eres el premio.</div>
         </div>
-        <h3>Seeker 🔭</h3>
-        <p>Buscas talento real, no papeles. Aquí lo encontrarás. Y lo verás en acción.</p>
-        <button class="p-btn" onclick="document.querySelector('.screen-5').scrollIntoView({behavior:'smooth'})">Quiero buscar</button>
+        <div class="gloss-card c2">
+          <span class="g-emoji">🔭</span>
+          <div class="g-word">Seeker</div>
+          <div class="g-def">La empresa que te busca. Ellos vienen a ti.</div>
+        </div>
+        <div class="gloss-card c3">
+          <span class="g-emoji">✨</span>
+          <div class="g-word">Magic Room</div>
+          <div class="g-def">Tu perfil. Tu escenario. Vídeos, juegos y tú siendo tú.</div>
+        </div>
+        <div class="gloss-card c4">
+          <span class="g-emoji">⚡</span>
+          <div class="g-word">Challenge Room</div>
+          <div class="g-def">Una pregunta. 60 segundos. Sin edición. Sin trampa.</div>
+        </div>
+        <div class="gloss-card c5">
+          <span class="g-emoji">🎬</span>
+          <div class="g-word">Showtime</div>
+          <div class="g-def">El encuentro en directo. No es una entrevista — es tu show.</div>
+        </div>
+        <div class="gloss-card c6">
+          <span class="g-emoji">🏆</span>
+          <div class="g-word">Champions</div>
+          <div class="g-def">La gran final. Al aire libre. Solo llegan los mejores.</div>
+        </div>
+        <div class="gloss-card c7">
+          <span class="g-emoji">⭐</span>
+          <div class="g-word">Jackpot</div>
+          <div class="g-def">Cuando un Seeker te encuentra a ti. Todos ganan.</div>
+        </div>
+        <div class="gloss-card c8">
+          <span class="g-emoji">❌</span>
+          <div class="g-word">CV / Oferta</div>
+          <div class="g-def">No existen aquí. Punto.</div>
+        </div>
       </div>
     </div>
-  </section>
-
-  <!-- SCREEN 5 — WAITLIST -->
-  <section class="screen-5" id="waitlist">
-    <h2>Sé el<br>primero.<br>⭐</h2>
-    <p>Talpot abre pronto. Apúntate y entra antes que nadie.</p>
-    <div class="waitlist-box">
-      <input type="email" placeholder="tu@email.com" />
-      <button>⭐ Apúntame</button>
-    </div>
-    <p class="waitlist-note">Sin spam. Sin CVs. Solo el futuro del talento.</p>
-  </section>
-
-  <footer>
-    <strong>talpot</strong> — Tu talento es el jackpot. © 2026
-  </footer>
+  </div>
 
 </body>
 </html>
