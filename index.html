@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Talpot</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; overflow: hidden; }
@@ -265,7 +266,10 @@
     .gloss-card.c6 { background: #FF6B00; color: #fff; }
     .gloss-card.c7 { background: #FFD60A; color: #111; }
     .gloss-card.c8 { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
-    .gloss-card .g-emoji { font-size: 1.4rem; display: block; margin-bottom: 0.3rem; }
+    .auth-error { display: none; color: #FF2D55; font-size: 0.8rem; font-weight: 600; text-align: center; padding: 0.5rem; }
+    .welcome-emoji { font-size: 3rem; margin-bottom: 1rem; }
+    .welcome-nom { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; color: #fff; margin-bottom: 0.5rem; letter-spacing: -1px; }
+    .welcome-rol { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15em; color: #FFD60A; text-transform: uppercase; margin-bottom: 2rem; }
     .gloss-card .g-word { font-size: 0.95rem; font-weight: 900; margin-bottom: 0.2rem; }
     .gloss-card .g-def { font-size: 0.75rem; opacity: 0.85; line-height: 1.4; font-weight: 500; }
   </style>
@@ -297,9 +301,10 @@
     <div class="auth-logo">TAL<span>POT</span></div>
     <div class="auth-title">Bienvenido de nuevo</div>
     <div class="auth-form">
-      <input class="auth-input" type="email" placeholder="tu@email.com" />
-      <input class="auth-input" type="password" placeholder="Contraseña" />
-      <button class="btn-submit yellow">ENTRAR</button>
+      <input id="login-email" class="auth-input" type="email" placeholder="tu@email.com" />
+      <input id="login-pass" class="auth-input" type="password" placeholder="Contraseña" />
+      <div id="login-error" class="auth-error"></div>
+      <button id="btn-login" class="btn-submit yellow">ENTRAR</button>
       <div class="auth-sep">o</div>
       <button class="btn-google">
         <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -324,9 +329,10 @@
       </div>
     </div>
     <div class="auth-form">
-      <input class="auth-input" type="text" placeholder="Tu nombre" />
-      <input class="auth-input" type="email" placeholder="tu@email.com" />
-      <input class="auth-input" type="password" placeholder="Contraseña" />
+      <input id="reg-nom" class="auth-input" type="text" placeholder="Tu nombre" />
+      <input id="reg-email" class="auth-input" type="email" placeholder="tu@email.com" />
+      <input id="reg-pass" class="auth-input" type="password" placeholder="Contraseña" />
+      <div id="reg-error" class="auth-error"></div>
       <button class="btn-submit yellow" id="btn-register">EMPEZAR A CREAR</button>
       <div class="auth-sep">o</div>
       <button class="btn-google">
@@ -335,6 +341,16 @@
       </button>
     </div>
     <button class="back-link" onclick="show('s-main')">← Volver</button>
+  </div>
+
+  <!-- PANTALLA 4 — BENVINGUDA -->
+  <div class="screen below" id="s-welcome">
+    <div class="welcome-emoji">🎰</div>
+    <div class="welcome-nom" id="welcome-nom">Talpotter</div>
+    <div class="welcome-rol" id="welcome-rol">CREATOR</div>
+    <div class="actions">
+      <button class="btn btn-yellow">ENTRAR A TALPOT</button>
+    </div>
   </div>
 
   <div class="bottom">talpot.app · © 2026</div>
@@ -362,11 +378,111 @@
   <script>
     let rolSeleccionat = 'creator';
 
+    // ── SUPABASE ──
+    const SUPABASE_URL = 'https://dlxeqzdgsejoywwwnchi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRseGVxemRnc2Vqb3l3d3duY2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDM2MTgsImV4cCI6MjA5Nzg3OTYxOH0.qZBwTlAHFMsyc-t58ldSdlxlwZhUX-QKUakl1yZI7mA';
+
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Comprovar sessió activa — si ja està logat, entra directe
+    async function checkSession() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const rol = session.user.user_metadata?.rol || 'creator';
+        entrarApp(rol, session.user);
+      }
+    }
+
+    checkSession();
+
+    // ── LOGIN ──
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value.trim();
+      const btn = document.getElementById('btn-login');
+
+      if (!email || !pass) return showError('login-error', 'Rellena todos los campos');
+
+      btn.textContent = 'ENTRANDO...';
+      btn.disabled = true;
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+      if (error) {
+        showError('login-error', 'Email o contraseña incorrectos');
+        btn.textContent = 'ENTRAR';
+        btn.disabled = false;
+        return;
+      }
+
+      const rol = data.user.user_metadata?.rol || 'creator';
+      entrarApp(rol, data.user);
+    });
+
+    // ── REGISTRE ──
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const nom = document.getElementById('reg-nom').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-pass').value.trim();
+      const btn = document.getElementById('btn-register');
+
+      if (!nom || !email || !pass) return showError('reg-error', 'Rellena todos los campos');
+      if (pass.length < 6) return showError('reg-error', 'La contraseña debe tener mínimo 6 caracteres');
+
+      btn.textContent = 'CREANDO...';
+      btn.disabled = true;
+
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password: pass,
+        options: { data: { nom, rol: rolSeleccionat } }
+      });
+
+      if (error) {
+        showError('reg-error', error.message);
+        btn.textContent = rolSeleccionat === 'creator' ? 'EMPEZAR A CREAR' : 'EMPEZAR A DESCUBRIR';
+        btn.disabled = false;
+        return;
+      }
+
+      entrarApp(rolSeleccionat, data.user);
+    });
+
+    // ── LOGIN GOOGLE ──
+    document.querySelectorAll('.btn-google').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await sb.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.href }
+        });
+      });
+    });
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg; el.style.display = 'block'; }
+    }
+
+    function entrarApp(rol, user) {
+      // Aquí redirigim a la pantalla principal de l'app
+      // Per ara mostrem un missatge de benvinguda
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.add('below');
+        s.classList.remove('hidden');
+      });
+      document.getElementById('s-welcome').classList.remove('below', 'hidden');
+      document.getElementById('welcome-nom').textContent = user?.user_metadata?.nom || user?.email?.split('@')[0] || 'Talpotter';
+      document.getElementById('welcome-rol').textContent = rol === 'creator' ? 'CREATOR' : 'SEEKER';
+    }
+
     function show(id) {
       document.querySelectorAll('.screen').forEach(s => {
         s.classList.remove('hidden');
         s.classList.add('below');
       });
+      // Netejar errors
+      document.querySelectorAll('.auth-error').forEach(e => e.style.display = 'none');
       const target = document.getElementById(id);
       target.classList.remove('hidden', 'below');
     }
