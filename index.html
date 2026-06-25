@@ -266,12 +266,69 @@
     .gloss-card.c6 { background: #FF6B00; color: #fff; }
     .gloss-card.c7 { background: #FFD60A; color: #111; }
     .gloss-card.c8 { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
-    .auth-error { display: none; color: #FF2D55; font-size: 0.8rem; font-weight: 600; text-align: center; padding: 0.5rem; }
+    /* X VISUALS */
+    .no-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: min(4vmin, 2rem);
+      animation: fadeUp 0.8s ease both 0.45s;
+    }
+
+    .no-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: min(4.5vw, 2.2vh, 1.05rem);
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: -0.3px;
+      text-decoration: line-through;
+      text-decoration-color: rgba(255,45,85,0.6);
+      text-decoration-thickness: 2px;
+    }
+
+    .no-x {
+      font-size: min(6vw, 3vh, 1.6rem);
+      font-weight: 900;
+      color: #FF2D55;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: min(8vw, 4vh, 2rem);
+      height: min(8vw, 4vh, 2rem);
+      background: rgba(255,45,85,0.15);
+      border-radius: 6px;
+      border: 2px solid rgba(255,45,85,0.4);
+      filter: drop-shadow(0 0 8px rgba(255,45,85,0.5));
+      flex-shrink: 0;
+      animation: xPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .no-item:nth-child(1) .no-x { animation-delay: 0.6s; }
+    .no-item:nth-child(2) .no-x { animation-delay: 0.8s; }
+    .no-item:nth-child(3) .no-x { animation-delay: 1.0s; }
+
+    @keyframes xPop {
+      0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+      60% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+      80% { transform: scale(0.9) rotate(-3deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
     .welcome-emoji { font-size: 3rem; margin-bottom: 1rem; }
     .welcome-nom { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; color: #fff; margin-bottom: 0.5rem; letter-spacing: -1px; }
     .welcome-rol { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15em; color: #FFD60A; text-transform: uppercase; margin-bottom: 2rem; }
     .gloss-card .g-word { font-size: 0.95rem; font-weight: 900; margin-bottom: 0.2rem; }
     .gloss-card .g-def { font-size: 0.75rem; opacity: 0.85; line-height: 1.4; font-weight: 500; }
+    .ready {
+      font-size: min(5vw, 2.5vh, 1.3rem);
+      font-weight: 800;
+      color: #FFD60A;
+      margin-bottom: min(3vmin, 1.5rem);
+      animation: fadeUp 0.8s ease both 1.2s;
+      text-shadow: 0 0 20px rgba(255,214,10,0.4);
+    }
   </style>
 </head>
 <body>
@@ -287,13 +344,214 @@
       <span class="line2">siempre</span>
       <span class="line3">eres tú.</span>
     </h1>
+
     <div class="actions">
       <button class="btn btn-yellow" onclick="show('s-login')">ENTRAR</button>
       <button class="btn btn-white" onclick="show('s-register')">REGISTRARME</button>
     </div>
-    <button class="gloss-link" onclick="document.querySelector('.modal-overlay').classList.add('open')">
-      ¿No entiendes algo? Aprende el idioma Talpot →
-    </button>
+    <div style="margin-top:min(3vmin,1.5rem);width:100%;max-width:300px;animation:fadeUp 0.8s ease both 1.2s;">
+      <div style="height:1px;background:rgba(255,255,255,0.1);margin-bottom:min(3vmin,1.5rem);"></div>
+      <button onclick="show('s-about')" style="width:100%;background:none;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;justify-content:space-between;padding:0;">
+        <span style="font-size:min(4.5vw,2.2vh,1rem);font-weight:800;color:#fff;">¿Qué es Talpot?</span>
+        <span style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#FFD60A;">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PANTALLA ABOUT — QUÈ ÉS TALPOT -->
+  <div class="screen below" id="s-about" style="overflow-y:auto; justify-content:flex-start; padding-top: 6vh;">
+    <div class="auth-logo">TAL<span>POT</span></div>
+
+    <!-- SELECTOR -->
+    <div style="display:flex;gap:0;background:rgba(255,255,255,0.07);border-radius:100px;padding:4px;margin-bottom:1.5rem;width:100%;max-width:300px;">
+      <button id="tab-creator" onclick="switchAbout('creator')" style="flex:1;padding:0.6rem 1rem;border-radius:100px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;background:#FFD60A;color:#020B18;transition:all 0.2s;">🎬 Creator</button>
+      <button id="tab-seeker" onclick="switchAbout('seeker')" style="flex:1;padding:0.6rem 1rem;border-radius:100px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);transition:all 0.2s;">🔭 Seeker</button>
+    </div>
+
+    <!-- VISTA CREATOR -->
+    <div id="about-creator" style="width:100%;max-width:360px;text-align:left;display:flex;flex-direction:column;gap:1.5rem;padding-bottom:4rem;">
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">Qué es</div>
+        <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;line-height:1.7;font-weight:500;">Talpot es tu espacio para mostrarte como eres. Sin CVs. Sin formularios. Aquí el talento se ve, se escucha y se siente. Tú eres el protagonista.</p>
+      </div>
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">La misión</div>
+        <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;line-height:1.7;font-weight:500;">Que las oportunidades no pasen de largo. Que el talento se detecte. Que no caigas en una lista de CVs eternos que son todos iguales. Muestra tu esencia. Enseña quién eres.</p>
+      </div>
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.75rem;">Cómo funciona</div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">✨</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Crea tu Magic Room</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Sube vídeos por categorías — presentación, habilidades, idiomas, hobbies. Sin CV. Es tu escenario.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🎮</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Juega y descúbrete</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Mini-juegos que revelan tu perfil profesional sin que te des cuenta. Lógica, creatividad, intuición.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">⚡</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Entra a la Challenge Room</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Una pregunta aleatoria. 60 segundos. Sin edición. Sin trampa. Aquí se ve quién eres de verdad.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🔭</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Los Seekers te están buscando</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Las empresas — los Seekers — acceden a tu Magic Room completa. Ven tus vídeos, tus retos y tu perfil. Tú no aplicas a nada. Ellos te descubren a ti.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🌟</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">¡Te han Talpoteado!</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Un Seeker te contacta. Showtime, Champions o directamente la oportunidad. Siempre estás en el mercado — sin hacer nada.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.75rem;">El idioma Talpot</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          <div style="background:rgba(191,90,242,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(191,90,242,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">✨</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Magic Room</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Tu perfil en vídeo.</div>
+          </div>
+          <div style="background:rgba(255,107,0,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,107,0,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">⚡</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Challenge Room</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">60 seg. Sin trampa.</div>
+          </div>
+          <div style="background:rgba(48,209,88,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(48,209,88,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🎬</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Showtime</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Tu show en directo.</div>
+          </div>
+          <div style="background:rgba(255,214,10,0.1);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,214,10,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🏆</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Champions</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">La gran final.</div>
+          </div>
+          <div style="background:rgba(0,180,216,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(0,180,216,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🔭</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Seeker</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">La empresa que te descubre.</div>
+          </div>
+          <div style="background:rgba(255,214,10,0.1);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,214,10,0.3);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🌟</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#FFD60A;">Talpoteado</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Cuando un Seeker te encuentra.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-yellow" onclick="show('s-register')">REGISTRARME COMO CREATOR</button>
+      <button class="back-link" onclick="show('s-main')">← Volver</button>
+    </div>
+
+    <!-- VISTA SEEKER -->
+    <div id="about-seeker" style="width:100%;max-width:360px;text-align:left;display:none;flex-direction:column;gap:1.5rem;padding-bottom:4rem;">
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">Qué es</div>
+        <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;line-height:1.7;font-weight:500;">Talpot es la plataforma donde descubres talento real. No CVs. No papeles. Ves a las personas en vídeo, en retos de improvisación y en mini-juegos. Encuentras quién realmente es cada candidato.</p>
+      </div>
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">Cómo detectamos el talento</div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🎬</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Vídeos por categorías</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Presentación, experiencia, idiomas reales, habilidades y personalidad. Ves a la persona, no un papel.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🤖</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">IA que trabaja por ti</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Transcribe vídeos, extrae palabras clave, analiza tono de voz y lenguaje no verbal. Busca por perfil, no por palabras en un CV.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">⚡</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Challenge Room</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Ves cómo reacciona el Creator bajo presión real. Sin preparación. Sin trampa.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🎮</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Perfil de personalidad</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Los mini-juegos revelan lógica, creatividad e inteligencia emocional de cada Creator.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">Formas de encontrar talento</div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+          <div style="display:flex;gap:0.75rem;align-items:center;padding:0.75rem;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08);">
+            <span style="font-size:1.2rem;">🆓</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;">Explorar</div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Acceso básico. Para empezar.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:center;padding:0.75rem;background:rgba(255,214,10,0.07);border-radius:12px;border:1px solid rgba(255,214,10,0.2);">
+            <span style="font-size:1.2rem;">💼</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;">Hunt</div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Acceso completo. Búsquedas ilimitadas.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:center;padding:0.75rem;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08);">
+            <span style="font-size:1.2rem;">🎯</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;">Headhunting digital</div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Nosotros seleccionamos por ti.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:center;padding:0.75rem;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08);">
+            <span style="font-size:1.2rem;">🏆</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;">Champions</div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Evento presencial al aire libre.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.75rem;">El idioma Talpot</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          <div style="background:rgba(255,45,85,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,45,85,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🎬</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Creator</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">El talento que buscas.</div>
+          </div>
+          <div style="background:rgba(191,90,242,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(191,90,242,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">✨</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Magic Room</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">El perfil completo del Creator.</div>
+          </div>
+          <div style="background:rgba(255,107,0,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,107,0,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">⚡</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Challenge Room</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Improvisación real. Sin filtros.</div>
+          </div>
+          <div style="background:rgba(48,209,88,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(48,209,88,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🎬</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Showtime</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">El primer encuentro en directo.</div>
+          </div>
+          <div style="background:rgba(255,214,10,0.1);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,214,10,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🏆</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Champions</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">El evento presencial que organizas.</div>
+          </div>
+          <div style="background:rgba(255,214,10,0.1);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,214,10,0.3);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🌟</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#FFD60A;">Talpoteado</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Cuando encuentras al Creator perfecto.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-white" onclick="show('s-register')" style="background:#fff;color:#020B18;">REGISTRARME COMO SEEKER</button>
+      <button class="back-link" onclick="show('s-main')">← Volver</button>
+    </div>
+
   </div>
 
   <!-- PANTALLA 2 — LOGIN -->
@@ -317,15 +575,15 @@
   <!-- PANTALLA 3 — REGISTRE -->
   <div class="screen below" id="s-register">
     <div class="auth-logo">TAL<span>POT</span></div>
-    <div class="auth-title">¿Cuál es tu rol?</div>
+    <div class="auth-title">¿Quién eres?</div>
     <div class="rol-grid">
       <div class="rol-card creator" id="rol-creator" onclick="selectRol('creator')">
         <span class="rol-emoji">🎬</span>
-        <div class="rol-name">CREAR</div>
+        <div class="rol-name">CREATOR</div>
       </div>
       <div class="rol-card seeker" id="rol-seeker" onclick="selectRol('seeker')">
         <span class="rol-emoji">🔭</span>
-        <div class="rol-name">DESCUBRIR</div>
+        <div class="rol-name">SEEKER</div>
       </div>
     </div>
     <div class="auth-form">
@@ -345,7 +603,7 @@
 
   <!-- PANTALLA 4 — BENVINGUDA -->
   <div class="screen below" id="s-welcome">
-    <div class="welcome-emoji">🎰</div>
+    <div class="welcome-emoji">🌟</div>
     <div class="welcome-nom" id="welcome-nom">Talpotter</div>
     <div class="welcome-rol" id="welcome-rol">CREATOR</div>
     <div class="actions">
@@ -363,14 +621,14 @@
         <button class="modal-close" onclick="document.querySelector('.modal-overlay').classList.remove('open')">✕</button>
       </div>
       <div class="gloss-grid">
-        <div class="gloss-card c1"><span class="g-emoji">🎬</span><div class="g-word">Creator</div><div class="g-def">El Talpotter que crea. Muestras quién eres. Te descubren.</div></div>
-        <div class="gloss-card c2"><span class="g-emoji">🔭</span><div class="g-word">Seeker</div><div class="g-def">El Talpotter que descubre. Encuentras el talento que buscas.</div></div>
+        <div class="gloss-card c1"><span class="g-emoji">🎬</span><div class="g-word">Creator</div><div class="g-def">Tú. Creas contenido real. Te muestras. Te descubren.</div></div>
+        <div class="gloss-card c2"><span class="g-emoji">🔭</span><div class="g-word">Seeker</div><div class="g-def">La empresa. Descubre talento real. Sin papeles, sin CVs.</div></div>
         <div class="gloss-card c3"><span class="g-emoji">✨</span><div class="g-word">Magic Room</div><div class="g-def">Tu perfil. Tu escenario. Vídeos, juegos y tú siendo tú.</div></div>
         <div class="gloss-card c4"><span class="g-emoji">⚡</span><div class="g-word">Challenge Room</div><div class="g-def">Una pregunta. 60 segundos. Sin edición. Sin trampa.</div></div>
         <div class="gloss-card c5"><span class="g-emoji">🎬</span><div class="g-word">Showtime</div><div class="g-def">El encuentro en directo. No es una entrevista — es tu show.</div></div>
         <div class="gloss-card c6"><span class="g-emoji">🏆</span><div class="g-word">Champions</div><div class="g-def">La gran final. Al aire libre. Solo llegan los mejores.</div></div>
-        <div class="gloss-card c7"><span class="g-emoji">⭐</span><div class="g-word">Jackpot</div><div class="g-def">Cuando un Seeker encuentra su Creator perfecto. Todos ganan.</div></div>
-        <div class="gloss-card c8"><span class="g-emoji">❌</span><div class="g-word">CV / Oferta</div><div class="g-def">No existen aquí. Punto.</div></div>
+        <div class="gloss-card c7"><span class="g-emoji">⭐</span><div class="g-word">Talpot</div><div class="g-def">¡Te han Talpoteado! Seeker y Creator se encuentran. Todos ganan.</div></div>
+        <div class="gloss-card c8"><span class="g-emoji">✕</span><div class="g-word">CV / Job offer</div><div class="g-def">No existen aquí. Punto.</div></div>
       </div>
     </div>
   </div>
@@ -474,6 +732,16 @@
       document.getElementById('s-welcome').classList.remove('below', 'hidden');
       document.getElementById('welcome-nom').textContent = user?.user_metadata?.nom || user?.email?.split('@')[0] || 'Talpotter';
       document.getElementById('welcome-rol').textContent = rol === 'creator' ? 'CREATOR' : 'SEEKER';
+    }
+
+    function switchAbout(rol) {
+      const isCreator = rol === 'creator';
+      document.getElementById('about-creator').style.display = isCreator ? 'flex' : 'none';
+      document.getElementById('about-seeker').style.display = isCreator ? 'none' : 'flex';
+      document.getElementById('tab-creator').style.background = isCreator ? '#FFD60A' : 'transparent';
+      document.getElementById('tab-creator').style.color = isCreator ? '#020B18' : 'rgba(255,255,255,0.4)';
+      document.getElementById('tab-seeker').style.background = isCreator ? 'transparent' : '#fff';
+      document.getElementById('tab-seeker').style.color = isCreator ? 'rgba(255,255,255,0.4)' : '#020B18';
     }
 
     function show(id) {
