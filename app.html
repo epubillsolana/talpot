@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Feed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; overflow: hidden; background: #060612; color: #fff; }
+
+    /* ── NAV TOP ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(6,6,18,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 50;
+    }
+
+    .nav-logo {
+      font-size: 1.2rem; font-weight: 900;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
+    }
+    .nav-logo span { color: #FFD60A; }
+
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, #FFD60A, #FF6B00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800; color: #020B18;
+      cursor: pointer;
+    }
+
+    .nav-notif {
+      position: relative; cursor: pointer;
+    }
+
+    .nav-notif-dot {
+      position: absolute; top: -2px; right: -2px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #FF2D55; border: 2px solid #060612;
+    }
+
+    /* ── FEED ── */
+    .feed {
+      position: fixed;
+      top: 56px; bottom: 64px;
+      left: 0; right: 0;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .feed::-webkit-scrollbar { display: none; }
+
+    /* ── CARD ── */
+    .card {
+      height: calc(100dvh - 56px - 64px);
+      scroll-snap-align: start;
+      display: flex; flex-direction: column;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Colors per tipus de card */
+    .card-welcome {
+      background: linear-gradient(160deg, #0D1F35 0%, #041E3A 50%, #0D3B6E 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .card-magic {
+      background: linear-gradient(160deg, #1A0D35 0%, #2D1065 50%, #1A0D35 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .card-challenge {
+      background: linear-gradient(160deg, #1A0A00 0%, #331500 50%, #1A0A00 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .card-seeker {
+      background: linear-gradient(160deg, #001A0D 0%, #003320 50%, #001A0D 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .card-game {
+      background: linear-gradient(160deg, #00101A 0%, #002033 50%, #00101A 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Tag tipus */
+    .card-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.35rem 0.75rem;
+      border-radius: 100px; margin-bottom: auto;
+      width: fit-content;
+    }
+
+    .tag-welcome { background: rgba(255,214,10,0.15); color: #FFD60A; border: 1px solid rgba(255,214,10,0.3); }
+    .tag-magic { background: rgba(191,90,242,0.15); color: #BF5AF2; border: 1px solid rgba(191,90,242,0.3); }
+    .tag-challenge { background: rgba(255,107,0,0.15); color: #FF6B00; border: 1px solid rgba(255,107,0,0.3); }
+    .tag-seeker { background: rgba(48,209,88,0.15); color: #30D158; border: 1px solid rgba(48,209,88,0.3); }
+    .tag-game { background: rgba(0,180,216,0.15); color: #00B4D8; border: 1px solid rgba(0,180,216,0.3); }
+
+    /* Contingut card */
+    .card-body {
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      height: 100%;
+      gap: 1rem;
+    }
+
+    .card-emoji { font-size: 3.5rem; line-height: 1; margin-bottom: 0.5rem; }
+
+    .card-title {
+      font-size: clamp(1.6rem, 6vw, 2.5rem);
+      font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      color: #fff;
+    }
+
+    .card-title .accent { color: #FFD60A; }
+
+    .card-desc {
+      font-size: clamp(0.9rem, 3vw, 1rem);
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6; font-weight: 500;
+      max-width: 340px;
+    }
+
+    /* Progress bar Magic Room */
+    .progress-wrap {
+      background: rgba(255,255,255,0.08);
+      border-radius: 100px; height: 6px;
+      overflow: hidden; margin-top: 0.25rem;
+    }
+
+    .progress-bar {
+      height: 100%; border-radius: 100px;
+      background: linear-gradient(90deg, #BF5AF2, #FFD60A);
+      transition: width 0.8s ease;
+    }
+
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.75rem; color: rgba(255,255,255,0.4);
+      font-weight: 600; margin-bottom: 0.4rem;
+    }
+
+    /* Seekers mini avatars */
+    .seekers-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .seeker-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid rgba(48,209,88,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 800; color: #fff;
+    }
+
+    .seeker-count {
+      font-size: 0.85rem; font-weight: 700;
+      color: #30D158;
+    }
+
+    /* Botó acció */
+    .card-btn {
+      width: 100%; padding: 1rem 1.5rem;
+      border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: 0.95rem;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.03em;
+    }
+
+    .card-btn:active { transform: scale(0.97); }
+    .btn-yellow { background: #FFD60A; color: #020B18; box-shadow: 0 6px 24px rgba(255,214,10,0.25); }
+    .btn-yellow:hover { transform: scale(1.02); box-shadow: 0 10px 32px rgba(255,214,10,0.4); }
+    .btn-purple { background: #BF5AF2; color: #fff; box-shadow: 0 6px 24px rgba(191,90,242,0.25); }
+    .btn-orange { background: #FF6B00; color: #fff; box-shadow: 0 6px 24px rgba(255,107,0,0.25); }
+    .btn-green { background: #30D158; color: #020B18; box-shadow: 0 6px 24px rgba(48,209,88,0.25); }
+    .btn-blue { background: #00B4D8; color: #020B18; box-shadow: 0 6px 24px rgba(0,180,216,0.25); }
+
+    /* Scroll hint */
+    .scroll-hint {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.3rem; font-size: 0.72rem;
+      color: rgba(255,255,255,0.2); font-weight: 600;
+      animation: bounce 2s infinite;
+      margin-top: 0.5rem;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+
+    /* ── NAV BOTTOM ── */
+    .nav-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-around;
+      background: rgba(6,6,18,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.25rem;
+      cursor: pointer; opacity: 0.4;
+      transition: opacity 0.2s;
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: #fff;
+    }
+
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon { color: #FFD60A; }
+
+    .nav-icon { font-size: 1.4rem; line-height: 1; }
+
+    /* Botó central destacat */
+    .nav-center {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #FFD60A;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,214,10,0.4);
+      transition: transform 0.15s;
+      opacity: 1 !important;
+    }
+
+    .nav-center:hover { transform: scale(1.08); }
+
+    /* Decoració fons cards */
+    .card-glow {
+      position: absolute; border-radius: 50%;
+      filter: blur(60px); pointer-events: none; z-index: 0;
+    }
+
+    .card-body { position: relative; z-index: 1; }
+    .card-tag { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV TOP -->
+  <nav class="nav">
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div class="nav-notif">
+        <span style="font-size:1.3rem;">🔔</span>
+        <div class="nav-notif-dot"></div>
+      </div>
+      <div class="nav-avatar">E</div>
+    </div>
+  </nav>
+
+  <!-- FEED -->
+  <div class="feed" id="feed">
+
+    <!-- CARD 1 — BENVINGUDA -->
+    <div class="card card-welcome">
+      <div class="card-glow" style="width:300px;height:300px;background:#FFD60A;opacity:0.06;top:-100px;right:-100px;"></div>
+      <div class="card-tag tag-welcome">🌟 Bienvenido</div>
+      <div class="card-body">
+        <div>
+          <div class="card-emoji">👋</div>
+          <div class="card-title">Hola, <span class="accent">Eduard.</span><br>Tu aventura<br>empieza aquí.</div>
+        </div>
+        <p class="card-desc">Esto es tu feed. Cada día habrá nuevas misiones, retos y novedades. Empieza creando tu Magic Room.</p>
+        <button class="card-btn btn-yellow">✨ Crear mi Magic Room</button>
+        <div class="scroll-hint">↓ desliza</div>
+      </div>
+    </div>
+
+    <!-- CARD 2 — MAGIC ROOM -->
+    <div class="card card-magic">
+      <div class="card-glow" style="width:250px;height:250px;background:#BF5AF2;opacity:0.1;bottom:-50px;left:-50px;"></div>
+      <div class="card-tag tag-magic">✨ Magic Room</div>
+      <div class="card-body">
+        <div>
+          <div class="card-emoji">✨</div>
+          <div class="card-title">Tu perfil<br>está <span class="accent" style="color:#BF5AF2;">vacío.</span></div>
+        </div>
+        <p class="card-desc">Los Seekers no pueden descubrirte si tu Magic Room está vacía. Sube tu primer vídeo y empieza a brillar.</p>
+        <div>
+          <div class="progress-label">
+            <span>Progreso Magic Room</span>
+            <span>0%</span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <button class="card-btn btn-purple">✨ Añadir primer vídeo</button>
+      </div>
+    </div>
+
+    <!-- CARD 3 — CHALLENGE ROOM -->
+    <div class="card card-challenge">
+      <div class="card-glow" style="width:200px;height:200px;background:#FF6B00;opacity:0.12;top:50px;right:-30px;"></div>
+      <div class="card-tag tag-challenge">⚡ Challenge Room</div>
+      <div class="card-body">
+        <div>
+          <div class="card-emoji">⚡</div>
+          <div class="card-title">¿Listo para<br>el <span class="accent" style="color:#FF6B00;">reto?</span></div>
+        </div>
+        <p class="card-desc">Una pregunta. 60 segundos. Sin edición. Sin trampa. Aquí se ve quién eres de verdad. Los Seekers lo ven todo.</p>
+        <button class="card-btn btn-orange">⚡ Entrar a la Challenge Room</button>
+      </div>
+    </div>
+
+    <!-- CARD 4 — SEEKERS -->
+    <div class="card card-seeker">
+      <div class="card-glow" style="width:300px;height:300px;background:#30D158;opacity:0.07;bottom:-80px;right:-80px;"></div>
+      <div class="card-tag tag-seeker">🔭 Seekers</div>
+      <div class="card-body">
+        <div>
+          <div class="card-emoji">🔭</div>
+          <div class="card-title">Hay <span class="accent" style="color:#30D158;">Seekers</span><br>buscando<br>talento.</div>
+        </div>
+        <p class="card-desc">Las empresas están en Talpot buscando perfiles como el tuyo. Completa tu Magic Room para aparecer en sus búsquedas.</p>
+        <div class="seekers-row">
+          <div class="seeker-avatar" style="background:rgba(48,209,88,0.2);">S1</div>
+          <div class="seeker-avatar" style="background:rgba(48,209,88,0.15);">S2</div>
+          <div class="seeker-avatar" style="background:rgba(48,209,88,0.1);">S3</div>
+          <span class="seeker-count">+12 Seekers activos hoy</span>
+        </div>
+        <button class="card-btn btn-green">🌟 Hacerme visible</button>
+      </div>
+    </div>
+
+    <!-- CARD 5 — MINI JOC -->
+    <div class="card card-game">
+      <div class="card-glow" style="width:250px;height:250px;background:#00B4D8;opacity:0.1;top:30px;left:-50px;"></div>
+      <div class="card-tag tag-game">🎮 Mini-juego</div>
+      <div class="card-body">
+        <div>
+          <div class="card-emoji">🎮</div>
+          <div class="card-title">Nuevo juego<br><span class="accent" style="color:#00B4D8;">desbloqueado.</span></div>
+        </div>
+        <p class="card-desc">Juega 5 minutos y descubre qué tipo de perfil profesional eres. Los Seekers ven tu resultado. ¿Eres más creativo o analítico?</p>
+        <button class="card-btn btn-blue">🎮 Jugar ahora</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAV BOTTOM -->
+  <nav class="nav-bottom">
+    <div class="nav-item active">
+      <div class="nav-icon">🏠</div>
+      <span>Feed</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">✨</div>
+      <span>Mi Room</span>
+    </div>
+    <div class="nav-center">✚</div>
+    <div class="nav-item">
+      <div class="nav-icon">🔭</div>
+      <span>Seekers</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👤</div>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+</body>
+</html>
