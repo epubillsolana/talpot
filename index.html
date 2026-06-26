@@ -723,15 +723,7 @@
     }
 
     function entrarApp(rol, user) {
-      // Aquí redirigim a la pantalla principal de l'app
-      // Per ara mostrem un missatge de benvinguda
-      document.querySelectorAll('.screen').forEach(s => {
-        s.classList.add('below');
-        s.classList.remove('hidden');
-      });
-      document.getElementById('s-welcome').classList.remove('below', 'hidden');
-      document.getElementById('welcome-nom').textContent = user?.user_metadata?.nom || user?.email?.split('@')[0] || 'Talpotter';
-      document.getElementById('welcome-rol').textContent = rol === 'creator' ? 'CREATOR' : 'SEEKER';
+      window.location.href = rol === 'seeker' ? 'seeker.html' : 'app.html';
     }
 
     function switchAbout(rol) {
