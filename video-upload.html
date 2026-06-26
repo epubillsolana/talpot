@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Subir Vídeo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; }
+
+    /* FASES */
+    .fase {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 5rem 1.5rem 2rem;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .fase.hidden { opacity: 0; pointer-events: none; transform: translateY(16px); }
+
+    /* FASE 1 — TRIAR CATEGORIA */
+    .cats-title { font-size: clamp(1.5rem, 6vw, 2.5rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 0.5rem; text-align: center; }
+    .cats-desc { font-size: 0.9rem; color: rgba(255,255,255,0.45); text-align: center; margin-bottom: 1.5rem; line-height: 1.6; }
+
+    .cats-grid { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; max-width: 360px; }
+
+    .cat-btn {
+      padding: 0.9rem 1.1rem; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      display: flex; align-items: center; gap: 0.85rem;
+      cursor: pointer; transition: all 0.15s; text-align: left;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .cat-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); transform: scale(1.01); }
+    .cat-btn:active { transform: scale(0.99); }
+    .cat-btn.done { border-color: rgba(255,214,10,0.25); background: rgba(255,214,10,0.05); }
+
+    .cat-icon { font-size: 1.3rem; width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cat-info { flex: 1; }
+    .cat-name { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.15rem; }
+    .cat-desc { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+    .cat-status { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 100px; }
+    .status-done { background: rgba(255,214,10,0.12); color: #FFD60A; border: 1px solid rgba(255,214,10,0.25); }
+    .status-add { color: rgba(255,255,255,0.25); font-size: 1.2rem; }
+
+    /* FASE 2 — GRAVAR / PUJAR */
+    .upload-wrap { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 1.25rem; align-items: center; }
+
+    .upload-cat-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,214,10,0.1); border: 1px solid rgba(255,214,10,0.2);
+      border-radius: 100px; padding: 0.35rem 0.9rem;
+      font-size: 0.75rem; font-weight: 700; color: #FFD60A;
+    }
+
+    .upload-title { font-size: clamp(1.5rem, 6vw, 2.2rem); font-weight: 900; letter-spacing: -1px; text-align: center; }
+
+    .upload-area {
+      width: 100%; aspect-ratio: 9/14; max-height: 280px;
+      border: 2px dashed rgba(255,255,255,0.15); border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.75rem; cursor: pointer; transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .upload-area:hover { border-color: rgba(255,214,10,0.3); background: rgba(255,214,10,0.04); }
+    .upload-area.recording { border-color: rgba(255,45,85,0.5); background: rgba(255,45,85,0.05); }
+
+    .ua-icon { font-size: 2.5rem; }
+    .ua-text { font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.6); text-align: center; }
+    .ua-hint { font-size: 0.72rem; color: rgba(255,255,255,0.3); text-align: center; }
+
+    .rec-badge {
+      position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 0.35rem;
+      background: rgba(255,45,85,0.2); border: 1px solid rgba(255,45,85,0.4);
+      border-radius: 100px; padding: 0.25rem 0.65rem;
+      font-size: 0.72rem; font-weight: 700; color: #FF2D55;
+      animation: recBlink 1s infinite;
+    }
+    .rec-dot { width: 6px; height: 6px; border-radius: 50%; background: #FF2D55; }
+    @keyframes recBlink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .upload-btns { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; }
+
+    .ubtn {
+      width: 100%; padding: 1rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 0.95rem; cursor: pointer; transition: transform 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .ubtn:active { transform: scale(0.97); }
+    .ubtn-record { background: #FF2D55; color: #fff; box-shadow: 0 6px 24px rgba(255,45,85,0.3); }
+    .ubtn-upload { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); }
+
+    /* FASE 3 — PROCESSANT IA */
+    .ia-wrap { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 340px; text-align: center; }
+
+    .ia-spinner {
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 3px solid rgba(0,180,216,0.2);
+      border-top-color: #00B4D8;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ia-title { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 900; letter-spacing: -1px; }
+    .ia-title span { color: #00B4D8; }
+
+    .ia-steps { width: 100%; display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .ia-step {
+      display: flex; align-items: center; gap: 0.85rem;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 0.8rem 1rem;
+    }
+    .ia-step.done { border-color: rgba(48,209,88,0.2); background: rgba(48,209,88,0.05); }
+    .ia-step.active { border-color: rgba(0,180,216,0.3); background: rgba(0,180,216,0.07); animation: stepPulse 1.5s infinite; }
+    @keyframes stepPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+    .step-icon { font-size: 1.1rem; width: 32px; text-align: center; flex-shrink: 0; }
+    .step-text { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.7); }
+    .ia-step.done .step-text { color: #30D158; }
+    .ia-step.active .step-text { color: #00B4D8; }
+
+    /* FASE 4 — RESULTAT IA */
+    .result-wrap { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; max-height: calc(100dvh - 120px); }
+    .result-wrap::-webkit-scrollbar { display: none; }
+
+    .result-header { text-align: center; }
+    .result-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .result-title { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 0.25rem; }
+    .result-sub { font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+
+    .result-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 1rem;
+    }
+
+    .rc-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.75rem; }
+
+    .keywords { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .kw {
+      font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.7rem;
+      border-radius: 100px;
+    }
+    .kw-main { background: rgba(255,214,10,0.12); color: #FFD60A; border: 1px solid rgba(255,214,10,0.25); }
+    .kw-sec { background: rgba(0,180,216,0.1); color: #00B4D8; border: 1px solid rgba(0,180,216,0.2); }
+    .kw-ter { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); }
+
+    .transcription {
+      font-size: 0.82rem; color: rgba(255,255,255,0.55);
+      line-height: 1.65; font-style: italic;
+      border-left: 2px solid rgba(255,255,255,0.1);
+      padding-left: 0.75rem; margin-top: 0.25rem;
+    }
+
+    .skill-row { margin-bottom: 0.6rem; }
+    .skill-top { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .skill-pct { color: #FFD60A; }
+    .skill-bar { height: 4px; background: rgba(255,255,255,0.07); border-radius: 100px; overflow: hidden; }
+    .skill-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); }
+
+    .rob-update {
+      background: rgba(48,209,88,0.08); border: 1px solid rgba(48,209,88,0.2);
+      border-radius: 14px; padding: 0.85rem 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .ru-icon { font-size: 1.3rem; }
+    .ru-text { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .ru-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+
+    .btn-save {
+      width: 100%; padding: 1rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.95rem;
+      cursor: pointer; background: #FFD60A; color: #020B18;
+      box-shadow: 0 6px 24px rgba(255,214,10,0.3); transition: transform 0.15s;
+    }
+    .btn-save:hover { transform: scale(1.02); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" onclick="goBack()">← Volver</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <!-- FASE 1 — TRIAR CATEGORIA -->
+  <div class="fase" id="fase-cats">
+    <div class="cats-title">¿Qué vídeo<br>añades hoy?</div>
+    <p class="cats-desc">Cada vídeo hace tu perfil más robusto.<br>La IA lo analiza automáticamente.</p>
+    <div class="cats-grid">
+      <div class="cat-btn done" onclick="selectCat('presentacion','🎤','Presentación personal')">
+        <div class="cat-icon">🎤</div>
+        <div class="cat-info"><div class="cat-name">Presentación personal</div><div class="cat-desc">Cuéntanos quién eres</div></div>
+        <span class="cat-status status-done">✓</span>
+      </div>
+      <div class="cat-btn" onclick="selectCat('experiencia','💼','Experiencia')">
+        <div class="cat-icon">💼</div>
+        <div class="cat-info"><div class="cat-name">Experiencia</div><div class="cat-desc">¿Qué has hecho hasta ahora?</div></div>
+        <span class="cat-status status-add">＋</span>
+      </div>
+      <div class="cat-btn" onclick="selectCat('habilidades','🧠','Habilidades')">
+        <div class="cat-icon">🧠</div>
+        <div class="cat-info"><div class="cat-name">Habilidades</div><div class="cat-desc">¿En qué eres realmente bueno?</div></div>
+        <span class="cat-status status-add">＋</span>
+      </div>
+      <div class="cat-btn" onclick="selectCat('idiomas','🌍','Idiomas')">
+        <div class="cat-icon">🌍</div>
+        <div class="cat-info"><div class="cat-name">Idiomas</div><div class="cat-desc">Muestra tu nivel real hablando</div></div>
+        <span class="cat-status status-add">＋</span>
+      </div>
+      <div class="cat-btn" onclick="selectCat('objetivos','🎯','Objetivos')">
+        <div class="cat-icon">🎯</div>
+        <div class="cat-info"><div class="cat-name">Objetivos</div><div class="cat-desc">¿Hacia dónde quieres ir?</div></div>
+        <span class="cat-status status-add">＋</span>
+      </div>
+      <div class="cat-btn" onclick="selectCat('hobbies','🎨','Hobbies')">
+        <div class="cat-icon">🎨</div>
+        <div class="cat-info"><div class="cat-name">Hobbies</div><div class="cat-desc">¿Qué te apasiona fuera del trabajo?</div></div>
+        <span class="cat-status status-add">＋</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 2 — GRAVAR / PUJAR -->
+  <div class="fase hidden" id="fase-upload">
+    <div class="upload-wrap">
+      <span class="upload-cat-badge" id="upload-cat-badge">🎤 Presentación</span>
+      <div class="upload-title">Tu momento.<br>Tu vídeo.</div>
+      <div class="upload-area" id="upload-area">
+        <div class="ua-icon">📹</div>
+        <div class="ua-text">Toca para grabar<br>o subir vídeo</div>
+        <div class="ua-hint">Máximo 90 segundos</div>
+        <input type="file" accept="video/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="handleVideoUpload(this)">
+      </div>
+      <div class="upload-btns">
+        <button class="ubtn ubtn-record" onclick="startRecording()">🔴 Grabar ahora</button>
+        <button class="ubtn ubtn-upload" onclick="document.querySelector('input[type=file]').click()">📁 Subir vídeo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 3 — PROCESSANT IA -->
+  <div class="fase hidden" id="fase-ia">
+    <div class="ia-wrap">
+      <div class="ia-spinner"></div>
+      <div class="ia-title">Talpot <span>IA</span><br>analizando...</div>
+      <div class="ia-steps">
+        <div class="ia-step done" id="step-1">
+          <span class="step-icon">✅</span>
+          <span class="step-text">Vídeo subido correctamente</span>
+        </div>
+        <div class="ia-step active" id="step-2">
+          <span class="step-icon">🎙️</span>
+          <span class="step-text">Transcribiendo audio con Whisper...</span>
+        </div>
+        <div class="ia-step" id="step-3">
+          <span class="step-icon">🔍</span>
+          <span class="step-text">Extrayendo palabras clave...</span>
+        </div>
+        <div class="ia-step" id="step-4">
+          <span class="step-icon">🤖</span>
+          <span class="step-text">Analizando perfil de personalidad...</span>
+        </div>
+        <div class="ia-step" id="step-5">
+          <span class="step-icon">📈</span>
+          <span class="step-text">Actualizando robustez del perfil...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 4 — RESULTAT IA -->
+  <div class="fase hidden" id="fase-result">
+    <div class="result-wrap">
+      <div class="result-header">
+        <div class="result-icon">🌟</div>
+        <div class="result-title">¡Analizado!</div>
+        <div class="result-sub">Esto es lo que ha detectado Talpot IA</div>
+      </div>
+
+      <div class="result-card">
+        <div class="rc-title">📝 Transcripción</div>
+        <div class="transcription" id="ia-transcription">
+          "Hola, soy Eduard. Soy desarrollador web y emprendedor con experiencia en aplicaciones de lotería y plataformas digitales. Me apasiona crear productos que resuelvan problemas reales y que tengan impacto en las personas..."
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="rc-title">🏷️ Palabras clave detectadas</div>
+        <div class="keywords" id="ia-keywords">
+          <span class="kw kw-main">Desarrollo web</span>
+          <span class="kw kw-main">Emprendedor</span>
+          <span class="kw kw-main">Productos digitales</span>
+          <span class="kw kw-sec">JavaScript</span>
+          <span class="kw kw-sec">Supabase</span>
+          <span class="kw kw-sec">Cloudflare</span>
+          <span class="kw kw-ter">Impacto social</span>
+          <span class="kw kw-ter">Innovación</span>
+          <span class="kw kw-ter">Resolución de problemas</span>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="rc-title">🤖 Actualización del perfil IA</div>
+        <div class="skill-row">
+          <div class="skill-top"><span>Creatividad</span><span class="skill-pct">↑ 85%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-top"><span>Liderazgo</span><span class="skill-pct">↑ 72%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:72%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-top"><span>Orientación técnica</span><span class="skill-pct">↑ 91%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div>
+        </div>
+      </div>
+
+      <div class="rob-update">
+        <div class="ru-icon">📈</div>
+        <div>
+          <div class="ru-text">Robustez: 15% → 28%</div>
+          <div class="ru-sub">+13% por añadir vídeo de experiencia</div>
+        </div>
+      </div>
+
+      <button class="btn-save" onclick="window.location.href='magic-room.html'">✨ Guardar en mi Magic Room</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://dlxeqzdgsejoywwwnchi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRseGVxemRnc2Vqb3l3d3duY2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDM2MTgsImV4cCI6MjA5Nzg3OTYxOH0.qZBwTlAHFMsyc-t58ldSdlxlwZhUX-QKUakl1yZI7mA';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let catActual = '';
+
+    function showFase(id) {
+      document.querySelectorAll('.fase').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function goBack() {
+      const current = document.querySelector('.fase:not(.hidden)');
+      if (current.id === 'fase-cats') window.location.href = 'magic-room.html';
+      else if (current.id === 'fase-upload') showFase('fase-cats');
+      else if (current.id === 'fase-result') showFase('fase-cats');
+    }
+
+    function selectCat(id, icon, name) {
+      catActual = id;
+      document.getElementById('upload-cat-badge').textContent = icon + ' ' + name;
+      showFase('fase-upload');
+    }
+
+    function startRecording() {
+      const area = document.getElementById('upload-area');
+      area.classList.add('recording');
+      area.innerHTML = `
+        <div class="rec-badge"><div class="rec-dot"></div>GRABANDO</div>
+        <div style="font-size:3rem;">🎙️</div>
+        <div style="font-size:1.5rem;font-weight:900;color:#FF2D55;" id="rec-countdown">1:30</div>
+      `;
+      let secs = 90;
+      const iv = setInterval(() => {
+        secs--;
+        const m = Math.floor(secs/60);
+        const s = secs % 60;
+        const el = document.getElementById('rec-countdown');
+        if (el) el.textContent = m + ':' + String(s).padStart(2,'0');
+        if (secs <= 0) { clearInterval(iv); processVideo('recorded'); }
+      }, 1000);
+
+      // Simula aturar als 5 segons per demo
+      setTimeout(() => { clearInterval(iv); processVideo('recorded'); }, 5000);
+    }
+
+    function handleVideoUpload(input) {
+      if (input.files && input.files[0]) {
+        processVideo(input.files[0]);
+      }
+    }
+
+    async function processVideo(file) {
+      showFase('fase-ia');
+
+      // Simula els passos de la IA
+      const steps = ['step-2', 'step-3', 'step-4', 'step-5'];
+      const delays = [1500, 2500, 3500, 4500];
+
+      steps.forEach((stepId, i) => {
+        setTimeout(() => {
+          // Anterior → done
+          if (i > 0) {
+            const prev = document.getElementById(steps[i-1]);
+            prev.classList.remove('active');
+            prev.classList.add('done');
+            prev.querySelector('.step-icon').textContent = '✅';
+            prev.querySelector('.step-text').style.color = '#30D158';
+          }
+          // Actual → active
+          const curr = document.getElementById(stepId);
+          curr.classList.add('active');
+        }, delays[i]);
+      });
+
+      // Quan acaba → mostra resultat
+      setTimeout(async () => {
+        document.getElementById('step-5').classList.remove('active');
+        document.getElementById('step-5').classList.add('done');
+        document.getElementById('step-5').querySelector('.step-icon').textContent = '✅';
+
+        // Aquí faríem la crida real a Whisper + GPT-4o
+        // Per ara simulem el resultat
+        await simulateIA();
+        showFase('fase-result');
+      }, 6000);
+    }
+
+    async function simulateIA() {
+      // En producció aquí faríem:
+      // 1. Pujar vídeo a Supabase Storage
+      // 2. Cridar Whisper API per transcriure
+      // 3. Cridar GPT-4o per extreure paraules clau i perfil
+      // 4. Guardar a Supabase
+      return new Promise(resolve => setTimeout(resolve, 500));
+    }
+  </script>
+
+</body>
+</html>
