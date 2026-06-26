@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Creators</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; }
+
+    /* FEED VERTICAL TIKTOK */
+    .feed {
+      position: fixed; top: 56px; bottom: 64px;
+      left: 0; right: 0;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .feed::-webkit-scrollbar { display: none; }
+
+    /* CARD CREATOR */
+    .creator-card {
+      height: calc(100dvh - 56px - 64px);
+      scroll-snap-align: start;
+      position: relative;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      flex-shrink: 0; overflow: hidden;
+    }
+
+    /* Fons de color per cada Creator */
+    .card-bg {
+      position: absolute; inset: 0; z-index: 0;
+    }
+
+    /* Vídeo placeholder */
+    .video-placeholder {
+      position: absolute; inset: 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vp-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; font-weight: 800; color: #020B18;
+      opacity: 0.4;
+    }
+
+    /* Gradient overlay */
+    .card-overlay {
+      position: absolute; inset: 0; z-index: 2;
+      background: linear-gradient(
+        to bottom,
+        transparent 30%,
+        rgba(2,11,24,0.3) 60%,
+        rgba(2,11,24,0.85) 85%,
+        rgba(2,11,24,0.95) 100%
+      );
+    }
+
+    /* Contingut */
+    .card-content {
+      position: relative; z-index: 3;
+      padding: 1.25rem 4rem 1.25rem 1.25rem;
+    }
+
+    .card-cat {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.2rem 0.6rem;
+      border-radius: 100px; margin-bottom: 0.6rem;
+      background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7);
+    }
+
+    .card-name { font-size: 1.1rem; font-weight: 900; color: #fff; margin-bottom: 0.2rem; }
+    .card-role { font-size: 0.78rem; color: rgba(255,255,255,0.55); font-weight: 500; margin-bottom: 0.75rem; }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.85rem; }
+    .card-tag {
+      font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem;
+      border-radius: 100px; background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7);
+    }
+    .card-tag.key { background: rgba(255,214,10,0.12); border-color: rgba(255,214,10,0.25); color: #FFD60A; }
+
+    /* ROB BAR */
+    .card-rob {
+      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.85rem;
+    }
+    .rob-label { font-size: 0.65rem; font-weight: 600; color: rgba(255,255,255,0.3); white-space: nowrap; }
+    .rob-track { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 100px; overflow: hidden; }
+    .rob-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); }
+    .rob-pct { font-size: 0.72rem; font-weight: 800; color: #FFD60A; }
+
+    /* ACCIONS LATERALS */
+    .card-actions {
+      position: absolute; right: 1rem; bottom: 1.5rem; z-index: 3;
+      display: flex; flex-direction: column; gap: 1.25rem; align-items: center;
+    }
+
+    .action-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+      cursor: pointer;
+    }
+
+    .action-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; transition: all 0.2s;
+    }
+
+    .action-icon:hover { background: rgba(255,255,255,0.18); transform: scale(1.08); }
+    .action-icon.liked { background: rgba(255,45,85,0.2); border-color: rgba(255,45,85,0.4); }
+
+    .action-count { font-size: 0.62rem; font-weight: 700; color: rgba(255,255,255,0.5); }
+
+    /* PLAY BUTTON */
+    .play-btn {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3; cursor: pointer;
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; transition: all 0.2s;
+    }
+    .play-btn:hover { background: rgba(255,255,255,0.25); transform: translate(-50%, -50%) scale(1.08); }
+
+    /* PROGRESS VIDEOS */
+    .card-videos {
+      display: flex; gap: 0.3rem; margin-bottom: 0.6rem;
+    }
+    .cv-dot {
+      flex: 1; height: 2px; border-radius: 1px;
+      background: rgba(255,255,255,0.2);
+    }
+    .cv-dot.active { background: #FFD60A; }
+    .cv-dot.done { background: rgba(255,255,255,0.5); }
+
+    /* TALENT BADGES MODAL */
+    .badges-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
+      display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .badges-overlay.open { opacity: 1; pointer-events: all; }
+
+    .badges-sheet {
+      width: 100%; max-width: 480px;
+      background: #0D1F35; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px 24px 0 0; padding: 1.5rem 1.25rem 2rem;
+      transform: translateY(100%); transition: transform 0.35s ease;
+    }
+    .badges-overlay.open .badges-sheet { transform: translateY(0); }
+
+    .bs-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.15); margin: 0 auto 1.25rem; }
+    .bs-title { font-size: 1rem; font-weight: 900; color: #fff; margin-bottom: 0.25rem; text-align: center; }
+    .bs-sub { font-size: 0.78rem; color: rgba(255,255,255,0.4); text-align: center; margin-bottom: 1.25rem; }
+
+    .badges-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.6rem; margin-bottom: 1rem;
+    }
+
+    .badge-btn {
+      padding: 0.85rem 0.75rem; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer; transition: all 0.15s; text-align: left;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .badge-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); transform: scale(1.02); }
+    .badge-btn:active { transform: scale(0.98); }
+    .badge-btn.selected { border-color: rgba(255,214,10,0.4); background: rgba(255,214,10,0.08); }
+
+    .bb-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .bb-info { }
+    .bb-name { font-size: 0.82rem; font-weight: 800; color: #fff; margin-bottom: 0.1rem; }
+    .bb-desc { font-size: 0.65rem; color: rgba(255,255,255,0.35); line-height: 1.3; }
+
+    .bs-send {
+      width: 100%; padding: 1rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 0.95rem; cursor: pointer;
+      background: #FFD60A; color: #020B18;
+      box-shadow: 0 6px 24px rgba(255,214,10,0.3);
+      transition: transform 0.15s; opacity: 0.4; pointer-events: none;
+    }
+    .bs-send.ready { opacity: 1; pointer-events: all; }
+    .bs-send.ready:hover { transform: scale(1.02); }
+    .nav-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+      display: flex; align-items: center; justify-content: space-around;
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: #fff; }
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon { color: #FFD60A; }
+    .nav-icon { font-size: 1.3rem; line-height: 1; }
+    .nav-center { width: 46px; height: 46px; border-radius: 50%; background: #FFD60A; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); opacity: 1 !important; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" onclick="window.location.href='app.html'">← Feed</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <div class="feed">
+
+    <!-- CREATOR 1 -->
+    <div class="creator-card">
+      <div class="card-bg" style="background:linear-gradient(160deg,#1A0D35,#0D1F35,#041E3A);"></div>
+      <div class="video-placeholder">
+        <div class="vp-avatar" style="background:linear-gradient(135deg,#FFD60A,#FF6B00);">MA</div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="play-btn" onclick="togglePlay(this)">▶</div>
+      <div class="card-actions">
+        <div class="action-btn" onclick="openBadges(this)">
+          <div class="action-icon">❤️</div>
+          <div class="action-count">24</div>
+        </div>
+        <div class="action-btn" onclick="window.location.href='game.html'">
+          <div class="action-icon">⚡</div>
+          <div class="action-count">Retar</div>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon">🎬</div>
+          <div class="action-count">Responder</div>
+        </div>
+        <div class="action-btn" onclick="window.location.href='creator-profile.html'">
+          <div class="action-icon">👤</div>
+          <div class="action-count">Perfil</div>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="card-cat">🎤 Presentación personal</div>
+        <div class="card-videos">
+          <div class="cv-dot active"></div>
+          <div class="cv-dot done"></div>
+          <div class="cv-dot done"></div>
+          <div class="cv-dot"></div>
+          <div class="cv-dot"></div>
+        </div>
+        <div class="card-name">María A.</div>
+        <div class="card-role">Diseño UX · Barcelona · 26 años</div>
+        <div class="card-tags">
+          <span class="card-tag key">UX Design</span>
+          <span class="card-tag key">Figma</span>
+          <span class="card-tag">Inglés B2</span>
+          <span class="card-tag">Creativa</span>
+        </div>
+        <div class="card-rob">
+          <span class="rob-label">Robustez</span>
+          <div class="rob-track"><div class="rob-fill" style="width:87%"></div></div>
+          <span class="rob-pct">87%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATOR 2 -->
+    <div class="creator-card">
+      <div class="card-bg" style="background:linear-gradient(160deg,#001A0D,#002033,#041E3A);"></div>
+      <div class="video-placeholder">
+        <div class="vp-avatar" style="background:linear-gradient(135deg,#00B4D8,#0D3B6E);">JL</div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="play-btn" onclick="togglePlay(this)">▶</div>
+      <div class="card-actions">
+        <div class="action-btn" onclick="openBadges(this)">
+          <div class="action-icon liked">❤️</div>
+          <div class="action-count" style="color:#FF2D55;">12</div>
+        </div>
+        <div class="action-btn" onclick="window.location.href='game.html'">
+          <div class="action-icon">⚡</div>
+          <div class="action-count">Retar</div>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon">🎬</div>
+          <div class="action-count">Responder</div>
+        </div>
+        <div class="action-btn" onclick="window.location.href='creator-profile.html'">
+          <div class="action-icon">👤</div>
+          <div class="action-count">Perfil</div>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="card-cat">💼 Experiencia</div>
+        <div class="card-videos">
+          <div class="cv-dot done"></div>
+          <div class="cv-dot active"></div>
+          <div class="cv-dot done"></div>
+          <div class="cv-dot done"></div>
+          <div class="cv-dot"></div>
+        </div>
+        <div class="card-name">Jordi L.</div>
+        <div class="card-role">Marketing Digital · Madrid · 29 años</div>
+        <div class="card-tags">
+          <span class="card-tag key">Marketing digital</span>
+          <span class="card-tag key">Analytics</span>
+          <span class="card-tag">Inglés C1</span>
+        </div>
+        <div class="card-rob">
+          <span class="rob-label">Robustez</span>
+          <div class="rob-track"><div class="rob-fill" style="width:72%"></div></div>
+          <span class="rob-pct">72%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATOR 3 — CHALLENGE ROOM -->
+    <div class="creator-card">
+      <div class="card-bg" style="background:linear-gradient(160deg,#1A0500,#2D0D00,#041E3A);"></div>
+      <div class="video-placeholder">
+        <div class="vp-avatar" style="background:linear-gradient(135deg,#BF5AF2,#7B2FBE);">SR</div>
+      </div>
+      <div class="card-overlay"></div>
+      <div class="play-btn" onclick="togglePlay(this)">▶</div>
+      <div class="card-actions">
+        <div class="action-btn" onclick="openBadges(this)">
+          <div class="action-icon">❤️</div>
+          <div class="action-count">38</div>
+        </div>
+        <div class="action-btn" onclick="window.location.href='game.html'">
+          <div class="action-icon">⚡</div>
+          <div class="action-count">Retar</div>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon">🎬</div>
+          <div class="action-count">Responder</div>
+        </div>
+        <div class="action-btn" onclick="window.location.href='creator-profile.html'">
+          <div class="action-icon">👤</div>
+          <div class="action-count">Perfil</div>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="card-cat" style="background:rgba(255,107,0,0.2);color:#FF6B00;">⚡ Challenge Room</div>
+        <div class="card-videos">
+          <div class="cv-dot done"></div>
+          <div class="cv-dot done"></div>
+          <div class="cv-dot done"></div>
+          <div class="cv-dot done"></div>
+          <div class="cv-dot active"></div>
+        </div>
+        <div class="card-name">Sara R.</div>
+        <div class="card-role">Ventas B2B · Valencia · 31 años</div>
+        <div class="card-tags">
+          <span class="card-tag key">Ventas B2B</span>
+          <span class="card-tag key">Liderazgo</span>
+          <span class="card-tag">Francés nativo</span>
+        </div>
+        <div class="card-rob">
+          <span class="rob-label">Robustez</span>
+          <div class="rob-track"><div class="rob-fill" style="width:94%"></div></div>
+          <span class="rob-pct">94%</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TALENT BADGES MODAL -->
+  <div class="badges-overlay" id="badges-overlay" onclick="if(event.target===this)closeBadges()">
+    <div class="badges-sheet">
+      <div class="bs-handle"></div>
+      <div class="bs-title">Reconoce su talento</div>
+      <div class="bs-sub" id="bs-creator-name">¿Qué destacas de María A.?</div>
+      <div class="badges-grid">
+        <div class="badge-btn" onclick="selectBadge(this,'🔥','Pasión')">
+          <div class="bb-icon">🔥</div>
+          <div class="bb-info"><div class="bb-name">Pasión</div><div class="bb-desc">Transmite energía real</div></div>
+        </div>
+        <div class="badge-btn" onclick="selectBadge(this,'💡','Creatividad')">
+          <div class="bb-icon">💡</div>
+          <div class="bb-info"><div class="bb-name">Creatividad</div><div class="bb-desc">Ideas originales</div></div>
+        </div>
+        <div class="badge-btn" onclick="selectBadge(this,'🎯','Claridad')">
+          <div class="bb-icon">🎯</div>
+          <div class="bb-info"><div class="bb-name">Claridad</div><div class="bb-desc">Se explica muy bien</div></div>
+        </div>
+        <div class="badge-btn" onclick="selectBadge(this,'🤝','Empatía')">
+          <div class="bb-icon">🤝</div>
+          <div class="bb-info"><div class="bb-name">Empatía</div><div class="bb-desc">Conecta con las personas</div></div>
+        </div>
+        <div class="badge-btn" onclick="selectBadge(this,'⚡','Decisión')">
+          <div class="bb-icon">⚡</div>
+          <div class="bb-info"><div class="bb-name">Decisión</div><div class="bb-desc">Actúa con confianza</div></div>
+        </div>
+        <div class="badge-btn" onclick="selectBadge(this,'🧠','Analítico')">
+          <div class="bb-icon">🧠</div>
+          <div class="bb-info"><div class="bb-name">Analítico</div><div class="bb-desc">Razona en profundidad</div></div>
+        </div>
+        <div class="badge-btn" onclick="selectBadge(this,'🚀','Ambición')">
+          <div class="bb-icon">🚀</div>
+          <div class="bb-info"><div class="bb-name">Ambición</div><div class="bb-desc">Tiene hambre de crecer</div></div>
+        </div>
+        <div class="badge-btn" onclick="selectBadge(this,'🎤','Comunicación')">
+          <div class="bb-icon">🎤</div>
+          <div class="bb-info"><div class="bb-name">Comunicación</div><div class="bb-desc">Se expresa con impacto</div></div>
+        </div>
+      </div>
+      <button class="bs-send" id="bs-send" onclick="sendBadge()">Reconocer talento</button>
+    </div>
+  </div>
+
+  <nav class="nav-bottom">
+    <div class="nav-item" onclick="window.location.href='app.html'">
+      <div class="nav-icon">🏠</div>
+      <span>Feed</span>
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon">✨</div>
+      <span>Creators</span>
+    </div>
+    <div class="nav-center" onclick="window.location.href='video-upload.html'">✚</div>
+    <div class="nav-item" onclick="window.location.href='notifications.html'">
+      <div class="nav-icon">🔔</div>
+      <span>Avisos</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <div class="nav-icon">👤</div>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+  <script>
+    let selectedBadge = null;
+    let activeLikeBtn = null;
+
+    function openBadges(btn) {
+      activeLikeBtn = btn;
+      selectedBadge = null;
+      document.querySelectorAll('.badge-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('bs-send').classList.remove('ready');
+      document.getElementById('badges-overlay').classList.add('open');
+    }
+
+    function closeBadges() {
+      document.getElementById('badges-overlay').classList.remove('open');
+    }
+
+    function selectBadge(btn, icon, name) {
+      document.querySelectorAll('.badge-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedBadge = { icon, name };
+      document.getElementById('bs-send').classList.add('ready');
+      document.getElementById('bs-send').textContent = icon + ' Reconocer como "' + name + '"';
+    }
+
+    function sendBadge() {
+      if (!selectedBadge || !activeLikeBtn) return;
+      const icon = activeLikeBtn.querySelector('.action-icon');
+      const count = activeLikeBtn.querySelector('.action-count');
+      icon.textContent = selectedBadge.icon;
+      icon.classList.add('liked');
+      icon.style.background = 'rgba(255,214,10,0.2)';
+      icon.style.borderColor = 'rgba(255,214,10,0.4)';
+      count.textContent = selectedBadge.name;
+      count.style.color = '#FFD60A';
+      count.style.fontSize = '0.55rem';
+      closeBadges();
+    }
+
+    function togglePlay(btn) {
+      btn.textContent = btn.textContent === '▶' ? '⏸' : '▶';
+    }
+  </script>
+
+</body>
+</html>
