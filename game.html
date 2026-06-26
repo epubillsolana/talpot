@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Decisiones Rápidas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; }
+    .nav-back:hover { color: #fff; }
+
+    /* FASES */
+    .fase {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 5rem 1.5rem 2rem; text-align: center;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .fase.hidden { opacity: 0; pointer-events: none; transform: translateY(16px); }
+
+    /* INTRO */
+    .game-icon { font-size: 4rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+
+    .game-title { font-size: clamp(2rem, 8vw, 3rem); font-weight: 900; letter-spacing: -1.5px; line-height: 1.05; margin-bottom: 0.75rem; }
+    .game-title span { color: #FFD60A; }
+
+    .game-desc { font-size: 0.95rem; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 320px; margin-bottom: 1.5rem; }
+
+    /* NIVELLS */
+    .levels { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; max-width: 320px; margin-bottom: 1.5rem; }
+
+    .level-btn {
+      padding: 1rem 1.25rem; border-radius: 14px; border: none; cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .level-btn:active { transform: scale(0.98); }
+
+    .level-rookie { background: rgba(48,209,88,0.12); border: 1px solid rgba(48,209,88,0.25); color: #30D158; }
+    .level-rookie:hover { background: rgba(48,209,88,0.18); transform: scale(1.02); }
+    .level-pro { background: rgba(255,214,10,0.1); border: 1px solid rgba(255,214,10,0.25); color: #FFD60A; }
+    .level-pro:hover { background: rgba(255,214,10,0.15); transform: scale(1.02); }
+    .level-expert { background: rgba(255,45,85,0.1); border: 1px solid rgba(255,45,85,0.25); color: #FF2D55; }
+    .level-expert:hover { background: rgba(255,45,85,0.15); transform: scale(1.02); }
+    .level-locked { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.2); cursor: not-allowed; }
+
+    .level-left { display: flex; align-items: center; gap: 0.6rem; }
+    .level-info { text-align: left; }
+    .level-name { font-size: 0.9rem; font-weight: 800; }
+    .level-meta { font-size: 0.7rem; opacity: 0.6; margin-top: 0.1rem; }
+    .level-badge { font-size: 0.7rem; opacity: 0.7; }
+
+    .model-tag {
+      font-size: 0.68rem; color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      padding: 0.25rem 0.65rem; border-radius: 100px;
+    }
+
+    /* JOC */
+    .game-wrap {
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 1.25rem;
+    }
+
+    /* Progress bar */
+    .game-progress-wrap {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .progress-track {
+      flex: 1; height: 4px; background: rgba(255,255,255,0.08);
+      border-radius: 100px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #00B4D8, #FFD60A);
+      border-radius: 100px; transition: width 0.4s ease;
+    }
+    .progress-label { font-size: 0.72rem; color: rgba(255,255,255,0.3); font-weight: 700; white-space: nowrap; }
+
+    /* Timer */
+    .timer-row { display: flex; justify-content: center; }
+    .timer-circle {
+      width: 70px; height: 70px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .timer-circle svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+    .timer-num { font-size: 1.5rem; font-weight: 900; position: relative; z-index: 1; }
+
+    /* Situació */
+    .situacio {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px; padding: 1.25rem; text-align: left;
+      backdrop-filter: blur(8px);
+    }
+    .situacio-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.6rem; }
+    .situacio-text { font-size: clamp(0.95rem, 3vw, 1.1rem); font-weight: 700; color: #fff; line-height: 1.5; }
+
+    /* Opcions */
+    .opcions { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .opcio {
+      padding: 0.9rem 1.1rem; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04); backdrop-filter: blur(8px);
+      cursor: pointer; text-align: left;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem;
+      font-weight: 600; color: rgba(255,255,255,0.8);
+      transition: all 0.15s; display: flex; align-items: center; gap: 0.75rem;
+    }
+    .opcio:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); color: #fff; transform: scale(1.01); }
+    .opcio:active { transform: scale(0.99); }
+    .opcio.selected { background: rgba(255,214,10,0.12); border-color: rgba(255,214,10,0.35); color: #FFD60A; }
+    .opcio.correct { background: rgba(48,209,88,0.12); border-color: rgba(48,209,88,0.35); color: #30D158; }
+    .opcio.wrong { background: rgba(255,45,85,0.08); border-color: rgba(255,45,85,0.2); color: rgba(255,255,255,0.3); }
+    .opcio-letter { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
+
+    /* RESULTAT */
+    .resultat-header { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .resultat-icon { font-size: 3.5rem; }
+    .resultat-title { font-size: clamp(1.8rem, 7vw, 2.8rem); font-weight: 900; letter-spacing: -1.5px; }
+    .resultat-sub { font-size: 0.9rem; color: rgba(255,255,255,0.5); }
+
+    .resultat-stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.6rem; width: 100%; max-width: 340px; margin-bottom: 1.25rem;
+    }
+    .rs { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 0.85rem 0.5rem; text-align: center; }
+    .rs-num { font-size: 1.4rem; font-weight: 900; color: #FFD60A; line-height: 1; margin-bottom: 0.2rem; }
+    .rs-label { font-size: 0.6rem; color: rgba(255,255,255,0.3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .perfil-update {
+      background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.2);
+      border-radius: 14px; padding: 1rem; width: 100%; max-width: 340px;
+      margin-bottom: 1.25rem; text-align: left;
+    }
+    .pu-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #00B4D8; margin-bottom: 0.75rem; }
+    .pu-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .pu-skill { font-size: 0.82rem; font-weight: 600; color: #fff; }
+    .pu-change { font-size: 0.78rem; font-weight: 800; color: #30D158; }
+    .pu-bar { height: 4px; background: rgba(255,255,255,0.07); border-radius: 100px; overflow: hidden; margin-bottom: 0.75rem; }
+    .pu-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); transition: width 1s ease; }
+
+    .btn-resultat {
+      width: 100%; max-width: 340px; padding: 1rem 2rem;
+      border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1rem;
+      cursor: pointer; background: #FFD60A; color: #020B18;
+      box-shadow: 0 8px 30px rgba(255,214,10,0.3); transition: transform 0.15s;
+    }
+    .btn-resultat:hover { transform: scale(1.04); }
+
+    .btn-resultat-sec {
+      width: 100%; max-width: 340px; padding: 0.9rem 2rem;
+      border-radius: 100px; border: 1px solid rgba(255,255,255,0.15);
+      background: transparent; color: rgba(255,255,255,0.6);
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; margin-top: 0.5rem; transition: color 0.2s;
+    }
+    .btn-resultat-sec:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" onclick="window.location.href='magic-room.html'">← Mi Room</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <!-- FASE INTRO -->
+  <div class="fase" id="fase-intro">
+    <div class="game-icon">⚡</div>
+    <div class="game-title">Decisiones<br><span>Rápidas</span></div>
+    <p class="game-desc">Una situación laboral. Tres opciones. Pocos segundos para decidir. No hay respuesta correcta — solo la tuya.</p>
+    <div class="levels">
+      <button class="level-btn level-rookie" onclick="startGame('rookie')">
+        <div class="level-left">
+          <span style="font-size:1.3rem;">🟢</span>
+          <div class="level-info">
+            <div class="level-name">Rookie</div>
+            <div class="level-meta">8 seg · 10 situaciones</div>
+          </div>
+        </div>
+        <span class="level-badge">JUGAR →</span>
+      </button>
+      <button class="level-btn level-pro" onclick="startGame('pro')">
+        <div class="level-left">
+          <span style="font-size:1.3rem;">🟡</span>
+          <div class="level-info">
+            <div class="level-name">Pro</div>
+            <div class="level-meta">5 seg · 10 situaciones · Más complejas</div>
+          </div>
+        </div>
+        <span class="level-badge">JUGAR →</span>
+      </button>
+      <button class="level-btn level-expert" onclick="startGame('expert')">
+        <div class="level-left">
+          <span style="font-size:1.3rem;">🔴</span>
+          <div class="level-info">
+            <div class="level-name">Expert</div>
+            <div class="level-meta">3 seg · 10 situaciones · Alta presión</div>
+          </div>
+        </div>
+        <span class="level-badge">JUGAR →</span>
+      </button>
+    </div>
+    <span class="model-tag">Big Five · Extraversion · Holland E — Mide intuición y liderazgo</span>
+  </div>
+
+  <!-- FASE JOC -->
+  <div class="fase hidden" id="fase-joc">
+    <div class="game-wrap">
+      <div class="game-progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="progress-label" id="progress-label">1 / 10</div>
+      </div>
+      <div class="timer-row">
+        <div class="timer-circle">
+          <svg width="70" height="70" viewBox="0 0 70 70">
+            <circle cx="35" cy="35" r="32" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+            <circle id="timer-circle" cx="35" cy="35" r="32" fill="none" stroke="#FFD60A" stroke-width="3"
+              stroke-dasharray="201" stroke-dashoffset="0" stroke-linecap="round"/>
+          </svg>
+          <div class="timer-num" id="timer-num">8</div>
+        </div>
+      </div>
+      <div class="situacio">
+        <div class="situacio-label">¿Qué harías?</div>
+        <div class="situacio-text" id="situacio-text"></div>
+      </div>
+      <div class="opcions" id="opcions"></div>
+    </div>
+  </div>
+
+  <!-- FASE RESULTAT -->
+  <div class="fase hidden" id="fase-resultat">
+    <div class="resultat-header">
+      <div class="resultat-icon" id="resultat-icon">🌟</div>
+      <div class="resultat-title" id="resultat-title">¡Completado!</div>
+      <div class="resultat-sub" id="resultat-sub">Tu perfil se ha actualizado</div>
+    </div>
+    <div class="resultat-stats">
+      <div class="rs"><div class="rs-num" id="r-respondidas">10</div><div class="rs-label">Respondidas</div></div>
+      <div class="rs"><div class="rs-num" id="r-rapidas">7</div><div class="rs-label">Rápidas</div></div>
+      <div class="rs"><div class="rs-num" id="r-tiempo">4.2s</div><div class="rs-label">Tiempo medio</div></div>
+    </div>
+    <div class="perfil-update">
+      <div class="pu-title">🤖 Actualización de perfil</div>
+      <div class="pu-row"><span class="pu-skill">Liderazgo</span><span class="pu-change">+4%</span></div>
+      <div class="pu-bar"><div class="pu-fill" id="pu-liderazgo" style="width:72%"></div></div>
+      <div class="pu-row"><span class="pu-skill">Intuición</span><span class="pu-change">+6%</span></div>
+      <div class="pu-bar"><div class="pu-fill" id="pu-intuicion" style="width:68%"></div></div>
+      <div class="pu-row"><span class="pu-skill">Decisión bajo presión</span><span class="pu-change">+3%</span></div>
+      <div class="pu-bar"><div class="pu-fill" id="pu-presion" style="width:55%"></div></div>
+    </div>
+    <button class="btn-resultat" onclick="showFase('fase-intro')">⚡ Jugar otra vez</button>
+    <button class="btn-resultat-sec" onclick="window.location.href='magic-room.html'">← Volver a mi Room</button>
+  </div>
+
+  <script>
+    // ── SITUACIONS PER NIVELL ──
+    const situacions = {
+      rookie: [
+        {
+          text: "Tu jefe te pide entregar un proyecto para mañana, pero crees que necesita más tiempo para hacerse bien.",
+          opcions: [
+            { text: "Lo entrego mañana aunque no esté perfecto", perfil: "acció" },
+            { text: "Le explico que necesita más tiempo y propongo una fecha alternativa", perfil: "comunicació" },
+            { text: "Trabajo toda la noche para entregarlo perfecto mañana", perfil: "perfeccionisme" }
+          ]
+        },
+        {
+          text: "Un compañero toma crédito por una idea que era tuya delante de todo el equipo.",
+          opcions: [
+            { text: "Lo corrijo en el momento con calma", perfil: "assertivitat" },
+            { text: "Se lo digo en privado después de la reunión", perfil: "diplomàcia" },
+            { text: "Lo dejo pasar, lo importante es que la idea salga adelante", perfil: "altruisme" }
+          ]
+        },
+        {
+          text: "Te ofrecen un ascenso, pero significa trabajar con un equipo que no te gusta.",
+          opcions: [
+            { text: "Acepto — el crecimiento profesional es lo primero", perfil: "ambició" },
+            { text: "Negocio las condiciones antes de decidir", perfil: "estratègia" },
+            { text: "Lo rechazo — el bienestar en el trabajo es fundamental", perfil: "valors" }
+          ]
+        },
+        {
+          text: "En medio de una presentación importante, te das cuenta de que hay un error en tus datos.",
+          opcions: [
+            { text: "Lo reconozco en el momento y lo corrijo", perfil: "honestedat" },
+            { text: "Continúo y lo corrijo después por email", perfil: "control" },
+            { text: "Improviso para cubrir el error sin que nadie lo note", perfil: "adaptació" }
+          ]
+        },
+        {
+          text: "Tu equipo está dividido sobre cómo resolver un problema. Tú tienes una opinión clara.",
+          opcions: [
+            { text: "Defiendo mi posición con datos y argumento", perfil: "lideratge" },
+            { text: "Escucho todas las opiniones antes de compartir la mía", perfil: "escolta" },
+            { text: "Propongo votar para que el equipo decida", perfil: "democràcia" }
+          ]
+        },
+        {
+          text: "Detectas un proceso ineficiente en tu empresa que nadie más ha comentado.",
+          opcions: [
+            { text: "Propongo una solución directamente a mi responsable", perfil: "iniciativa" },
+            { text: "Lo documento y espero el momento adecuado para mencionarlo", perfil: "estratègia" },
+            { text: "Lo mejoro por mi cuenta sin decirle nada a nadie", perfil: "autonomia" }
+          ]
+        },
+        {
+          text: "Un cliente está enfadado y te grita por teléfono por un error que no fue tuyo.",
+          opcions: [
+            { text: "Le escucho con calma y busco una solución", perfil: "empatia" },
+            { text: "Le explico que el error no fue mío y propongo solucionarlo", perfil: "assertivitat" },
+            { text: "Paso la llamada a mi responsable", perfil: "delegació" }
+          ]
+        },
+        {
+          text: "Te asignan un proyecto fuera de tu zona de confort que no sabes si podrás hacer bien.",
+          opcions: [
+            { text: "Lo acepto como un reto y aprendo sobre la marcha", perfil: "creixement" },
+            { text: "Lo acepto pero pido apoyo o recursos adicionales", perfil: "col·laboració" },
+            { text: "Soy honesto y digo que no tengo experiencia en eso", perfil: "honestedat" }
+          ]
+        },
+        {
+          text: "Tu empresa te pide hacer algo que crees que es éticamente cuestionable.",
+          opcions: [
+            { text: "Me niego y explico mis razones", perfil: "integritat" },
+            { text: "Lo consulto con alguien de confianza antes de decidir", perfil: "reflexió" },
+            { text: "Lo hago pero lo reporto internamente después", perfil: "pragmatisme" }
+          ]
+        },
+        {
+          text: "Hay dos proyectos urgentes al mismo tiempo y no puedes hacer los dos bien.",
+          opcions: [
+            { text: "Priorizo el más importante y comunico el retraso del otro", perfil: "comunicació" },
+            { text: "Pido ayuda a un compañero para uno de ellos", perfil: "col·laboració" },
+            { text: "Intento hacer los dos a la vez aunque sea peor calidad", perfil: "esforç" }
+          ]
+        }
+      ],
+      pro: [
+        {
+          text: "Descubres que tu empresa está perdiendo un cliente importante por un problema que podrías resolver tú, pero no es tu responsabilidad.",
+          opcions: [
+            { text: "Me involucro directamente aunque no sea mi área", perfil: "iniciativa" },
+            { text: "Lo comunico a quien corresponde con mi propuesta de solución", perfil: "estructura" },
+            { text: "Es problema de otro departamento, me centro en lo mío", perfil: "límits" }
+          ]
+        },
+        {
+          text: "Tu responsable te pide implementar una estrategia con la que no estás de acuerdo.",
+          opcions: [
+            { text: "La cuestiono abiertamente antes de implementarla", perfil: "valor" },
+            { text: "La implemento pero propongo ajustes mientras avanzo", perfil: "adaptació" },
+            { text: "La ejecuto sin cuestionarla — confío en que sabe más que yo", perfil: "confiança" }
+          ]
+        },
+        {
+          text: "Un miembro de tu equipo no está rindiendo. Sabes que tiene problemas personales.",
+          opcions: [
+            { text: "Hablo con él en privado para entender qué le pasa", perfil: "empatia" },
+            { text: "Lo comunico a RRHH para que lo gestionen", perfil: "protocol" },
+            { text: "Le doy más tiempo y redistribuyo su carga sin decirle nada", perfil: "protecció" }
+          ]
+        },
+        {
+          text: "Tienes la oportunidad de quedarte con un lead valioso o pasárselo a un compañero que lo necesita más.",
+          opcions: [
+            { text: "Me lo quedo — he trabajado para conseguirlo", perfil: "competitivitat" },
+            { text: "Se lo paso — el equipo primero", perfil: "generositat" },
+            { text: "Propongo trabajarlo juntos", perfil: "col·laboració" }
+          ]
+        },
+        {
+          text: "En una reunión con dirección, tu responsable directo dice algo incorrecto sobre tu trabajo.",
+          opcions: [
+            { text: "Lo corrijo en el momento con respeto", perfil: "valor" },
+            { text: "Espero y se lo digo en privado después", perfil: "tacte" },
+            { text: "Lo dejo pasar — no vale la pena el conflicto", perfil: "evitació" }
+          ]
+        },
+        {
+          text: "Tu empresa va a lanzar un producto que crees que no está listo. Tienes influencia pero no poder de decisión.",
+          opcions: [
+            { text: "Alerto formalmente de los riesgos por escrito", perfil: "responsabilitat" },
+            { text: "Lo digo en la reunión aunque no me hagan caso", perfil: "honestedat" },
+            { text: "Preparo un plan de contingencia por si falla", perfil: "previsió" }
+          ]
+        },
+        {
+          text: "Te ofrecen un puesto en otra empresa con más sueldo. Tu equipo actual te necesita en un momento crítico.",
+          opcions: [
+            { text: "Me voy — mi carrera es mi responsabilidad", perfil: "autonomia" },
+            { text: "Negocio con mi empresa actual antes de decidir", perfil: "leialtat" },
+            { text: "Espero a que pase el momento crítico y entonces decido", perfil: "compromís" }
+          ]
+        },
+        {
+          text: "Detectas que un compañero está cometiendo un fraude pequeño que solo tú has visto.",
+          opcions: [
+            { text: "Lo reporto directamente a dirección", perfil: "integritat" },
+            { text: "Se lo digo primero a él para darle la oportunidad de corregirlo", perfil: "empatia" },
+            { text: "Lo ignoro — no quiero problemas", perfil: "evitació" }
+          ]
+        },
+        {
+          text: "Tienes que tomar una decisión importante con información incompleta y poco tiempo.",
+          opcions: [
+            { text: "Decido con lo que tengo — la velocidad es clave", perfil: "decisió" },
+            { text: "Pido más tiempo aunque genere tensión", perfil: "qualitat" },
+            { text: "Delego la decisión en quien tenga más información", perfil: "humilitat" }
+          ]
+        },
+        {
+          text: "Un proyecto que lideraste ha fracasado. Tu equipo espera que expliques qué pasó.",
+          opcions: [
+            { text: "Asumo toda la responsabilidad públicamente", perfil: "lideratge" },
+            { text: "Analizo los errores con el equipo de forma constructiva", perfil: "aprenentatge" },
+            { text: "Explico qué salió mal sin señalar a nadie", perfil: "neutralitat" }
+          ]
+        }
+      ],
+      expert: [
+        {
+          text: "Tienes 3 segundos. Tu empresa o tu equipo.",
+          opcions: [
+            { text: "Mi empresa", perfil: "empresa" },
+            { text: "Mi equipo siempre", perfil: "equip" },
+            { text: "Depende de la situación", perfil: "context" }
+          ]
+        },
+        {
+          text: "¿Qué prefieres: tener razón o conseguir el resultado?",
+          opcions: [
+            { text: "Tener razón", perfil: "principis" },
+            { text: "El resultado", perfil: "pragmatisme" },
+            { text: "Las dos cosas o ninguna", perfil: "integrador" }
+          ]
+        },
+        {
+          text: "Tu mejor idea ha sido rechazada. ¿Qué haces?",
+          opcions: [
+            { text: "La defiendo hasta que la acepten", perfil: "perseverança" },
+            { text: "La archivo y espero el momento adecuado", perfil: "paciència" },
+            { text: "La adapto para hacerla más aceptable", perfil: "flexibilitat" }
+          ]
+        },
+        {
+          text: "Alguien más inteligente que tú quiere tu puesto. ¿Qué haces?",
+          opcions: [
+            { text: "Lo ayudo a crecer — el equipo gana", perfil: "generositat" },
+            { text: "Me centro en lo que yo hago mejor que nadie", perfil: "singularitat" },
+            { text: "Aprendo de él todo lo que puedo", perfil: "creixement" }
+          ]
+        },
+        {
+          text: "Te dan poder absoluto sobre una decisión que afecta a muchos. ¿Qué sientes?",
+          opcions: [
+            { text: "Responsabilidad. Lo analizo todo antes de decidir", perfil: "prudència" },
+            { text: "Oportunidad. Actúo rápido mientras puedo", perfil: "acció" },
+            { text: "Incomodidad. Prefiero decidir con otros", perfil: "col·laboració" }
+          ]
+        },
+        {
+          text: "¿Lideras mejor desde el ejemplo o desde la visión?",
+          opcions: [
+            { text: "Desde el ejemplo — hago lo que pido", perfil: "exemple" },
+            { text: "Desde la visión — inspiro hacia dónde ir", perfil: "visió" },
+            { text: "Depende del equipo y el momento", perfil: "adaptació" }
+          ]
+        },
+        {
+          text: "Un fracaso público. ¿Tu primera reacción?",
+          opcions: [
+            { text: "Asumo, explico y propongo solución", perfil: "lideratge" },
+            { text: "Necesito un momento antes de reaccionar", perfil: "reflexió" },
+            { text: "Analizo qué salió mal antes de hablar", perfil: "anàlisi" }
+          ]
+        },
+        {
+          text: "¿Qué prefieres: un equipo brillante que es difícil de gestionar, o uno mediocre que funciona perfectamente?",
+          opcions: [
+            { text: "El brillante — el conflicto vale la pena", perfil: "excel·lència" },
+            { text: "El que funciona — la paz es productividad", perfil: "harmonia" },
+            { text: "Construyo el brillante que también funciona", perfil: "ambició" }
+          ]
+        },
+        {
+          text: "Te equivocas delante de 100 personas. ¿Qué haces en los próximos 5 segundos?",
+          opcions: [
+            { text: "Lo reconozco con humor y sigo adelante", perfil: "autoconfiança" },
+            { text: "Lo corrijo con seriedad y continúo", perfil: "professionalitat" },
+            { text: "Me tomo un momento y lo gestiono con calma", perfil: "compostura" }
+          ]
+        },
+        {
+          text: "Tienes que elegir entre velocidad y perfección. Siempre.",
+          opcions: [
+            { text: "Velocidad — el mercado no espera", perfil: "agilitat" },
+            { text: "Perfección — hecho bien o no hecho", perfil: "qualitat" },
+            { text: "Lo suficientemente bueno y rápido", perfil: "equilibri" }
+          ]
+        }
+      ]
+    };
+
+    let nivellActual = 'rookie';
+    let indexActual = 0;
+    let timerSeconds = 8;
+    let timerInterval = null;
+    let tempsRespostes = [];
+    let respostesRapides = 0;
+    let situacionsNivell = [];
+
+    function showFase(id) {
+      document.querySelectorAll('.fase').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function startGame(nivell) {
+      nivellActual = nivell;
+      timerSeconds = nivell === 'rookie' ? 8 : nivell === 'pro' ? 5 : 3;
+      indexActual = 0;
+      tempsRespostes = [];
+      respostesRapides = 0;
+      situacionsNivell = [...situacions[nivell]].sort(() => Math.random() - 0.5);
+      showFase('fase-joc');
+      mostrarSituacio();
+    }
+
+    function mostrarSituacio() {
+      if (indexActual >= situacionsNivell.length) {
+        mostrarResultat();
+        return;
+      }
+
+      const s = situacionsNivell[indexActual];
+      const total = situacionsNivell.length;
+
+      document.getElementById('progress-fill').style.width = (indexActual / total * 100) + '%';
+      document.getElementById('progress-label').textContent = (indexActual + 1) + ' / ' + total;
+      document.getElementById('situacio-text').textContent = s.text;
+
+      // Opcions
+      const opcionsEl = document.getElementById('opcions');
+      opcionsEl.innerHTML = '';
+      const lletres = ['A', 'B', 'C'];
+      s.opcions.forEach((o, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'opcio';
+        btn.innerHTML = `<span class="opcio-letter">${lletres[i]}</span>${o.text}`;
+        btn.onclick = () => triarOpcio(i, btn);
+        opcionsEl.appendChild(btn);
+      });
+
+      iniciarTimer();
+    }
+
+    function iniciarTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      const maxSecs = timerSeconds;
+      let secs = maxSecs;
+      const circumference = 201;
+      const circle = document.getElementById('timer-circle');
+      const numEl = document.getElementById('timer-num');
+      const startTime = Date.now();
+
+      circle.style.stroke = '#FFD60A';
+      numEl.style.color = '#FFD60A';
+
+      numEl.textContent = secs;
+      circle.style.strokeDashoffset = 0;
+
+      timerInterval = setInterval(() => {
+        secs--;
+        numEl.textContent = secs;
+        circle.style.strokeDashoffset = circumference * (1 - secs / maxSecs);
+
+        if (secs <= 2) {
+          circle.style.stroke = '#FF2D55';
+          numEl.style.color = '#FF2D55';
+        }
+
+        if (secs <= 0) {
+          clearInterval(timerInterval);
+          tempsRespostes.push(maxSecs);
+          indexActual++;
+          mostrarSituacio();
+        }
+      }, 1000);
+    }
+
+    function triarOpcio(i, btn) {
+      if (timerInterval) clearInterval(timerInterval);
+
+      const elapsed = timerSeconds - parseInt(document.getElementById('timer-num').textContent);
+      tempsRespostes.push(elapsed || timerSeconds);
+      if (elapsed <= timerSeconds / 2) respostesRapides++;
+
+      // Highlight seleccionat
+      document.querySelectorAll('.opcio').forEach(o => o.classList.add('wrong'));
+      btn.classList.remove('wrong');
+      btn.classList.add('selected');
+
+      setTimeout(() => {
+        indexActual++;
+        mostrarSituacio();
+      }, 600);
+    }
+
+    function mostrarResultat() {
+      const avgTime = tempsRespostes.length
+        ? (tempsRespostes.reduce((a,b) => a+b, 0) / tempsRespostes.length).toFixed(1)
+        : '—';
+
+      document.getElementById('r-respondidas').textContent = situacionsNivell.length;
+      document.getElementById('r-rapidas').textContent = respostesRapides;
+      document.getElementById('r-tiempo').textContent = avgTime + 's';
+
+      // Missatge
+      const pct = respostesRapides / situacionsNivell.length;
+      if (pct >= 0.7) {
+        document.getElementById('resultat-icon').textContent = '🔥';
+        document.getElementById('resultat-title').textContent = '¡Instinto!';
+        document.getElementById('resultat-sub').textContent = 'Decides rápido y con confianza';
+      } else if (pct >= 0.4) {
+        document.getElementById('resultat-icon').textContent = '🌟';
+        document.getElementById('resultat-title').textContent = '¡Sólido!';
+        document.getElementById('resultat-sub').textContent = 'Buen equilibrio entre velocidad y reflexión';
+      } else {
+        document.getElementById('resultat-icon').textContent = '🧠';
+        document.getElementById('resultat-title').textContent = '¡Reflexivo!';
+        document.getElementById('resultat-sub').textContent = 'Piensas antes de actuar';
+      }
+
+      // Animar barres
+      setTimeout(() => {
+        const base = { liderazgo: 68, intuicion: 62, presion: 50 };
+        const bonus = { liderazgo: Math.round(pct * 8), intuicion: Math.round(pct * 10), presion: Math.round(pct * 6) };
+        document.getElementById('pu-liderazgo').style.width = (base.liderazgo + bonus.liderazgo) + '%';
+        document.getElementById('pu-intuicion').style.width = (base.intuicion + bonus.intuicion) + '%';
+        document.getElementById('pu-presion').style.width = (base.presion + bonus.presion) + '%';
+        document.querySelector('.pu-row:nth-child(2) .pu-change').textContent = '+' + bonus.liderazgo + '%';
+        document.querySelector('.pu-row:nth-child(4) .pu-change').textContent = '+' + bonus.intuicion + '%';
+        document.querySelector('.pu-row:nth-child(6) .pu-change').textContent = '+' + bonus.presion + '%';
+      }, 300);
+
+      showFase('fase-resultat');
+    }
+  </script>
+
+</body>
+</html>
