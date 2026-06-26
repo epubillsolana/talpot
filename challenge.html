@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Challenge Room</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 70%, rgba(13,59,110,0.25) 0%, transparent 50%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background:
+        linear-gradient(160deg, rgba(255,107,0,0.06) 0%, transparent 35%),
+        linear-gradient(168deg, rgba(0,180,216,0.04) 5%, transparent 45%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; transition: color 0.2s; }
+    .nav-back:hover { color: #fff; }
+
+    /* FASES */
+    /* FASE 0 — INTRO */
+    .fase {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem; text-align: center;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .fase.hidden { opacity: 0; pointer-events: none; transform: translateY(20px); }
+
+    /* INTRO */
+    .intro-icon { font-size: 4rem; margin-bottom: 1.5rem; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+    .intro-title {
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+      margin-bottom: 1rem;
+    }
+    .intro-title .orange { color: #FFD60A; }
+
+    .intro-desc {
+      font-size: clamp(0.9rem, 3vw, 1.05rem);
+      color: rgba(255,255,255,0.55); line-height: 1.7;
+      max-width: 340px; margin-bottom: 2rem; font-weight: 500;
+    }
+
+    .rules {
+      background: rgba(255,214,10,0.06);
+      border: 1px solid rgba(255,214,10,0.15);
+      border-radius: 16px; padding: 1.1rem 1.25rem;
+      text-align: left; max-width: 340px; width: 100%;
+      margin-bottom: 2rem;
+    }
+    .rules-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #FFD60A; margin-bottom: 0.75rem; }
+    .rule { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.85rem; color: rgba(255,255,255,0.7); font-weight: 500; margin-bottom: 0.5rem; line-height: 1.4; }
+    .rule-dot { width: 6px; height: 6px; border-radius: 50%; background: #FF6B00; flex-shrink: 0; margin-top: 6px; }
+
+    .btn-start {
+      width: 100%; max-width: 300px;
+      padding: 1.1rem 2rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 1rem; cursor: pointer; letter-spacing: 0.03em;
+      background: #FF6B00; color: #fff;
+      box-shadow: 0 8px 30px rgba(255,107,0,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-start:hover { transform: scale(1.04); box-shadow: 0 12px 40px rgba(255,107,0,0.5); }
+    .btn-start:active { transform: scale(0.97); }
+
+    /* PREGUNTA */
+    .pregunta-wrap {
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+    }
+
+    .countdown {
+      width: 90px; height: 90px; border-radius: 50%;
+      border: 3px solid rgba(255,107,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; position: relative;
+    }
+
+    .countdown svg {
+      position: absolute; top: 0; left: 0;
+      transform: rotate(-90deg);
+    }
+
+    .countdown-num {
+      font-size: 2rem; font-weight: 900; color: #FF6B00; line-height: 1;
+      position: relative; z-index: 1;
+    }
+    .countdown-label { font-size: 0.6rem; color: rgba(255,255,255,0.3); font-weight: 600; letter-spacing: 0.1em; position: relative; z-index: 1; }
+
+    .pregunta-text {
+      font-size: clamp(1.3rem, 5vw, 2rem);
+      font-weight: 800; letter-spacing: -0.5px; line-height: 1.25;
+      text-align: center; color: #fff;
+    }
+
+    .pregunta-hint { font-size: 0.8rem; color: rgba(255,255,255,0.35); font-weight: 500; }
+
+    .btn-grabar {
+      width: 100%; padding: 1.1rem 2rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 1rem; cursor: pointer; letter-spacing: 0.03em;
+      background: #FF2D55; color: #fff;
+      box-shadow: 0 8px 30px rgba(255,45,85,0.4);
+      transition: transform 0.15s; animation: readyPulse 1s ease both;
+    }
+
+    @keyframes readyPulse {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .btn-grabar:hover { transform: scale(1.04); }
+    .btn-grabar:active { transform: scale(0.97); }
+
+    /* GRAVANT */
+    .recording-wrap {
+      width: 100%; max-width: 360px;
+      display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+    }
+
+    .rec-indicator {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,45,85,0.15); border: 1px solid rgba(255,45,85,0.3);
+      border-radius: 100px; padding: 0.4rem 1rem;
+      font-size: 0.78rem; font-weight: 700; color: #FF2D55;
+      animation: recBlink 1s infinite;
+    }
+
+    .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF2D55; }
+
+    @keyframes recBlink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .rec-timer {
+      font-size: 3.5rem; font-weight: 900; letter-spacing: -2px;
+      color: #fff; line-height: 1;
+    }
+
+    .rec-pregunta {
+      font-size: 0.9rem; color: rgba(255,255,255,0.45);
+      text-align: center; line-height: 1.5; max-width: 300px;
+      font-weight: 500;
+    }
+
+    .rec-bars {
+      display: flex; align-items: flex-end; gap: 3px; height: 40px;
+    }
+
+    .rec-bar {
+      width: 4px; border-radius: 2px; background: #FF6B00;
+      animation: barAnim 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes barAnim { from{height:4px} to{height:var(--h)} }
+
+    .btn-stop {
+      width: 100%; padding: 1.1rem 2rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 1rem; cursor: pointer;
+      background: rgba(255,255,255,0.1); color: #fff;
+      border: 2px solid rgba(255,255,255,0.2);
+      transition: background 0.2s;
+    }
+    .btn-stop:hover { background: rgba(255,255,255,0.15); }
+
+    /* FI */
+    .fi-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .fi-title { font-size: clamp(1.8rem, 7vw, 3rem); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 0.75rem; }
+    .fi-desc { font-size: 0.95rem; color: rgba(255,255,255,0.55); line-height: 1.65; max-width: 320px; margin-bottom: 2rem; }
+
+    .fi-info {
+      background: rgba(255,214,10,0.06); border: 1px solid rgba(255,214,10,0.15);
+      border-radius: 14px; padding: 1rem; max-width: 320px; width: 100%;
+      margin-bottom: 1.5rem; text-align: left;
+    }
+    .fi-info-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #FFD60A; margin-bottom: 0.5rem; }
+    .fi-info-text { font-size: 0.82rem; color: rgba(255,255,255,0.6); line-height: 1.55; }
+
+    .btn-fi {
+      width: 100%; max-width: 300px;
+      padding: 1.1rem 2rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 1rem; cursor: pointer;
+      background: #FFD60A; color: #020B18;
+      box-shadow: 0 8px 30px rgba(255,214,10,0.3);
+      transition: transform 0.15s;
+    }
+    .btn-fi:hover { transform: scale(1.04); }
+    .btn-fi-sec {
+      width: 100%; max-width: 300px;
+      padding: 0.9rem 2rem; border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: transparent; color: rgba(255,255,255,0.6);
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 0.9rem; cursor: pointer; margin-top: 0.5rem;
+      transition: color 0.2s;
+    }
+    .btn-fi-sec:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-back" onclick="window.location.href='magic-room.html'">← Volver</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <!-- FASE 0 — INTRO -->
+  <div class="fase" id="fase-intro" style="padding-top:56px;">
+    <div class="intro-icon">⚡</div>
+    <div class="intro-title">Challenge<br><span class="orange">Room.</span></div>
+    <p class="intro-desc">Una pregunta aleatoria. 30 segundos para leerla. Luego grabas. Sin edición. Sin segunda toma. Los Seekers lo ven todo.</p>
+    <div class="rules">
+      <div class="rules-title">Antes de entrar</div>
+      <div class="rule"><div class="rule-dot"></div><span>Una vez empieces, no hay marcha atrás</span></div>
+      <div class="rule"><div class="rule-dot"></div><span>Tu respuesta no se puede editar ni borrar</span></div>
+      <div class="rule"><div class="rule-dot"></div><span>No hay respuesta correcta — solo la tuya</span></div>
+      <div class="rule"><div class="rule-dot"></div><span>Asegúrate de estar en un lugar tranquilo</span></div>
+    </div>
+    <button class="btn-start" onclick="startChallenge()">⚡ Estoy listo</button>
+  </div>
+
+  <!-- FASE 1 — PREGUNTA -->
+  <div class="fase hidden" id="fase-pregunta" style="padding-top:56px;">
+    <div class="pregunta-wrap">
+      <div class="countdown" id="countdown">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle cx="45" cy="45" r="42" fill="none" stroke="rgba(255,107,0,0.15)" stroke-width="3"/>
+          <circle id="countdown-circle" cx="45" cy="45" r="42" fill="none" stroke="#FF6B00" stroke-width="3"
+            stroke-dasharray="264" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="countdown-num" id="countdown-num">30</div>
+        <div class="countdown-label">seg</div>
+      </div>
+      <div class="pregunta-text" id="pregunta-text"></div>
+      <div class="pregunta-hint">Lee la pregunta. Cuando estés listo, graba.</div>
+      <button class="btn-grabar hidden" id="btn-grabar" onclick="startRecording()">
+        🔴 Empezar a grabar
+      </button>
+    </div>
+  </div>
+
+  <!-- FASE 2 — GRAVANT -->
+  <div class="fase hidden" id="fase-recording" style="padding-top:56px;">
+    <div class="recording-wrap">
+      <div class="rec-indicator">
+        <div class="rec-dot"></div>
+        GRABANDO
+      </div>
+      <div class="rec-timer" id="rec-timer">0:60</div>
+      <div class="rec-bars" id="rec-bars"></div>
+      <div class="rec-pregunta" id="rec-pregunta-display"></div>
+      <button class="btn-stop" onclick="stopRecording()">⏹ Terminar grabación</button>
+    </div>
+  </div>
+
+  <!-- FASE 3 — FI -->
+  <div class="fase hidden" id="fase-fi" style="padding-top:56px;">
+    <div class="fi-icon">🌟</div>
+    <div class="fi-title">¡Listo!<br>Eso es todo.</div>
+    <p class="fi-desc">Tu respuesta ya forma parte de tu Magic Room. Los Seekers podrán verla y valorarla.</p>
+    <div class="fi-info">
+      <div class="fi-info-title">Lo que los Seekers verán</div>
+      <div class="fi-info-text">Tu vídeo de respuesta aparecerá en tu Magic Room junto a la pregunta que te tocó. No se puede editar. Es auténtico. Eso es lo que lo hace valioso.</div>
+    </div>
+    <button class="btn-fi" onclick="window.location.href='magic-room.html'">✨ Volver a mi Magic Room</button>
+    <button class="btn-fi-sec" onclick="window.location.href='app.html'">← Ir al Feed</button>
+  </div>
+
+  <script>
+    const preguntas = [
+      "¿Cuál es tu mayor logro profesional y qué aprendiste de él?",
+      "Tienes 60 segundos para convencernos de que eres diferente.",
+      "¿Cuál es tu mayor defecto profesional y cómo lo gestionas?",
+      "¿Cómo reaccionarías si tu jefe te equivoca delante de todo el equipo?",
+      "Cuéntanos algo que no pondrías jamás en un CV.",
+      "¿Qué harías el primer día en un trabajo nuevo?",
+      "¿Cuándo fue la última vez que saliste de tu zona de confort?",
+      "Si pudieras cambiar algo del mundo laboral, ¿qué sería?",
+      "¿Qué te hace levantarte con ganas de trabajar?",
+      "Describe un fracaso y qué hiciste después."
+    ];
+
+    let preguntaActual = '';
+    let countdownInterval = null;
+    let recordingInterval = null;
+    let recSeconds = 60;
+
+    function showFase(id) {
+      document.querySelectorAll('.fase').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function startChallenge() {
+      preguntaActual = preguntas[Math.floor(Math.random() * preguntas.length)];
+      document.getElementById('pregunta-text').textContent = preguntaActual;
+      document.getElementById('rec-pregunta-display').textContent = preguntaActual;
+      showFase('fase-pregunta');
+      startCountdown();
+    }
+
+    function startCountdown() {
+      let seconds = 30;
+      const circle = document.getElementById('countdown-circle');
+      const numEl = document.getElementById('countdown-num');
+      const btnGrabar = document.getElementById('btn-grabar');
+      const circumference = 264;
+
+      countdownInterval = setInterval(() => {
+        seconds--;
+        numEl.textContent = seconds;
+        const offset = circumference * (1 - seconds / 30);
+        circle.style.strokeDashoffset = offset;
+
+        if (seconds <= 10) {
+          numEl.style.color = '#FF2D55';
+          circle.style.stroke = '#FF2D55';
+        }
+
+        if (seconds <= 5) {
+          btnGrabar.classList.remove('hidden');
+        }
+
+        if (seconds <= 0) {
+          clearInterval(countdownInterval);
+          startRecording();
+        }
+      }, 1000);
+    }
+
+    function startRecording() {
+      clearInterval(countdownInterval);
+      showFase('fase-recording');
+
+      // Barres d'àudio animades
+      const barsEl = document.getElementById('rec-bars');
+      for (let i = 0; i < 18; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'rec-bar';
+        const h = Math.random() * 36 + 4;
+        bar.style.setProperty('--h', h + 'px');
+        bar.style.animationDelay = (Math.random() * 0.5) + 's';
+        bar.style.animationDuration = (0.3 + Math.random() * 0.4) + 's';
+        barsEl.appendChild(bar);
+      }
+
+      recSeconds = 60;
+      updateRecTimer();
+
+      recordingInterval = setInterval(() => {
+        recSeconds--;
+        updateRecTimer();
+        if (recSeconds <= 0) {
+          clearInterval(recordingInterval);
+          stopRecording();
+        }
+      }, 1000);
+    }
+
+    function updateRecTimer() {
+      const m = Math.floor(recSeconds / 60);
+      const s = recSeconds % 60;
+      document.getElementById('rec-timer').textContent = m + ':' + String(s).padStart(2, '0');
+    }
+
+    function stopRecording() {
+      clearInterval(recordingInterval);
+      showFase('fase-fi');
+    }
+  </script>
+
+</body>
+</html>
