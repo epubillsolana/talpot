@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Showtime</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; background: #020B18; }
+
+    /* FASES */
+    .fase {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem; text-align: center;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .fase.hidden { opacity: 0; pointer-events: none; transform: translateY(16px); }
+
+    /* ── FASE ESPERA ── */
+    .waiting-bg {
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 30%, rgba(0,180,216,0.2) 0%, transparent 60%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 60%, #020B18 100%);
+    }
+
+    .waiting-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+
+    .logo { font-size: 1.3rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: #fff; }
+    .logo span { color: #FFD60A; }
+
+    .avatar-ring {
+      width: 110px; height: 110px; border-radius: 50%;
+      border: 2px solid rgba(255,214,10,0.3);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; animation: ringPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes ringPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,214,10,0.2); }
+      50% { box-shadow: 0 0 0 16px rgba(255,214,10,0); }
+    }
+
+    .avatar-big {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, #FFD60A, #FF6B00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 800; color: #020B18;
+    }
+
+    .waiting-title { font-size: clamp(1.5rem, 6vw, 2.5rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1; }
+    .waiting-title span { color: #FFD60A; }
+
+    .waiting-company {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 0.85rem 1.25rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .wc-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#00B4D8,#0D3B6E); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .wc-info { text-align: left; }
+    .wc-name { font-size: 0.9rem; font-weight: 800; color: #fff; }
+    .wc-role { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+
+    .waiting-dots { display: flex; gap: 0.4rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); animation: dotBounce 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce { 0%,80%,100%{transform:scale(0.8);opacity:0.3} 40%{transform:scale(1.2);opacity:1} }
+
+    .btn-cancel { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); padding: 0.85rem 2rem; border-radius: 100px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* ── FASE VIDEOTRUCADA ── */
+    .call-bg { position: fixed; inset: 0; background: #000; }
+
+    /* Vídeo seeker (gran) */
+    .video-main {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #0D1F35, #041E3A);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .video-main-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: linear-gradient(135deg, #00B4D8, #0D3B6E);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; font-weight: 800; color: #fff;
+      opacity: 0.9;
+    }
+
+    /* Vídeo propi (petit) */
+    .video-self {
+      position: fixed; top: 1rem; right: 1rem;
+      width: 90px; height: 130px; border-radius: 14px;
+      background: linear-gradient(135deg, #1A0D35, #041E3A);
+      border: 2px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; z-index: 30; cursor: pointer;
+    }
+
+    .video-self-avatar {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: linear-gradient(135deg, #FFD60A, #FF6B00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 800; color: #020B18;
+    }
+
+    /* Info dalt */
+    .call-top {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+      padding: 1rem 1.25rem;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+    }
+
+    .call-info { display: flex; align-items: center; gap: 0.75rem; }
+    .call-company { font-size: 1rem; font-weight: 800; color: #fff; }
+    .call-timer-badge {
+      background: rgba(255,45,85,0.2); border: 1px solid rgba(255,45,85,0.4);
+      border-radius: 100px; padding: 0.25rem 0.65rem;
+      font-size: 0.72rem; font-weight: 700; color: #FF2D55;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .rec-dot-small { width: 6px; height: 6px; border-radius: 50%; background: #FF2D55; animation: recBlink 1s infinite; }
+    @keyframes recBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Talpot info card */
+    .call-talpot-info {
+      position: fixed; top: 4rem; left: 1rem; z-index: 20;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      padding: 0.6rem 0.85rem; max-width: 200px;
+    }
+    .cti-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #FFD60A; margin-bottom: 0.3rem; }
+    .cti-text { font-size: 0.72rem; color: rgba(255,255,255,0.6); line-height: 1.4; }
+
+    /* Controls */
+    .call-controls {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+      padding: 1.5rem 2rem 2.5rem;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+      display: flex; flex-direction: column; gap: 1rem; align-items: center;
+    }
+
+    .controls-row { display: flex; gap: 1.25rem; align-items: center; justify-content: center; }
+
+    .ctrl-btn {
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; cursor: pointer; transition: transform 0.15s;
+      background: rgba(255,255,255,0.12); color: #fff;
+    }
+    .ctrl-btn:hover { transform: scale(1.08); }
+    .ctrl-btn:active { transform: scale(0.95); }
+    .ctrl-btn.active { background: rgba(255,255,255,0.25); }
+    .ctrl-btn.danger { background: #FF2D55; box-shadow: 0 4px 20px rgba(255,45,85,0.4); width: 64px; height: 64px; font-size: 1.5rem; }
+
+    /* Notes */
+    .call-notes {
+      width: 100%; max-width: 340px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 100px; padding: 0.7rem 1.2rem;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem;
+      color: rgba(255,255,255,0.5); outline: none; backdrop-filter: blur(8px);
+    }
+    .call-notes::placeholder { color: rgba(255,255,255,0.25); }
+
+    /* ── FASE FI ── */
+    .fi-bg {
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 30%, rgba(48,209,88,0.12) 0%, transparent 60%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 60%, #020B18 100%);
+    }
+
+    .fi-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; max-width: 340px; width: 100%; }
+
+    .fi-icon { font-size: 4rem; }
+    .fi-title { font-size: clamp(2rem, 7vw, 3rem); font-weight: 900; letter-spacing: -1.5px; line-height: 1.05; }
+    .fi-desc { font-size: 0.9rem; color: rgba(255,255,255,0.5); line-height: 1.65; text-align: center; }
+
+    .fi-summary {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 1rem; width: 100%; text-align: left;
+    }
+    .fis-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.75rem; }
+    .fis-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .fis-label { color: rgba(255,255,255,0.4); font-weight: 500; }
+    .fis-value { color: #fff; font-weight: 700; }
+
+    .fi-actions { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; }
+    .fi-btn { width: 100%; padding: 1rem; border-radius: 100px; border: none; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: transform 0.15s; }
+    .fi-btn:active { transform: scale(0.97); }
+    .fi-btn-primary { background: #FFD60A; color: #020B18; box-shadow: 0 6px 24px rgba(255,214,10,0.3); }
+    .fi-btn-primary:hover { transform: scale(1.02); }
+    .fi-btn-secondary { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); }
+  </style>
+</head>
+<body>
+
+  <!-- FASE 1 — ESPERA -->
+  <div class="fase" id="fase-waiting">
+    <div class="waiting-bg"></div>
+    <div class="waiting-content">
+      <div class="logo">tal<span>pot</span></div>
+      <div class="avatar-ring">
+        <div class="avatar-big">E</div>
+      </div>
+      <div class="waiting-title">Tu <span>Showtime</span><br>empieza pronto.</div>
+      <div class="waiting-company">
+        <div class="wc-avatar">TK</div>
+        <div class="wc-info">
+          <div class="wc-name">TechKorp</div>
+          <div class="wc-role">Se está conectando...</div>
+        </div>
+        <div class="waiting-dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+      <button class="btn-cancel" onclick="startCall()">🎬 Empezar Showtime</button>
+      <button class="btn-cancel" style="font-size:0.8rem;padding:0.6rem 1.5rem;" onclick="window.location.href='messages.html'">← Volver</button>
+    </div>
+  </div>
+
+  <!-- FASE 2 — VIDEOTRUCADA -->
+  <div class="fase hidden" id="fase-call" style="padding:0;">
+    <div class="video-main">
+      <div class="video-main-avatar">TK</div>
+    </div>
+
+    <!-- Vídeo propi -->
+    <div class="video-self">
+      <div class="video-self-avatar">E</div>
+    </div>
+
+    <!-- Info dalt -->
+    <div class="call-top">
+      <div class="call-info">
+        <div class="call-company">TechKorp · Showtime</div>
+        <div class="call-timer-badge">
+          <div class="rec-dot-small"></div>
+          <span id="call-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Talpot -->
+    <div class="call-talpot-info">
+      <div class="cti-label">🌟 Talpot recuerda</div>
+      <div class="cti-text">No es una entrevista. Es tu show. Sé tú mismo.</div>
+    </div>
+
+    <!-- Controls -->
+    <div class="call-controls">
+      <input class="call-notes" type="text" placeholder="✏️ Toma notas rápidas..." />
+      <div class="controls-row">
+        <button class="ctrl-btn" id="btn-micro" onclick="toggleMicro()">🎙️</button>
+        <button class="ctrl-btn" id="btn-cam" onclick="toggleCam()">📷</button>
+        <button class="ctrl-btn danger" onclick="endCall()">📵</button>
+        <button class="ctrl-btn" onclick="toggleChat()">💬</button>
+        <button class="ctrl-btn" onclick="toggleProfile()">👤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 3 — FI -->
+  <div class="fase hidden" id="fase-fi">
+    <div class="fi-bg"></div>
+    <div class="fi-content">
+      <div class="fi-icon">🌟</div>
+      <div class="fi-title">¡Showtime<br>completado!</div>
+      <p class="fi-desc">Has tenido tu momento en el escenario. El Seeker decidirá los próximos pasos.</p>
+      <div class="fi-summary">
+        <div class="fis-title">Resumen del Showtime</div>
+        <div class="fis-row"><span class="fis-label">Empresa</span><span class="fis-value">TechKorp</span></div>
+        <div class="fis-row"><span class="fis-label">Duración</span><span class="fis-value" id="fi-duracion">—</span></div>
+        <div class="fis-row"><span class="fis-label">Estado</span><span class="fis-value" style="color:#30D158;">Completado ✓</span></div>
+      </div>
+      <div class="fi-actions">
+        <button class="fi-btn fi-btn-primary" onclick="window.location.href='app.html'">🏠 Volver al Feed</button>
+        <button class="fi-btn fi-btn-secondary" onclick="window.location.href='messages.html'">← Mensajes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let callSeconds = 0;
+    let callInterval = null;
+    let microOn = true;
+    let camOn = true;
+
+    function showFase(id) {
+      document.querySelectorAll('.fase').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function startCall() {
+      showFase('fase-call');
+      callSeconds = 0;
+      callInterval = setInterval(() => {
+        callSeconds++;
+        const m = Math.floor(callSeconds / 60);
+        const s = callSeconds % 60;
+        document.getElementById('call-timer').textContent = m + ':' + String(s).padStart(2, '0');
+      }, 1000);
+    }
+
+    function toggleMicro() {
+      microOn = !microOn;
+      const btn = document.getElementById('btn-micro');
+      btn.textContent = microOn ? '🎙️' : '🔇';
+      btn.classList.toggle('active', !microOn);
+    }
+
+    function toggleCam() {
+      camOn = !camOn;
+      const btn = document.getElementById('btn-cam');
+      btn.textContent = camOn ? '📷' : '🚫';
+      btn.classList.toggle('active', !camOn);
+    }
+
+    function toggleChat() { alert('Chat en construcción'); }
+    function toggleProfile() { window.location.href = 'creator-profile.html'; }
+
+    function endCall() {
+      clearInterval(callInterval);
+      const m = Math.floor(callSeconds / 60);
+      const s = callSeconds % 60;
+      document.getElementById('fi-duracion').textContent = m + ' min ' + s + ' seg';
+      showFase('fase-fi');
+    }
+  </script>
+
+</body>
+</html>
