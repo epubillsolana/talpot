@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Mi Perfil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow-x: hidden; }
+
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-settings { font-size: 1.3rem; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; }
+    .nav-settings:hover { opacity: 1; }
+
+    /* SCROLL */
+    .scroll { padding-top: 56px; padding-bottom: 80px; overflow-y: auto; min-height: 100dvh; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* HERO */
+    .hero {
+      padding: 2rem 1.25rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 1rem;
+    }
+
+    .avatar-wrap { position: relative; cursor: pointer; }
+    .avatar {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, #FFD60A, #FF6B00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 800; color: #020B18;
+      border: 3px solid rgba(255,255,255,0.1);
+    }
+    .avatar-edit {
+      position: absolute; bottom: 0; right: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #FFD60A; color: #020B18;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; border: 2px solid #020B18;
+    }
+
+    .creator-name { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; }
+    .creator-role { font-size: 0.82rem; color: rgba(255,255,255,0.45); font-weight: 500; }
+
+    /* VISIBILITAT */
+    .visibility-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 0.85rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700;
+      background: rgba(48,209,88,0.12); border: 1px solid rgba(48,209,88,0.25);
+      color: #30D158; cursor: pointer; transition: background 0.2s;
+    }
+    .visibility-badge:hover { background: rgba(48,209,88,0.18); }
+    .vis-dot { width: 6px; height: 6px; border-radius: 50%; background: #30D158; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* STATS */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem; padding: 0 1.25rem; margin-bottom: 1.25rem;
+    }
+    .stat {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 0.75rem 0.4rem; text-align: center;
+    }
+    .stat-num { font-size: 1.2rem; font-weight: 900; color: #FFD60A; line-height: 1; margin-bottom: 0.2rem; }
+    .stat-label { font-size: 0.58rem; color: rgba(255,255,255,0.3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ROBUSTESA */
+    .rob-section {
+      margin: 0 1.25rem 1.25rem;
+      background: rgba(255,214,10,0.05); border: 1px solid rgba(255,214,10,0.12);
+      border-radius: 16px; padding: 1rem;
+    }
+    .rob-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .rob-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+    .rob-score { font-size: 0.9rem; font-weight: 900; color: #FFD60A; }
+    .rob-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; margin-bottom: 0.4rem; }
+    .rob-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); width: 45%; }
+    .rob-hint { font-size: 0.72rem; color: rgba(255,255,255,0.25); font-weight: 500; }
+
+    /* ACTIVITY */
+    .activity-card {
+      margin: 0 1.25rem 1.25rem;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 1rem;
+    }
+    .ac-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.85rem; }
+    .ac-row { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.75rem; }
+    .ac-row:last-child { margin-bottom: 0; }
+    .ac-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .ac-info { flex: 1; }
+    .ac-text { font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 0.1rem; }
+    .ac-time { font-size: 0.72rem; color: rgba(255,255,255,0.3); font-weight: 500; }
+    .ac-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 100px; }
+    .badge-new { background: rgba(255,45,85,0.15); color: #FF2D55; border: 1px solid rgba(255,45,85,0.3); }
+    .badge-done { background: rgba(48,209,88,0.12); color: #30D158; border: 1px solid rgba(48,209,88,0.2); }
+
+    /* SECTION */
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+    .section-link { font-size: 0.75rem; font-weight: 700; color: #FFD60A; cursor: pointer; }
+
+    /* PERFIL IA */
+    .ia-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 1.1rem;
+    }
+    .ia-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
+    .ia-badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #00B4D8; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.2); padding: 0.2rem 0.6rem; border-radius: 100px; }
+    .ia-sessions { font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: 500; }
+
+    .skill-row { margin-bottom: 0.65rem; }
+    .skill-top { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .skill-pct { color: #FFD60A; }
+    .skill-bar { height: 5px; background: rgba(255,255,255,0.07); border-radius: 100px; overflow: hidden; }
+    .skill-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); }
+
+    .ia-tipus {
+      margin-top: 0.85rem; padding-top: 0.85rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .ia-tipus-icon { font-size: 1.5rem; }
+    .ia-tipus-info { }
+    .ia-tipus-title { font-size: 0.85rem; font-weight: 800; color: #fff; margin-bottom: 0.15rem; }
+    .ia-tipus-desc { font-size: 0.72rem; color: rgba(255,255,255,0.4); line-height: 1.4; }
+
+    /* MENU OPCIONS */
+    .menu-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .menu-item {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 0.9rem 1rem;
+      display: flex; align-items: center; gap: 0.85rem;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .menu-item:hover { background: rgba(255,255,255,0.08); }
+    .mi-icon { font-size: 1.2rem; width: 36px; text-align: center; }
+    .mi-info { flex: 1; }
+    .mi-title { font-size: 0.88rem; font-weight: 700; color: #fff; }
+    .mi-desc { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 0.1rem; }
+    .mi-arrow { color: rgba(255,255,255,0.2); font-size: 1rem; }
+
+    .menu-item.danger .mi-title { color: #FF2D55; }
+    .menu-item.danger .mi-icon { opacity: 0.8; }
+
+    /* NAV BOTTOM */
+    .nav-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+      display: flex; align-items: center; justify-content: space-around;
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.06); z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; transition: opacity 0.2s; }
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon { color: #FFD60A; }
+    .nav-icon { font-size: 1.3rem; line-height: 1; }
+    .nav-center { width: 46px; height: 46px; border-radius: 50%; background: #FFD60A; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); opacity: 1 !important; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div class="nav-settings" onclick="window.location.href='settings.html'">⚙️</div>
+  </nav>
+
+  <div class="scroll">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="avatar-wrap">
+        <div class="avatar">E</div>
+        <div class="avatar-edit">✏️</div>
+      </div>
+      <div>
+        <div class="creator-name">Eduard</div>
+        <div class="creator-role">Creator · Barcelona</div>
+      </div>
+      <div class="visibility-badge">
+        <div class="vis-dot"></div>
+        Visible para Seekers
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">1</div>
+        <div class="stat-label">Vídeos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Challenges</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">1</div>
+        <div class="stat-label">Juegos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Visitas</div>
+      </div>
+    </div>
+
+    <!-- ROBUSTESA -->
+    <div class="rob-section">
+      <div class="rob-top">
+        <span class="rob-label">Robustez del perfil</span>
+        <span class="rob-score">15%</span>
+      </div>
+      <div class="rob-bar"><div class="rob-fill"></div></div>
+      <div class="rob-hint">Añade más vídeos y completa la Challenge Room para aumentar tu robustez y aparecer más en búsquedas.</div>
+    </div>
+
+    <!-- ACTIVITAT RECENT -->
+    <div class="activity-card">
+      <div class="ac-title">Actividad reciente</div>
+      <div class="ac-row">
+        <div class="ac-icon" style="background:rgba(0,180,216,0.12);">🔭</div>
+        <div class="ac-info">
+          <div class="ac-text">2 Seekers han visto tu perfil</div>
+          <div class="ac-time">Hoy</div>
+        </div>
+        <span class="ac-badge badge-new">Nuevo</span>
+      </div>
+      <div class="ac-row">
+        <div class="ac-icon" style="background:rgba(255,214,10,0.1);">✨</div>
+        <div class="ac-info">
+          <div class="ac-text">Vídeo de presentación subido</div>
+          <div class="ac-time">Hace 2 días</div>
+        </div>
+        <span class="ac-badge badge-done">✓</span>
+      </div>
+      <div class="ac-row">
+        <div class="ac-icon" style="background:rgba(0,180,216,0.08);">🎮</div>
+        <div class="ac-info">
+          <div class="ac-text">Primer juego completado — Decisiones Rápidas</div>
+          <div class="ac-time">Hace 3 días</div>
+        </div>
+        <span class="ac-badge badge-done">✓</span>
+      </div>
+    </div>
+
+    <!-- PERFIL IA -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🤖 Mi perfil IA</div>
+        <div class="section-link" onclick="window.location.href='magic-room.html'">Mejorar →</div>
+      </div>
+      <div class="ia-card">
+        <div class="ia-header">
+          <span class="ia-badge">IA Talpot</span>
+          <span class="ia-sessions">Basado en 1 juego · Perfil incompleto</span>
+        </div>
+        <div class="skill-row">
+          <div class="skill-top"><span>Creatividad</span><span class="skill-pct">82%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:82%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-top"><span style="color:rgba(255,255,255,0.3)">Liderazgo</span><span style="color:rgba(255,255,255,0.2)">—</span></div>
+          <div class="skill-bar"></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-top"><span style="color:rgba(255,255,255,0.3)">Resiliencia</span><span style="color:rgba(255,255,255,0.2)">—</span></div>
+          <div class="skill-bar"></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-top"><span style="color:rgba(255,255,255,0.3)">Inteligencia emocional</span><span style="color:rgba(255,255,255,0.2)">—</span></div>
+          <div class="skill-bar"></div>
+        </div>
+        <div class="ia-tipus">
+          <div class="ia-tipus-icon">🎨</div>
+          <div class="ia-tipus-info">
+            <div class="ia-tipus-title">Perfil Creativo</div>
+            <div class="ia-tipus-desc">Juega más para descubrir tu perfil completo. Cuantos más datos, más preciso.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENÚ -->
+    <div class="section">
+      <div class="section-title" style="margin-bottom:0.75rem;">Mi cuenta</div>
+      <div class="menu-list">
+        <div class="menu-item" onclick="window.location.href='magic-room.html'">
+          <div class="mi-icon">✨</div>
+          <div class="mi-info">
+            <div class="mi-title">Mi Magic Room</div>
+            <div class="mi-desc">Gestiona tus vídeos y contenido</div>
+          </div>
+          <div class="mi-arrow">→</div>
+        </div>
+        <div class="menu-item" onclick="window.location.href='challenge.html'">
+          <div class="mi-icon">⚡</div>
+          <div class="mi-info">
+            <div class="mi-title">Challenge Room</div>
+            <div class="mi-desc">0 sesiones completadas</div>
+          </div>
+          <div class="mi-arrow">→</div>
+        </div>
+        <div class="menu-item" onclick="window.location.href='game.html'">
+          <div class="mi-icon">🎮</div>
+          <div class="mi-info">
+            <div class="mi-title">Mini-juegos</div>
+            <div class="mi-desc">1 de 10 jugados</div>
+          </div>
+          <div class="mi-arrow">→</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">🔔</div>
+          <div class="mi-info">
+            <div class="mi-title">Notificaciones</div>
+            <div class="mi-desc">2 nuevas</div>
+          </div>
+          <div class="mi-arrow">→</div>
+        </div>
+        <div class="menu-item" onclick="window.location.href='settings.html'">
+          <div class="mi-icon">⚙️</div>
+          <div class="mi-info">
+            <div class="mi-title">Configuración</div>
+            <div class="mi-desc">Privacidad, idioma, cuenta</div>
+          </div>
+          <div class="mi-arrow">→</div>
+        </div>
+        <div class="menu-item danger" onclick="window.location.href='index6.html'">
+          <div class="mi-icon">🚪</div>
+          <div class="mi-info">
+            <div class="mi-title">Cerrar sesión</div>
+          </div>
+          <div class="mi-arrow">→</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAV BOTTOM -->
+  <nav class="nav-bottom">
+    <div class="nav-item" onclick="window.location.href='app.html'">
+      <div class="nav-icon">🏠</div>
+      <span>Feed</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='magic-room.html'">
+      <div class="nav-icon">✨</div>
+      <span>Mi Room</span>
+    </div>
+    <div class="nav-center" onclick="window.location.href='magic-room.html'">✚</div>
+    <div class="nav-item" onclick="window.location.href='seeker.html'">
+      <div class="nav-icon">🔭</div>
+      <span>Seekers</span>
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon">👤</div>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+</body>
+</html>
