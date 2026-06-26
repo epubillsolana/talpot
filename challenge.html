@@ -251,10 +251,11 @@
   <!-- FASE 1 — PREGUNTA -->
   <div class="fase hidden" id="fase-pregunta" style="padding-top:56px;">
     <div class="pregunta-wrap">
+      <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:0.75rem;" id="pregunta-num">1 / 10</div>
       <div class="countdown" id="countdown">
         <svg width="90" height="90" viewBox="0 0 90 90">
-          <circle cx="45" cy="45" r="42" fill="none" stroke="rgba(255,107,0,0.15)" stroke-width="3"/>
-          <circle id="countdown-circle" cx="45" cy="45" r="42" fill="none" stroke="#FF6B00" stroke-width="3"
+          <circle cx="45" cy="45" r="42" fill="none" stroke="rgba(255,214,10,0.15)" stroke-width="3"/>
+          <circle id="countdown-circle" cx="45" cy="45" r="42" fill="none" stroke="#FFD60A" stroke-width="3"
             stroke-dasharray="264" stroke-dashoffset="0" stroke-linecap="round"/>
         </svg>
         <div class="countdown-num" id="countdown-num">30</div>
@@ -275,7 +276,7 @@
         <div class="rec-dot"></div>
         GRABANDO
       </div>
-      <div class="rec-timer" id="rec-timer">0:60</div>
+      <div class="rec-timer" id="rec-timer">1:30</div>
       <div class="rec-bars" id="rec-bars"></div>
       <div class="rec-pregunta" id="rec-pregunta-display"></div>
       <button class="btn-stop" onclick="stopRecording()">⏹ Terminar grabación</button>
@@ -285,34 +286,171 @@
   <!-- FASE 3 — FI -->
   <div class="fase hidden" id="fase-fi" style="padding-top:56px;">
     <div class="fi-icon">🌟</div>
-    <div class="fi-title">¡Listo!<br>Eso es todo.</div>
-    <p class="fi-desc">Tu respuesta ya forma parte de tu Magic Room. Los Seekers podrán verla y valorarla.</p>
+    <div class="fi-title">¡Sesión<br>completada!</div>
+    <p class="fi-desc">10 preguntas. 10 respuestas auténticas. Tu Magic Room ahora es mucho más poderosa.</p>
     <div class="fi-info">
       <div class="fi-info-title">Lo que los Seekers verán</div>
-      <div class="fi-info-text">Tu vídeo de respuesta aparecerá en tu Magic Room junto a la pregunta que te tocó. No se puede editar. Es auténtico. Eso es lo que lo hace valioso.</div>
+      <div class="fi-info-text">Tus vídeos aparecerán en tu Magic Room junto a cada pregunta. No se pueden editar. Son auténticos. Y si repites la Challenge Room, los Seekers verán tu evolución — eso también habla de quién eres.</div>
     </div>
-    <button class="btn-fi" onclick="window.location.href='magic-room.html'">✨ Volver a mi Magic Room</button>
-    <button class="btn-fi-sec" onclick="window.location.href='app.html'">← Ir al Feed</button>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:0.9rem 1rem;max-width:300px;width:100%;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem;">
+      <div style="font-size:1.5rem;">⚡</div>
+      <div>
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:0.2rem;">Sesiones completadas</div>
+        <div style="font-size:1.2rem;font-weight:900;color:#FFD60A;" id="fi-sessions">1</div>
+      </div>
+    </div>
+    <button class="btn-fi" onclick="startChallenge()">⚡ Repetir Challenge Room</button>
+    <button class="btn-fi-sec" onclick="window.location.href='magic-room.html'">✨ Volver a mi Magic Room</button>
   </div>
 
   <script>
-    const preguntas = [
-      "¿Cuál es tu mayor logro profesional y qué aprendiste de él?",
-      "Tienes 60 segundos para convencernos de que eres diferente.",
-      "¿Cuál es tu mayor defecto profesional y cómo lo gestionas?",
-      "¿Cómo reaccionarías si tu jefe te equivoca delante de todo el equipo?",
-      "Cuéntanos algo que no pondrías jamás en un CV.",
-      "¿Qué harías el primer día en un trabajo nuevo?",
-      "¿Cuándo fue la última vez que saliste de tu zona de confort?",
-      "Si pudieras cambiar algo del mundo laboral, ¿qué sería?",
-      "¿Qué te hace levantarte con ganas de trabajar?",
-      "Describe un fracaso y qué hiciste después."
-    ];
+    // ── 100 PREGUNTES PER CATEGORIES ──
+    const preguntes = {
+      autenticitat: [
+        "Tienes 60 segundos. Convéncenos de que eres diferente a todos los demás.",
+        "Cuéntanos algo que nunca pondrías en un CV pero que define quién eres.",
+        "¿Cuál es tu mayor miedo profesional y cómo lo enfrentas?",
+        "Si alguien que te conoce bien tuviera que describirte en 3 palabras, ¿cuáles serían y por qué?",
+        "¿Qué parte de ti mismo no sueles mostrar en el trabajo?",
+        "¿Cuándo fue la última vez que te sorprendiste a ti mismo?",
+        "¿Qué harías profesionalmente si supieras que no puedes fracasar?",
+        "¿Qué cosa que haces bien no aparece en ningún CV?",
+        "¿En qué momento de tu vida te has sentido más tú mismo?",
+        "Si pudieras elegir cómo te recuerden al final de tu carrera, ¿qué dirían?"
+      ],
+      resiliencia: [
+        "Describe un fracaso importante. ¿Qué hiciste después?",
+        "¿Cuándo fue la última vez que te equivocaste delante de otros? ¿Cómo reaccionaste?",
+        "Te acaban de dar una mala noticia en el trabajo. ¿Qué haces los próximos 10 minutos?",
+        "Cuéntanos un momento en que todo salió mal y cómo lo gestionaste.",
+        "¿Cuál ha sido el momento más difícil de tu vida profesional?",
+        "¿Alguna vez has tenido que empezar desde cero? ¿Cómo fue?",
+        "¿Qué haces cuando sientes que estás al límite?",
+        "¿Cómo reaccionas cuando alguien critica tu trabajo duramente?",
+        "¿Has tenido que tomar una decisión difícil sin tener toda la información? ¿Qué hiciste?",
+        "¿Qué has aprendido de tu mayor error?"
+      ],
+      valores: [
+        "¿Qué te hace levantarte con ganas un lunes por la mañana?",
+        "Si pudieras cambiar una sola cosa del mundo laboral, ¿qué sería y por qué?",
+        "¿Qué línea no cruzarías jamás en el trabajo, aunque te lo pidieran?",
+        "¿Qué es más importante para ti: el sueldo, el equipo o el propósito?",
+        "¿Qué tipo de liderazgo te inspira y cuál te apaga?",
+        "¿Qué valoras más en un compañero de trabajo?",
+        "¿Qué harías si descubrieras algo incorrecto en tu empresa?",
+        "¿En qué tipo de cultura de empresa das lo mejor de ti?",
+        "¿Cuándo sientes que tu trabajo tiene sentido de verdad?",
+        "¿Qué sacrificarías y qué no sacrificarías por tu carrera?"
+      ],
+      motivacion: [
+        "¿Qué tipo de empresa o equipo sacaría lo mejor de ti?",
+        "¿Qué te motiva más: un reto difícil o un resultado seguro?",
+        "¿Cuál sería tu trabajo ideal si el dinero no importara?",
+        "¿Qué proyecto te haría trabajar sin mirar el reloj?",
+        "¿Cuándo fue la última vez que te apasionaste de verdad por algo en el trabajo?",
+        "¿Qué te aburre profesionalmente?",
+        "¿Qué tipo de reconocimiento te importa más?",
+        "¿Prefieres trabajar solo o en equipo? ¿Por qué?",
+        "¿Qué te impulsa a seguir cuando algo se pone difícil?",
+        "¿Qué significa para ti el éxito profesional?"
+      ],
+      pensamiento: [
+        "Tienes un minuto para vender algo que no existe todavía. Empieza.",
+        "¿Cómo tomas decisiones importantes cuando tienes poco tiempo?",
+        "Si tuvieras que resolver un problema que nunca has visto antes, ¿por dónde empezarías?",
+        "¿Cómo distingues lo urgente de lo importante?",
+        "¿Qué preguntas te haces antes de tomar una decisión grande?",
+        "¿Prefieres analizar mucho o actuar rápido? ¿Por qué?",
+        "¿Cómo reaccionas cuando los datos contradicen tu intuición?",
+        "¿Alguna vez has cambiado completamente de opinión sobre algo importante? ¿Qué pasó?",
+        "¿Qué haces cuando no sabes la respuesta a algo?",
+        "¿Cómo sabes cuándo una idea es buena?"
+      ],
+      relaciones: [
+        "¿Cómo gestionas los conflictos con compañeros de trabajo?",
+        "¿Cómo te comportas cuando alguien de tu equipo no rinde?",
+        "¿Cuándo fue la última vez que ayudaste a alguien sin que te lo pidieran?",
+        "¿Cómo construyes confianza con alguien nuevo?",
+        "¿Qué haces cuando un equipo no funciona bien?",
+        "¿Has tenido que dar un feedback difícil? ¿Cómo lo hiciste?",
+        "¿Cómo adaptas tu comunicación según con quién hablas?",
+        "¿Qué rol sueles tomar en un equipo sin que nadie te lo asigne?",
+        "¿Cómo reaccionas cuando alguien toma el mérito de tu trabajo?",
+        "¿Qué hace que confíes en alguien profesionalmente?"
+      ],
+      ambicion: [
+        "¿Dónde te ves en 5 años? Sé honesto, no des la respuesta de manual.",
+        "¿Qué te falta aprender para ser quien quieres ser profesionalmente?",
+        "¿Qué harías si te ofrecieran el trabajo de tus sueños mañana?",
+        "¿Qué límites te has impuesto tú mismo y por qué?",
+        "¿Hay algo que siempre has querido hacer pero no te has atrevido?",
+        "¿Qué versión de ti mismo quieres ser dentro de 10 años?",
+        "¿Qué te detiene en este momento?",
+        "¿Qué riesgo profesional estás dispuesto a asumir?",
+        "¿Cuándo fue la última vez que saliste de tu zona de confort?",
+        "¿Qué sacrificio estarías dispuesto a hacer por alcanzar tu objetivo?"
+      ],
+      creatividad: [
+        "¿Cuándo tienes tus mejores ideas? ¿Cómo las capturas?",
+        "Explícanos algo complejo de tu área como si tuviéramos 10 años.",
+        "¿Cómo resuelves problemas cuando estás bloqueado?",
+        "¿Qué conexión inesperada has hecho entre dos cosas aparentemente sin relación?",
+        "¿Tienes algún ritual o hábito que activa tu creatividad?",
+        "¿Cómo sabes cuando algo que has creado es bueno de verdad?",
+        "¿Qué harías si te dieran 1 semana libre y recursos ilimitados para crear algo?",
+        "¿Alguna vez has propuesto algo que todos pensaban que era una locura? ¿Qué pasó?",
+        "¿De dónde sacas inspiración?",
+        "¿Cómo equilibras la creatividad con los límites y las restricciones?"
+      ],
+      liderazgo: [
+        "¿Cómo defines el liderazgo con tus propias palabras?",
+        "¿Cuándo has liderado algo, aunque no fuera tu rol oficial?",
+        "¿Cómo motivas a alguien que ha perdido el entusiasmo?",
+        "¿Qué harías si tu equipo estuviera en desacuerdo contigo?",
+        "¿Cómo tomas decisiones bajo presión cuando hay mucho en juego?",
+        "¿Qué cualidad de liderazgo te falta desarrollar todavía?",
+        "¿Alguna vez has tenido que tomar una decisión impopular? ¿Cómo lo gestionaste?",
+        "¿Cómo delegas sin perder el control?",
+        "¿Qué diferencia a un buen líder de uno mediocre?",
+        "¿Qué harías el primer día si te nombraran responsable de un equipo nuevo?"
+      ],
+      vision: [
+        "¿Cómo crees que cambiará tu sector en los próximos 10 años?",
+        "¿Qué problema del mundo te gustaría resolver si pudieras?",
+        "¿Cuál es la tendencia que más te preocupa de tu industria?",
+        "¿Qué habilidad crees que será imprescindible en 5 años y por qué?",
+        "¿Cómo crees que la IA cambiará tu trabajo?",
+        "¿Qué empresa o persona admiras y por qué?",
+        "¿Qué futuro laboral te da esperanza?",
+        "¿Qué legado quieres dejar en tu campo?",
+        "¿Qué cosa que existe hoy crees que desaparecerá en 10 años?",
+        "Si pudieras construir una empresa desde cero, ¿qué problema resolvería?"
+      ]
+    };
 
+    // Aplana totes les preguntes
+    const todesPreguntes = Object.values(preguntes).flat();
+
+    // Historial de preguntes fetes (localStorage)
+    let historial = JSON.parse(localStorage.getItem('talpot_challenge_historial') || '[]');
+    let sessioActual = [];
     let preguntaActual = '';
     let countdownInterval = null;
     let recordingInterval = null;
-    let recSeconds = 60;
+    let recSeconds = 90;
+    let preguntaIndex = 0;
+    const PREGUNTES_PER_SESSIO = 10;
+
+    function getPreguntesNoves() {
+      const disponibles = todesPreguntes.filter(p => !historial.includes(p));
+      if (disponibles.length < PREGUNTES_PER_SESSIO) {
+        // Si s'han esgotat, reiniciem historial
+        historial = [];
+        localStorage.setItem('talpot_challenge_historial', JSON.stringify(historial));
+        return todesPreguntes.sort(() => Math.random() - 0.5).slice(0, PREGUNTES_PER_SESSIO);
+      }
+      return disponibles.sort(() => Math.random() - 0.5).slice(0, PREGUNTES_PER_SESSIO);
+    }
 
     function showFase(id) {
       document.querySelectorAll('.fase').forEach(f => f.classList.add('hidden'));
@@ -320,9 +458,21 @@
     }
 
     function startChallenge() {
-      preguntaActual = preguntas[Math.floor(Math.random() * preguntas.length)];
+      sessioActual = getPreguntesNoves();
+      preguntaIndex = 0;
+      mostrarPregunta();
+    }
+
+    function mostrarPregunta() {
+      if (preguntaIndex >= sessioActual.length) {
+        showFase('fase-fi');
+        return;
+      }
+      preguntaActual = sessioActual[preguntaIndex];
       document.getElementById('pregunta-text').textContent = preguntaActual;
       document.getElementById('rec-pregunta-display').textContent = preguntaActual;
+      document.getElementById('pregunta-num').textContent = (preguntaIndex + 1) + ' / ' + PREGUNTES_PER_SESSIO;
+      document.getElementById('btn-grabar').classList.add('hidden');
       showFase('fase-pregunta');
       startCountdown();
     }
@@ -334,21 +484,19 @@
       const btnGrabar = document.getElementById('btn-grabar');
       const circumference = 264;
 
+      if (countdownInterval) clearInterval(countdownInterval);
+
       countdownInterval = setInterval(() => {
         seconds--;
         numEl.textContent = seconds;
-        const offset = circumference * (1 - seconds / 30);
+        const offset = circumference * (seconds / 30);
         circle.style.strokeDashoffset = offset;
 
         if (seconds <= 10) {
           numEl.style.color = '#FF2D55';
           circle.style.stroke = '#FF2D55';
         }
-
-        if (seconds <= 5) {
-          btnGrabar.classList.remove('hidden');
-        }
-
+        if (seconds <= 5) btnGrabar.classList.remove('hidden');
         if (seconds <= 0) {
           clearInterval(countdownInterval);
           startRecording();
@@ -360,8 +508,13 @@
       clearInterval(countdownInterval);
       showFase('fase-recording');
 
-      // Barres d'àudio animades
+      // Guardar pregunta a historial
+      historial.push(preguntaActual);
+      localStorage.setItem('talpot_challenge_historial', JSON.stringify(historial));
+
+      // Barres àudio
       const barsEl = document.getElementById('rec-bars');
+      barsEl.innerHTML = '';
       for (let i = 0; i < 18; i++) {
         const bar = document.createElement('div');
         bar.className = 'rec-bar';
@@ -372,15 +525,16 @@
         barsEl.appendChild(bar);
       }
 
-      recSeconds = 60;
+      recSeconds = 90;
       updateRecTimer();
+      if (recordingInterval) clearInterval(recordingInterval);
 
       recordingInterval = setInterval(() => {
         recSeconds--;
         updateRecTimer();
         if (recSeconds <= 0) {
           clearInterval(recordingInterval);
-          stopRecording();
+          nextPregunta();
         }
       }, 1000);
     }
@@ -393,7 +547,20 @@
 
     function stopRecording() {
       clearInterval(recordingInterval);
-      showFase('fase-fi');
+      nextPregunta();
+    }
+
+    function nextPregunta() {
+      preguntaIndex++;
+      // Actualitzar comptador de sessions
+      const sessions = parseInt(localStorage.getItem('talpot_challenge_sessions') || '0');
+      if (preguntaIndex >= sessioActual.length) {
+        localStorage.setItem('talpot_challenge_sessions', sessions + 1);
+        showFase('fase-fi');
+        document.getElementById('fi-sessions').textContent = sessions + 1;
+      } else {
+        mostrarPregunta();
+      }
     }
   </script>
 
