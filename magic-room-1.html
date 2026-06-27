@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Magic Room</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
+
+    /* VISTES */
+    .view { position: fixed; inset: 0; z-index: 10; transition: opacity 0.3s, transform 0.3s; }
+    .view.hidden { opacity: 0; pointer-events: none; transform: translateX(20px); }
+
+    .scroll { padding-top: 56px; padding-bottom: 80px; overflow-y: auto; height: 100%; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* INTRO CARD */
+    .intro-card {
+      margin: 1.25rem 1.25rem 1.25rem;
+      background: rgba(255,214,10,0.06); border: 1px solid rgba(255,214,10,0.15);
+      border-radius: 20px; padding: 1.25rem;
+    }
+    .intro-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+    .intro-desc { font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.65; }
+
+    /* SECTION */
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.75rem; }
+
+    /* VIDEO CARDS */
+    .video-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .video-card {
+      border-radius: 14px; padding: 1rem;
+      display: flex; align-items: center; gap: 0.9rem;
+      cursor: pointer; transition: transform 0.15s, background 0.2s;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+    .video-card:hover { background: rgba(255,255,255,0.08); transform: scale(1.01); }
+    .video-card:active { transform: scale(0.99); }
+    .video-card.done { border-color: rgba(255,214,10,0.25); background: rgba(255,214,10,0.05); }
+    .video-card.multi { border-color: rgba(0,180,216,0.2); background: rgba(0,180,216,0.05); }
+
+    .vc-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; background: rgba(255,255,255,0.06); }
+    .video-card.done .vc-icon { background: rgba(255,214,10,0.1); }
+    .video-card.multi .vc-icon { background: rgba(0,180,216,0.1); }
+
+    .vc-info { flex: 1; min-width: 0; }
+    .vc-name { font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 0.15rem; }
+    .vc-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .vc-time { font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.4); }
+    .vc-multi { font-size: 0.68rem; font-weight: 700; color: #00B4D8; }
+    .vc-tip { font-size: 0.7rem; color: rgba(255,255,255,0.45); margin-top: 0.2rem; font-style: italic; }
+
+    .vc-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; }
+    .vc-add { font-size: 1.4rem; color: rgba(255,255,255,0.35); font-weight: 300; }
+    .vc-badge { font-size: 0.62rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 100px; background: rgba(255,214,10,0.15); color: #FFD60A; border: 1px solid rgba(255,214,10,0.3); }
+    .vc-count { font-size: 0.68rem; font-weight: 700; color: #00B4D8; }
+
+    /* PANTALLA IDIOMA */
+    .lang-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 5rem 1.5rem 2rem; text-align: center; gap: 1.25rem;
+    }
+
+    .lang-title { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 900; letter-spacing: -1px; }
+    .lang-desc { font-size: 0.88rem; color: rgba(255,255,255,0.6); line-height: 1.65; max-width: 320px; }
+
+    .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; width: 100%; max-width: 360px; }
+
+    .lang-btn {
+      padding: 0.9rem; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      cursor: pointer; transition: all 0.15s;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: scale(1.02); }
+    .lang-flag { font-size: 1.3rem; }
+    .lang-name { font-size: 0.88rem; font-weight: 700; color: #fff; }
+
+    /* PANTALLA PREGUNTA IDIOMA */
+    .question-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 5rem 1.5rem 2rem; text-align: center; gap: 1.25rem;
+      max-width: 400px; margin: 0 auto;
+    }
+
+    .q-lang-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.2);
+      border-radius: 100px; padding: 0.3rem 0.8rem;
+      font-size: 0.75rem; font-weight: 700; color: #00B4D8;
+    }
+
+    .q-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+
+    .q-text {
+      font-size: clamp(1.1rem, 4vw, 1.4rem); font-weight: 800;
+      color: #fff; line-height: 1.4; letter-spacing: -0.3px;
+    }
+
+    .q-hint { font-size: 0.78rem; color: rgba(255,255,255,0.4); line-height: 1.5; }
+
+    .q-btns { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; }
+
+    .q-btn {
+      width: 100%; padding: 1rem; border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 0.95rem; cursor: pointer; transition: transform 0.15s;
+    }
+    .q-btn:active { transform: scale(0.97); }
+    .q-btn-record { background: #FF2D55; color: #fff; box-shadow: 0 6px 24px rgba(255,45,85,0.3); }
+    .q-btn-record:hover { transform: scale(1.02); }
+    .q-btn-change { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); }
+
+    /* NAV BOTTOM */
+    .nav-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+      display: flex; align-items: center; justify-content: space-around;
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: #fff; }
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon { color: #FFD60A; }
+    .nav-icon { font-size: 1.3rem; line-height: 1; }
+    .nav-center { width: 46px; height: 46px; border-radius: 50%; background: #FFD60A; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); opacity: 1 !important; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" id="nav-back" onclick="goBack()">← Feed</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <!-- VISTA PRINCIPAL -->
+  <div class="view" id="view-main">
+    <div class="scroll">
+
+      <div class="intro-card">
+        <div class="intro-title">✨ Magic Room</div>
+        <div class="intro-desc">Aquí te muestras como eres. Cada vídeo es espontáneo, directo y auténtico. <strong>Sin guiones. Sin segunda toma.</strong> Sé tú mismo — eso es lo que los Seekers quieren ver. Tienes entre 60 y 120 segundos según la categoría.</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Tus vídeos</div>
+        <div class="video-list">
+
+          <div class="video-card" onclick="goUpload('presentacion','🎤','Presentación personal',60)">
+            <div class="vc-icon">🎤</div>
+            <div class="vc-info">
+              <div class="vc-name">Presentación personal</div>
+              <div class="vc-meta">
+                <span class="vc-time">⏱ 60 seg</span>
+              </div>
+              <div class="vc-tip">Engancha desde el primer segundo. Sé divertido, espontáneo, real.</div>
+            </div>
+            <div class="vc-right"><span class="vc-add">＋</span></div>
+          </div>
+
+          <div class="video-card multi" onclick="goUpload('experiencia','💼','Experiencia',90)">
+            <div class="vc-icon">💼</div>
+            <div class="vc-info">
+              <div class="vc-name">Experiencia</div>
+              <div class="vc-meta">
+                <span class="vc-time">⏱ 90 seg</span>
+                <span class="vc-multi">· Múltiples vídeos</span>
+              </div>
+              <div class="vc-tip">Un vídeo por experiencia relevante. Sé concreto y directo.</div>
+            </div>
+            <div class="vc-right"><span class="vc-add">＋</span></div>
+          </div>
+
+          <div class="video-card" onclick="goUpload('estudios','🎓','Estudios',120)">
+            <div class="vc-icon">🎓</div>
+            <div class="vc-info">
+              <div class="vc-name">Estudios</div>
+              <div class="vc-meta">
+                <span class="vc-time">⏱ 120 seg</span>
+              </div>
+              <div class="vc-tip">Explica qué estudiaste y por qué te importa lo que aprendiste.</div>
+            </div>
+            <div class="vc-right"><span class="vc-add">＋</span></div>
+          </div>
+
+          <div class="video-card" onclick="goUpload('habilidades','🧠','Habilidades',90)">
+            <div class="vc-icon">🧠</div>
+            <div class="vc-info">
+              <div class="vc-name">Habilidades</div>
+              <div class="vc-meta">
+                <span class="vc-time">⏱ 90 seg</span>
+              </div>
+              <div class="vc-tip">¿En qué eres realmente bueno? No lo que pone en el CV — lo que de verdad dominas.</div>
+            </div>
+            <div class="vc-right"><span class="vc-add">＋</span></div>
+          </div>
+
+          <div class="video-card multi" onclick="showLangSelect()">
+            <div class="vc-icon">🌍</div>
+            <div class="vc-info">
+              <div class="vc-name">Idiomas</div>
+              <div class="vc-meta">
+                <span class="vc-time">⏱ 60 seg</span>
+                <span class="vc-multi">· Un vídeo por idioma</span>
+              </div>
+              <div class="vc-tip">El sistema te lanzará una pregunta de negocio. Responde con naturalidad.</div>
+            </div>
+            <div class="vc-right"><span class="vc-add">＋</span></div>
+          </div>
+
+          <div class="video-card" onclick="goUpload('objetivos','🎯','Objetivos',60)">
+            <div class="vc-icon">🎯</div>
+            <div class="vc-info">
+              <div class="vc-name">Objetivos</div>
+              <div class="vc-meta">
+                <span class="vc-time">⏱ 60 seg</span>
+              </div>
+              <div class="vc-tip">¿Hacia dónde quieres ir? Sé honesto, no des la respuesta de manual.</div>
+            </div>
+            <div class="vc-right"><span class="vc-add">＋</span></div>
+          </div>
+
+          <div class="video-card" onclick="goUpload('hobbies','🎨','Hobbies',60)">
+            <div class="vc-icon">🎨</div>
+            <div class="vc-info">
+              <div class="vc-name">Hobbies</div>
+              <div class="vc-meta">
+                <span class="vc-time">⏱ 60 seg</span>
+              </div>
+              <div class="vc-tip">Lo que te apasiona fuera del trabajo también dice mucho de ti.</div>
+            </div>
+            <div class="vc-right"><span class="vc-add">＋</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VISTA SELECCIÓ IDIOMA -->
+  <div class="view hidden" id="view-lang">
+    <div class="lang-wrap">
+      <div class="lang-title">¿En qué idioma<br>quieres grabar?</div>
+      <p class="lang-desc">El sistema te lanzará una pregunta de negocio en ese idioma. Responde con naturalidad — la IA detectará tu nivel real.</p>
+      <div class="lang-grid">
+        <div class="lang-btn" onclick="showLangQuestion('en','🇬🇧','English')">
+          <span class="lang-flag">🇬🇧</span><span class="lang-name">English</span>
+        </div>
+        <div class="lang-btn" onclick="showLangQuestion('es','🇪🇸','Español')">
+          <span class="lang-flag">🇪🇸</span><span class="lang-name">Español</span>
+        </div>
+        <div class="lang-btn" onclick="showLangQuestion('fr','🇫🇷','Français')">
+          <span class="lang-flag">🇫🇷</span><span class="lang-name">Français</span>
+        </div>
+        <div class="lang-btn" onclick="showLangQuestion('de','🇩🇪','Deutsch')">
+          <span class="lang-flag">🇩🇪</span><span class="lang-name">Deutsch</span>
+        </div>
+        <div class="lang-btn" onclick="showLangQuestion('it','🇮🇹','Italiano')">
+          <span class="lang-flag">🇮🇹</span><span class="lang-name">Italiano</span>
+        </div>
+        <div class="lang-btn" onclick="showLangQuestion('pt','🇵🇹','Português')">
+          <span class="lang-flag">🇵🇹</span><span class="lang-name">Português</span>
+        </div>
+        <div class="lang-btn" onclick="showLangQuestion('ca','🇨🇦','Català')">
+          <span class="lang-flag">🏴</span><span class="lang-name">Català</span>
+        </div>
+        <div class="lang-btn" onclick="showLangQuestion('zh','🇨🇳','中文')">
+          <span class="lang-flag">🇨🇳</span><span class="lang-name">中文</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA PREGUNTA IDIOMA -->
+  <div class="view hidden" id="view-question">
+    <div class="question-wrap">
+      <span class="q-lang-badge" id="q-lang-badge">🇬🇧 English</span>
+      <div class="q-title">Tu pregunta de hoy</div>
+      <div class="q-text" id="q-text"></div>
+      <p class="q-hint">Tienes 60 segundos. Responde con naturalidad. Si borras el vídeo, recibirás una pregunta diferente automáticamente.</p>
+      <div class="q-btns">
+        <button class="q-btn q-btn-record" onclick="goUpload('idioma','🌍','Idioma',60)">🔴 Empezar a grabar</button>
+        <button class="q-btn q-btn-change" onclick="changeQuestion()">↺ Cambiar pregunta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV BOTTOM -->
+  <nav class="nav-bottom">
+    <div class="nav-item" onclick="window.location.href='app.html'">
+      <div class="nav-icon">🏠</div>
+      <span>Feed</span>
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon">✨</div>
+      <span>Mi Room</span>
+    </div>
+    <div class="nav-center" onclick="showView('view-main')">＋</div>
+    <div class="nav-item" onclick="window.location.href='creators-feed.html'">
+      <div class="nav-icon">👥</div>
+      <span>Creators</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <div class="nav-icon">👤</div>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+  <script>
+    // 100 preguntes per idioma
+    const questions = {
+      en: [
+        "Describe a situation where you had to make a quick decision at work.",
+        "How do you handle disagreements with a colleague?",
+        "Tell us about a project you're proud of and why.",
+        "How do you prioritize your tasks when everything seems urgent?",
+        "Describe your ideal work environment.",
+        "How do you deal with failure or setbacks?",
+        "Tell us about a time you had to lead a team.",
+        "How do you stay motivated during difficult projects?",
+        "Describe a moment when you had to adapt quickly to a change.",
+        "How do you build relationships with new colleagues?",
+        "Tell us about a skill you've recently developed.",
+        "How do you handle pressure and tight deadlines?",
+        "Describe a time you went above and beyond for a client.",
+        "How do you approach problem-solving at work?",
+        "Tell us about your biggest professional achievement.",
+        "How do you manage your work-life balance?",
+        "Describe a situation where you had to persuade someone.",
+        "How do you give and receive feedback?",
+        "Tell us about a time you had to work with a difficult person.",
+        "How do you keep up with industry trends?",
+        "Describe your decision-making process.",
+        "How do you handle multiple projects at once?",
+        "Tell us about a time you improved a process at work.",
+        "How do you approach learning new things?",
+        "Describe a time when you had to take initiative.",
+        "How do you measure success in your work?",
+        "Tell us about a challenging negotiation you've been part of.",
+        "How do you communicate with stakeholders?",
+        "Describe a time when your idea changed the direction of a project.",
+        "How do you deal with ambiguity at work?"
+      ],
+      es: [
+        "Describe una situación donde tuviste que tomar una decisión rápida.",
+        "¿Cómo gestionas los desacuerdos con un compañero de trabajo?",
+        "Cuéntanos un proyecto del que estés orgulloso y por qué.",
+        "¿Cómo priorizas tus tareas cuando todo parece urgente?",
+        "Describe tu entorno de trabajo ideal.",
+        "¿Cómo afrontas los fracasos o contratiempos?",
+        "Cuéntanos una vez que tuviste que liderar un equipo.",
+        "¿Cómo te mantienes motivado en proyectos difíciles?",
+        "Describe un momento en que tuviste que adaptarte rápido a un cambio.",
+        "¿Cómo construyes relaciones con nuevos compañeros?",
+        "Cuéntanos una habilidad que hayas desarrollado recientemente.",
+        "¿Cómo gestionas la presión y los plazos ajustados?",
+        "Describe una vez que fuiste más allá por un cliente.",
+        "¿Cómo abordas la resolución de problemas en el trabajo?",
+        "Cuéntanos tu mayor logro profesional.",
+        "¿Cómo gestionas el equilibrio entre trabajo y vida personal?",
+        "Describe una situación donde tuviste que persuadir a alguien.",
+        "¿Cómo das y recibes feedback?",
+        "Cuéntanos una vez que trabajaste con una persona difícil.",
+        "¿Cómo te mantienes al día con las tendencias del sector?"
+      ],
+      fr: [
+        "Décrivez une situation où vous avez dû prendre une décision rapide.",
+        "Comment gérez-vous les désaccords avec un collègue?",
+        "Parlez-nous d'un projet dont vous êtes fier et pourquoi.",
+        "Comment priorisez-vous vos tâches quand tout semble urgent?",
+        "Décrivez votre environnement de travail idéal.",
+        "Comment gérez-vous les échecs ou les revers?",
+        "Parlez-nous d'une fois où vous avez dû diriger une équipe.",
+        "Comment restez-vous motivé dans des projets difficiles?",
+        "Décrivez un moment où vous avez dû vous adapter rapidement.",
+        "Comment construisez-vous des relations avec de nouveaux collègues?"
+      ],
+      de: [
+        "Beschreiben Sie eine Situation, in der Sie schnell eine Entscheidung treffen mussten.",
+        "Wie gehen Sie mit Meinungsverschiedenheiten mit Kollegen um?",
+        "Erzählen Sie uns von einem Projekt, auf das Sie stolz sind.",
+        "Wie priorisieren Sie Ihre Aufgaben, wenn alles dringend erscheint?",
+        "Beschreiben Sie Ihr ideales Arbeitsumfeld.",
+        "Wie gehen Sie mit Misserfolgen oder Rückschlägen um?",
+        "Erzählen Sie uns von einer Zeit, in der Sie ein Team leiten mussten.",
+        "Wie bleiben Sie bei schwierigen Projekten motiviert?",
+        "Beschreiben Sie einen Moment, in dem Sie sich schnell anpassen mussten.",
+        "Wie bauen Sie Beziehungen zu neuen Kollegen auf?"
+      ],
+      it: [
+        "Descrivi una situazione in cui hai dovuto prendere una decisione rapida.",
+        "Come gestisci i disaccordi con un collega?",
+        "Raccontaci di un progetto di cui sei orgoglioso e perché.",
+        "Come prioritizzi i tuoi compiti quando tutto sembra urgente?",
+        "Descrivi il tuo ambiente di lavoro ideale.",
+        "Come affronti i fallimenti o le battute d'arresto?",
+        "Raccontaci di quando hai dovuto guidare un team.",
+        "Come rimani motivato durante progetti difficili?",
+        "Descrivi un momento in cui hai dovuto adattarti rapidamente.",
+        "Come costruisci relazioni con nuovi colleghi?"
+      ],
+      pt: [
+        "Descreva uma situação em que teve de tomar uma decisão rápida.",
+        "Como gere os desentendimentos com um colega de trabalho?",
+        "Conte-nos sobre um projeto do qual se orgulha e porquê.",
+        "Como prioriza as suas tarefas quando tudo parece urgente?",
+        "Descreva o seu ambiente de trabalho ideal.",
+        "Como lida com falhas ou contratempos?",
+        "Conte-nos sobre uma vez que teve de liderar uma equipa.",
+        "Como se mantém motivado em projetos difíceis?",
+        "Descreva um momento em que teve de se adaptar rapidamente.",
+        "Como constrói relações com novos colegas?"
+      ],
+      ca: [
+        "Descriu una situació on has hagut de prendre una decisió ràpida.",
+        "Com gestiones els desacords amb un company de feina?",
+        "Explica'ns un projecte del qual estiguis orgullós i per què.",
+        "Com prioritzes les teves tasques quan tot sembla urgent?",
+        "Descriu el teu entorn de treball ideal.",
+        "Com afrontes els fracassos o contratemps?",
+        "Explica'ns una vegada que vas haver de liderar un equip.",
+        "Com et mantens motivat en projectes difícils?",
+        "Descriu un moment en què vas haver d'adaptar-te ràpidament.",
+        "Com construeixes relacions amb nous companys?"
+      ],
+      zh: [
+        "描述一个你需要快速做出决定的情况。",
+        "你如何处理与同事的分歧？",
+        "告诉我们一个你引以为豪的项目及原因。",
+        "当所有事情似乎都很紧急时，你如何确定任务的优先级？",
+        "描述你理想的工作环境。",
+        "你如何应对失败或挫折？",
+        "告诉我们你必须领导团队的经历。",
+        "在困难项目中你如何保持动力？",
+        "描述一个你必须快速适应变化的时刻。",
+        "你如何与新同事建立关系？"
+      ]
+    };
+
+    let currentLang = 'en';
+    let currentLangName = 'English';
+    let currentLangFlag = '🇬🇧';
+    let usedQuestions = [];
+    let currentQuestion = '';
+
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function goBack() {
+      const main = document.getElementById('view-main');
+      const langSel = document.getElementById('view-lang');
+      const langQ = document.getElementById('view-question');
+
+      if (!langQ.classList.contains('hidden')) {
+        showView('view-lang');
+        document.getElementById('nav-back').textContent = '← Mi Room';
+      } else if (!langSel.classList.contains('hidden')) {
+        showView('view-main');
+        document.getElementById('nav-back').textContent = '← Feed';
+      } else {
+        window.location.href = 'app.html';
+      }
+    }
+
+    function showLangSelect() {
+      showView('view-lang');
+      document.getElementById('nav-back').textContent = '← Mi Room';
+    }
+
+    function getRandomQuestion(lang) {
+      const pool = questions[lang] || questions['en'];
+      const available = pool.filter(q => !usedQuestions.includes(q));
+      if (available.length === 0) { usedQuestions = []; return pool[0]; }
+      const q = available[Math.floor(Math.random() * available.length)];
+      usedQuestions.push(q);
+      return q;
+    }
+
+    function showLangQuestion(lang, flag, name) {
+      currentLang = lang;
+      currentLangName = name;
+      currentLangFlag = flag;
+      currentQuestion = getRandomQuestion(lang);
+      document.getElementById('q-lang-badge').textContent = flag + ' ' + name;
+      document.getElementById('q-text').textContent = '"' + currentQuestion + '"';
+      showView('view-question');
+      document.getElementById('nav-back').textContent = '← Idiomas';
+    }
+
+    function changeQuestion() {
+      currentQuestion = getRandomQuestion(currentLang);
+      document.getElementById('q-text').textContent = '"' + currentQuestion + '"';
+    }
+
+    function goUpload(cat, icon, name, secs) {
+      sessionStorage.setItem('upload_cat', cat);
+      sessionStorage.setItem('upload_icon', icon);
+      sessionStorage.setItem('upload_name', name);
+      sessionStorage.setItem('upload_secs', secs);
+      if (cat === 'idioma') {
+        sessionStorage.setItem('upload_question', currentQuestion);
+        sessionStorage.setItem('upload_lang', currentLangName);
+      }
+      window.location.href = 'video-upload.html';
+    }
+  </script>
+
+</body>
+</html>
