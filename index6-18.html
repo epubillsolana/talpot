@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; overflow: hidden; }
+
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 70%, rgba(13,59,110,0.25) 0%, transparent 50%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(160deg, rgba(255,214,10,0.06) 0%, transparent 35%),
+        linear-gradient(168deg, rgba(0,180,216,0.05) 5%, transparent 45%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .dots {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px),
+        radial-gradient(circle, rgba(72,202,228,0.3) 1px, transparent 1px);
+      background-size: 180px 220px, 300px 280px, 250px 350px;
+      background-position: 40px 60px, 100px 180px, 200px 100px;
+    }
+
+    /* ── PANTALLES ── */
+    .screen {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 4vmin 2rem; text-align: center;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(-16px); }
+    .screen.below { opacity: 0; pointer-events: none; transform: translateY(16px); }
+
+    /* LOGO */
+    .logo {
+      font-size: min(15vw, 11vh, 5.5rem);
+      font-weight: 900; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #fff; line-height: 1;
+      animation: fadeUp 0.8s ease both 0.1s;
+      text-shadow: 0 0 60px rgba(0,180,216,0.3);
+    }
+    .logo span { color: #FFD60A; }
+
+    .divider {
+      width: 50px; height: 2px;
+      background: rgba(255,255,255,0.2);
+      margin: min(2vmin, 1rem) auto min(3vmin, 1.5rem);
+      animation: fadeUp 0.8s ease both 0.2s;
+    }
+
+    .headline {
+      font-size: min(5vw, 3.5vh, 1.8rem);
+      font-weight: 700; letter-spacing: -0.5px; line-height: 1.25;
+      margin-bottom: min(5vmin, 2.5rem);
+      animation: fadeUp 0.8s ease both 0.3s;
+    }
+    .headline .line1, .headline .line2 { display: block; color: rgba(255,255,255,0.85); }
+    .headline .line3 { display: block; color: #FFD60A; }
+
+    /* BOTONS */
+    .actions {
+      display: flex; flex-direction: column; gap: 0.75rem;
+      width: 100%; max-width: 300px;
+      animation: fadeUp 0.8s ease both 0.4s;
+    }
+
+    .btn {
+      width: 100%;
+      padding: min(3vmin, 1.1rem) 2rem;
+      border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: min(4vw, 2vh, 1rem);
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.05em;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-yellow { background: #FFD60A; color: #020B18; box-shadow: 0 6px 24px rgba(255,214,10,0.25); }
+    .btn-yellow:hover { transform: scale(1.04); box-shadow: 0 10px 32px rgba(255,214,10,0.45); }
+    .btn-white { background: #fff; color: #020B18; }
+    .btn-white:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(255,255,255,0.2); }
+
+    .gloss-link {
+      margin-top: min(3vmin, 1.5rem);
+      font-size: min(3.5vw, 1.8vh, 0.82rem);
+      color: rgba(255,255,255,0.25); cursor: pointer;
+      transition: color 0.2s; animation: fadeUp 0.8s ease both 0.5s;
+      text-decoration: underline; text-underline-offset: 3px;
+      background: none; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 500;
+    }
+    .gloss-link:hover { color: rgba(255,255,255,0.6); }
+
+    /* ── FORMULARIS ── */
+    .auth-logo {
+      font-size: min(8vw, 6vh, 2.8rem);
+      font-weight: 900; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #fff;
+      margin-bottom: min(1vmin, 0.5rem);
+    }
+    .auth-logo span { color: #FFD60A; }
+
+    .auth-title {
+      font-size: min(4vw, 2.5vh, 1rem);
+      font-weight: 700; color: rgba(255,255,255,0.4);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: min(4vmin, 2rem);
+    }
+
+    .auth-form {
+      display: flex; flex-direction: column; gap: 0.7rem;
+      width: 100%; max-width: 300px;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: min(3vmin, 1rem) 1.2rem;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      color: #fff; font-family: 'Space Grotesk', sans-serif;
+      font-size: min(4vw, 2vh, 0.95rem); font-weight: 500;
+      outline: none; transition: border-color 0.2s, background 0.2s;
+      backdrop-filter: blur(10px);
+    }
+    .auth-input::placeholder { color: rgba(255,255,255,0.3); }
+    .auth-input:focus { border-color: rgba(255,214,10,0.5); background: rgba(255,255,255,0.1); }
+
+    .btn-submit {
+      width: 100%;
+      padding: min(3vmin, 1.1rem) 2rem;
+      border-radius: 100px; border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: min(4vw, 2vh, 1rem);
+      cursor: pointer; letter-spacing: 0.05em;
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin-top: 0.25rem;
+    }
+    .btn-submit.yellow { background: #FFD60A; color: #020B18; }
+    .btn-submit.white { background: #fff; color: #020B18; }
+    .btn-submit:hover { transform: scale(1.04); }
+
+    .auth-sep {
+      display: flex; align-items: center; gap: 0.75rem;
+      color: rgba(255,255,255,0.2); font-size: 0.8rem;
+    }
+    .auth-sep::before, .auth-sep::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1);
+    }
+
+    .btn-google {
+      width: 100%;
+      padding: min(2.5vmin, 0.9rem) 2rem;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07); color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700; font-size: min(3.5vw, 1.8vh, 0.88rem);
+      cursor: pointer; transition: background 0.2s, transform 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-google:hover { background: rgba(255,255,255,0.12); transform: scale(1.02); }
+
+    /* ROL SELECTOR */
+    .rol-grid {
+      display: flex; gap: 0.75rem;
+      width: 100%; max-width: 300px;
+      margin-bottom: min(3vmin, 1.5rem);
+    }
+
+    .rol-card {
+      flex: 1; padding: min(2.5vmin, 1rem) 0.75rem;
+      border-radius: 16px; border: 2px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.5); cursor: pointer;
+      transition: all 0.2s; text-align: center;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .rol-card .rol-emoji { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+    .rol-card .rol-name { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; }
+
+    .rol-card.selected.creator {
+      border-color: #FFD60A; background: rgba(255,214,10,0.1);
+      color: #FFD60A;
+    }
+    .rol-card.selected.seeker {
+      border-color: #fff; background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .back-link {
+      margin-top: min(2.5vmin, 1rem);
+      font-size: min(3.5vw, 1.8vh, 0.8rem);
+      color: rgba(255,255,255,0.25); cursor: pointer;
+      background: none; border: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 500;
+      transition: color 0.2s; text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .back-link:hover { color: rgba(255,255,255,0.6); }
+
+    .bottom {
+      position: fixed; bottom: 1.2rem; left: 0; right: 0;
+      text-align: center; font-size: 0.7rem;
+      color: rgba(255,255,255,0.1); z-index: 20;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
+      z-index: 100; display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #0D1F35; border: 1px solid rgba(0,180,216,0.15);
+      border-radius: 24px; padding: 2rem 1.5rem;
+      max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto;
+      transform: translateY(16px); transition: transform 0.3s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-header h3 { font-size: 1.3rem; font-weight: 900; color: #fff; }
+    .modal-close {
+      background: rgba(255,255,255,0.08); border: none; color: #fff;
+      width: 32px; height: 32px; border-radius: 50%; font-size: 0.9rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.15); }
+    .gloss-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    @media (max-width: 400px) { .gloss-grid { grid-template-columns: 1fr; } }
+    .gloss-card { border-radius: 14px; padding: 1rem; transition: transform 0.2s; }
+    .gloss-card:hover { transform: scale(1.03); }
+    .gloss-card.c1 { background: #FF2D55; color: #fff; }
+    .gloss-card.c2 { background: #FFD60A; color: #111; }
+    .gloss-card.c3 { background: #30D158; color: #111; }
+    .gloss-card.c4 { background: #00B4D8; color: #fff; }
+    .gloss-card.c5 { background: #BF5AF2; color: #fff; }
+    .gloss-card.c6 { background: #FF6B00; color: #fff; }
+    .gloss-card.c7 { background: #FFD60A; color: #111; }
+    .gloss-card.c8 { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
+    /* X VISUALS */
+    .no-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: min(4vmin, 2rem);
+      animation: fadeUp 0.8s ease both 0.45s;
+    }
+
+    .no-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: min(4.5vw, 2.2vh, 1.05rem);
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: -0.3px;
+      text-decoration: line-through;
+      text-decoration-color: rgba(255,45,85,0.6);
+      text-decoration-thickness: 2px;
+    }
+
+    .no-x {
+      font-size: min(6vw, 3vh, 1.6rem);
+      font-weight: 900;
+      color: #FF2D55;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: min(8vw, 4vh, 2rem);
+      height: min(8vw, 4vh, 2rem);
+      background: rgba(255,45,85,0.15);
+      border-radius: 6px;
+      border: 2px solid rgba(255,45,85,0.4);
+      filter: drop-shadow(0 0 8px rgba(255,45,85,0.5));
+      flex-shrink: 0;
+      animation: xPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .no-item:nth-child(1) .no-x { animation-delay: 0.6s; }
+    .no-item:nth-child(2) .no-x { animation-delay: 0.8s; }
+    .no-item:nth-child(3) .no-x { animation-delay: 1.0s; }
+
+    @keyframes xPop {
+      0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+      60% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+      80% { transform: scale(0.9) rotate(-3deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .welcome-emoji { font-size: 3rem; margin-bottom: 1rem; }
+    .welcome-nom { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; color: #fff; margin-bottom: 0.5rem; letter-spacing: -1px; }
+    .welcome-rol { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15em; color: #FFD60A; text-transform: uppercase; margin-bottom: 2rem; }
+    .gloss-card .g-word { font-size: 0.95rem; font-weight: 900; margin-bottom: 0.2rem; }
+    .gloss-card .g-def { font-size: 0.75rem; opacity: 0.85; line-height: 1.4; font-weight: 500; }
+    .ready {
+      font-size: min(5vw, 2.5vh, 1.3rem);
+      font-weight: 800;
+      color: #FFD60A;
+      margin-bottom: min(3vmin, 1.5rem);
+      animation: fadeUp 0.8s ease both 1.2s;
+      text-shadow: 0 0 20px rgba(255,214,10,0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dots"></div>
+
+  <!-- PANTALLA 1 — PRINCIPAL -->
+  <div class="screen" id="s-main">
+    <div class="logo">TAL<span>POT</span></div>
+    <div class="divider"></div>
+    <h1 class="headline">
+      <span class="line1">La oportunidad</span>
+      <span class="line2">siempre</span>
+      <span class="line3">eres tú.</span>
+    </h1>
+
+    <div class="actions">
+      <button class="btn btn-yellow" onclick="show('s-login')">ENTRAR</button>
+      <button class="btn btn-white" onclick="show('s-register')">REGISTRARME</button>
+    </div>
+    <div style="margin-top:min(3vmin,1.5rem);width:100%;max-width:300px;animation:fadeUp 0.8s ease both 1.2s;">
+      <div style="height:1px;background:rgba(255,255,255,0.1);margin-bottom:min(3vmin,1.5rem);"></div>
+      <button onclick="show('s-about')" style="width:100%;background:none;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;justify-content:space-between;padding:0;">
+        <span style="font-size:min(4.5vw,2.2vh,1rem);font-weight:800;color:#fff;">¿Qué es Talpot?</span>
+        <span style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#FFD60A;">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PANTALLA ABOUT — QUÈ ÉS TALPOT -->
+  <div class="screen below" id="s-about" style="overflow-y:auto; justify-content:flex-start; padding-top: 6vh;">
+    <div class="auth-logo">TAL<span>POT</span></div>
+
+    <div style="width:100%;max-width:360px;text-align:left;display:flex;flex-direction:column;gap:1.75rem;padding-bottom:4rem;">
+
+      <!-- QUÈ ÉS -->
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">Qué es Talpot</div>
+        <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;line-height:1.7;font-weight:500;">Talpot no es una bolsa de trabajo tradicional. No hay ofertas de trabajo concretas. No hay listas de CVs. Hay algo diferente — hay personas mostrando su talento real, y empresas descubriéndolas.</p>
+      </div>
+
+      <!-- EL PROBLEMA -->
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">El problema que resolvemos</div>
+        <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;line-height:1.7;font-weight:500;">Los procesos de selección tradicionales empiezan por el CV — un papel que no dice quién eres. El talento pasa desapercibido. Las empresas no encuentran a los mejores, encuentran a los que mejor escriben su CV.</p>
+      </div>
+
+      <!-- MISSIÓ -->
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.5rem;">La misión</div>
+        <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;line-height:1.7;font-weight:500;">Que el talento se vea, se escuche y se sienta antes que cualquier papel. El CV no desaparece — llega al final, cuando ya hay interés real. Primero te descubren por lo que eres.</p>
+      </div>
+
+      <!-- COM FUNCIONA -->
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.75rem;">Cómo funciona</div>
+        <div style="display:flex;flex-direction:column;gap:0.85rem;">
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">✨</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Magic Room</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Tu perfil en vídeo. Presentación, experiencia, habilidades, idiomas, objetivos y hobbies. Tú decides cómo mostrarte.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">⚡</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Challenge Room</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Una pregunta aleatoria. 90 segundos para responder en vídeo. Sin edición. Sin trampa. Autenticidad pura.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🎮</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Mini-juegos</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Juegos que revelan tu perfil real sin que te des cuenta — lógica, creatividad, intuición, inteligencia emocional.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🤖</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">IA que analiza todo</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Transcribe tus vídeos, extrae palabras clave, analiza tu tono de voz y construye tu perfil de personalidad automáticamente.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🔭</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Los Seekers te descubren</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Las empresas buscan talento por perfil, no por palabras en un CV. Tú no aplicas a nada. Ellos te encuentran.</div></div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <span style="font-size:1.2rem;flex-shrink:0;">🌟</span>
+            <div><div style="font-size:0.85rem;font-weight:800;color:#fff;margin-bottom:0.2rem;">Talpoteado</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.5;">Showtime, Champions, oportunidad. Si hay interés real, entonces sí puede llegar el CV — como trámite final, no como primer filtro.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GLOSSARI -->
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:#FFD60A;font-weight:700;margin-bottom:0.75rem;">El idioma Talpot</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          <div style="background:rgba(255,45,85,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,45,85,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🎬</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Creator</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Tú. El talento.</div>
+          </div>
+          <div style="background:rgba(0,180,216,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(0,180,216,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🔭</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Seeker</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">La empresa que te descubre.</div>
+          </div>
+          <div style="background:rgba(191,90,242,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(191,90,242,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">✨</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Magic Room</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Tu perfil en vídeo.</div>
+          </div>
+          <div style="background:rgba(255,107,0,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,107,0,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">⚡</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Challenge Room</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Autenticidad en vídeo.</div>
+          </div>
+          <div style="background:rgba(48,209,88,0.15);border-radius:12px;padding:0.75rem;border:1px solid rgba(48,209,88,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🎬</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Showtime</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">El encuentro en directo.</div>
+          </div>
+          <div style="background:rgba(255,214,10,0.1);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,214,10,0.2);">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🏆</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#fff;">Champions</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">La gran final presencial.</div>
+          </div>
+          <div style="background:rgba(255,214,10,0.1);border-radius:12px;padding:0.75rem;border:1px solid rgba(255,214,10,0.3);grid-column:span 2;">
+            <div style="font-size:1rem;margin-bottom:0.2rem;">🌟</div>
+            <div style="font-size:0.85rem;font-weight:900;color:#FFD60A;">Talpoteado</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.4;margin-top:0.2rem;">Cuando un Seeker encuentra al Creator perfecto. Todos ganan.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-yellow" onclick="show('s-register')">REGISTRARME</button>
+      <button class="back-link" onclick="show('s-main')" style="color:rgba(255,255,255,0.5);font-size:1rem;font-weight:700;background:none;border:none;cursor:pointer;padding:0.5rem;">← Volver</button>
+
+    </div>
+  </div>
+
+  <!-- PANTALLA 2 — LOGIN -->
+  <div class="screen below" id="s-login">
+    <div class="auth-logo">TAL<span>POT</span></div>
+    <div class="auth-title">Bienvenido de nuevo</div>
+    <div class="auth-form">
+      <input id="login-email" class="auth-input" type="email" placeholder="tu@email.com" />
+      <input id="login-pass" class="auth-input" type="password" placeholder="Contraseña" />
+      <div id="login-error" class="auth-error"></div>
+      <button id="btn-login" class="btn-submit yellow">ENTRAR</button>
+      <div class="auth-sep">o</div>
+      <button class="btn-google">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+    <button class="back-link" onclick="show('s-main')">← Volver</button>
+  </div>
+
+  <!-- PANTALLA 3 — REGISTRE -->
+  <div class="screen below" id="s-register">
+    <div class="auth-logo">TAL<span>POT</span></div>
+    <div class="auth-title">¿Quién eres?</div>
+    <div class="rol-grid">
+      <div class="rol-card creator" id="rol-creator" onclick="selectRol('creator')">
+        <span class="rol-emoji">🎬</span>
+        <div class="rol-name">CREATOR</div>
+      </div>
+      <div class="rol-card seeker" id="rol-seeker" onclick="selectRol('seeker')">
+        <span class="rol-emoji">🔭</span>
+        <div class="rol-name">SEEKER</div>
+      </div>
+    </div>
+    <div class="auth-form">
+      <input id="reg-nom" class="auth-input" type="text" placeholder="Tu nombre" />
+      <input id="reg-email" class="auth-input" type="email" placeholder="tu@email.com" />
+      <input id="reg-pass" class="auth-input" type="password" placeholder="Contraseña" />
+      <div id="reg-error" class="auth-error"></div>
+      <button class="btn-submit yellow" id="btn-register">EMPEZAR A CREAR</button>
+      <div class="auth-sep">o</div>
+      <button class="btn-google">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+    <button class="back-link" onclick="show('s-main')">← Volver</button>
+  </div>
+
+  <!-- PANTALLA 4 — BENVINGUDA -->
+  <div class="screen below" id="s-welcome">
+    <div class="welcome-emoji">🌟</div>
+    <div class="welcome-nom" id="welcome-nom">Talpotter</div>
+    <div class="welcome-rol" id="welcome-rol">CREATOR</div>
+    <div class="actions">
+      <button class="btn btn-yellow">ENTRAR A TALPOT</button>
+    </div>
+  </div>
+
+  <div class="bottom">talpot.app · © 2026</div>
+
+  <!-- MODAL GLOSSARI -->
+  <div class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>El idioma Talpot 🌊</h3>
+        <button class="modal-close" onclick="document.querySelector('.modal-overlay').classList.remove('open')">✕</button>
+      </div>
+      <div class="gloss-grid">
+        <div class="gloss-card c1"><span class="g-emoji">🎬</span><div class="g-word">Creator</div><div class="g-def">Tú. Creas contenido real. Te muestras. Te descubren.</div></div>
+        <div class="gloss-card c2"><span class="g-emoji">🔭</span><div class="g-word">Seeker</div><div class="g-def">La empresa. Descubre talento real. Sin papeles, sin CVs.</div></div>
+        <div class="gloss-card c3"><span class="g-emoji">✨</span><div class="g-word">Magic Room</div><div class="g-def">Tu perfil. Tu escenario. Vídeos, juegos y tú siendo tú.</div></div>
+        <div class="gloss-card c4"><span class="g-emoji">⚡</span><div class="g-word">Challenge Room</div><div class="g-def">Una pregunta. 60 segundos. Sin edición. Sin trampa.</div></div>
+        <div class="gloss-card c5"><span class="g-emoji">🎬</span><div class="g-word">Showtime</div><div class="g-def">El encuentro en directo. No es una entrevista — es tu show.</div></div>
+        <div class="gloss-card c6"><span class="g-emoji">🏆</span><div class="g-word">Champions</div><div class="g-def">La gran final. Al aire libre. Solo llegan los mejores.</div></div>
+        <div class="gloss-card c7"><span class="g-emoji">⭐</span><div class="g-word">Talpot</div><div class="g-def">¡Te han Talpoteado! Seeker y Creator se encuentran. Todos ganan.</div></div>
+        <div class="gloss-card c8"><span class="g-emoji">✕</span><div class="g-word">CV / Job offer</div><div class="g-def">No existen aquí. Punto.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let rolSeleccionat = 'creator';
+
+    // ── SUPABASE ──
+    const SUPABASE_URL = 'https://dlxeqzdgsejoywwwnchi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRseGVxemRnc2Vqb3l3d3duY2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDM2MTgsImV4cCI6MjA5Nzg3OTYxOH0.qZBwTlAHFMsyc-t58ldSdlxlwZhUX-QKUakl1yZI7mA';
+
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Comprovar sessió activa — si ja està logat, entra directe
+    async function checkSession() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const rol = session.user.user_metadata?.rol || 'creator';
+        entrarApp(rol, session.user);
+      }
+    }
+
+    checkSession();
+
+    // ── LOGIN ──
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value.trim();
+      const btn = document.getElementById('btn-login');
+
+      if (!email || !pass) return showError('login-error', 'Rellena todos los campos');
+
+      btn.textContent = 'ENTRANDO...';
+      btn.disabled = true;
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+      if (error) {
+        showError('login-error', 'Email o contraseña incorrectos');
+        btn.textContent = 'ENTRAR';
+        btn.disabled = false;
+        return;
+      }
+
+      const rol = data.user.user_metadata?.rol || 'creator';
+      entrarApp(rol, data.user);
+    });
+
+    // ── REGISTRE ──
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const nom = document.getElementById('reg-nom').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-pass').value.trim();
+      const btn = document.getElementById('btn-register');
+
+      if (!nom || !email || !pass) return showError('reg-error', 'Rellena todos los campos');
+      if (pass.length < 6) return showError('reg-error', 'La contraseña debe tener mínimo 6 caracteres');
+
+      btn.textContent = 'CREANDO...';
+      btn.disabled = true;
+
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password: pass,
+        options: { data: { nom, rol: rolSeleccionat } }
+      });
+
+      if (error) {
+        showError('reg-error', error.message);
+        btn.textContent = rolSeleccionat === 'creator' ? 'EMPEZAR A CREAR' : 'EMPEZAR A DESCUBRIR';
+        btn.disabled = false;
+        return;
+      }
+
+      entrarApp(rolSeleccionat, data.user);
+    });
+
+    // ── LOGIN GOOGLE ──
+    document.querySelectorAll('.btn-google').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await sb.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.href }
+        });
+      });
+    });
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg; el.style.display = 'block'; }
+    }
+
+    function entrarApp(rol, user) {
+      window.location.href = rol === 'seeker' ? 'seeker.html' : 'app.html';
+    }
+
+    function switchAbout(rol) {
+      const isCreator = rol === 'creator';
+      document.getElementById('about-creator').style.display = isCreator ? 'flex' : 'none';
+      document.getElementById('about-seeker').style.display = isCreator ? 'none' : 'flex';
+      document.getElementById('tab-creator').style.background = isCreator ? '#FFD60A' : 'transparent';
+      document.getElementById('tab-creator').style.color = isCreator ? '#020B18' : 'rgba(255,255,255,0.4)';
+      document.getElementById('tab-seeker').style.background = isCreator ? 'transparent' : '#fff';
+      document.getElementById('tab-seeker').style.color = isCreator ? 'rgba(255,255,255,0.4)' : '#020B18';
+    }
+
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('hidden');
+        s.classList.add('below');
+      });
+      // Netejar errors
+      document.querySelectorAll('.auth-error').forEach(e => e.style.display = 'none');
+      const target = document.getElementById(id);
+      target.classList.remove('hidden', 'below');
+    }
+
+    function selectRol(rol) {
+      rolSeleccionat = rol;
+      document.getElementById('rol-creator').classList.remove('selected');
+      document.getElementById('rol-seeker').classList.remove('selected');
+      document.getElementById('rol-' + rol).classList.add('selected');
+      const btn = document.getElementById('btn-register');
+      btn.textContent = rol === 'creator' ? 'EMPEZAR A CREAR' : 'EMPEZAR A DESCUBRIR';
+      btn.className = 'btn-submit ' + (rol === 'creator' ? 'yellow' : 'white');
+    }
+
+    // Selecció per defecte
+    selectRol('creator');
+  </script>
+
+</body>
+</html>
