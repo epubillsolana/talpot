@@ -7,31 +7,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      height: 100%; height: 100dvh;
-      font-family: 'Space Grotesk', sans-serif;
-      color: #fff; overflow: hidden;
-    }
-
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow-x: hidden; }
     body {
       background:
         radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
-        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 90% 70%, rgba(13,59,110,0.25) 0%, transparent 50%),
         linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
       background-attachment: fixed;
     }
 
-    /* Rajos de llum */
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background:
-        linear-gradient(160deg, rgba(255,214,10,0.05) 0%, transparent 35%),
-        linear-gradient(168deg, rgba(0,180,216,0.04) 5%, transparent 45%);
-      pointer-events: none; z-index: 0;
-    }
-
-    /* NAV */
     .nav {
       position: fixed; top: 0; left: 0; right: 0; height: 56px;
       display: flex; align-items: center; justify-content: space-between;
@@ -41,177 +24,78 @@
     }
     .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
     .nav-logo span { color: #FFD60A; }
-    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; transition: color 0.2s; }
-    .nav-back:hover { color: #fff; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
 
-    /* SCROLL */
-    .scroll {
-      position: fixed; top: 56px; bottom: 64px;
-      left: 0; right: 0; overflow-y: auto; padding: 1.25rem;
-      position: fixed; z-index: 1;
-    }
+    .scroll { padding-top: 56px; padding-bottom: 80px; overflow-y: auto; min-height: 100dvh; }
     .scroll::-webkit-scrollbar { display: none; }
 
-    /* GLASS CARD */
-    .glass {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-    }
-
-    /* HEADER ROOM */
+    /* HEADER */
     .room-header {
-      padding: 1.25rem; margin-bottom: 1.25rem;
-      background: rgba(255,214,10,0.06);
-      border: 1px solid rgba(255,214,10,0.15);
-      border-radius: 20px; backdrop-filter: blur(10px);
+      margin: 1.25rem 1.25rem 1.25rem;
+      background: rgba(255,214,10,0.06); border: 1px solid rgba(255,214,10,0.15);
+      border-radius: 20px; padding: 1.25rem;
     }
+    .room-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 0.2rem; }
+    .room-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.55); margin-bottom: 1rem; line-height: 1.5; }
 
-    .room-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 0.25rem; }
-    .room-subtitle { font-size: 0.82rem; color: rgba(255,255,255,0.45); font-weight: 500; margin-bottom: 1rem; }
+    .rob-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .rob-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+    .rob-score { font-size: 0.9rem; font-weight: 900; color: #FFD60A; }
+    .rob-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 100px; overflow: hidden; margin-bottom: 0.4rem; }
+    .rob-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); width: 0%; }
+    .rob-status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: rgba(255,255,255,0.55); font-weight: 500; }
 
-    /* ROBUSTESA */
-    .robustness-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .robustness-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
-    .robustness-score { font-size: 0.9rem; font-weight: 900; color: #FFD60A; }
-    .rob-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; }
-    .rob-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); width: 15%; }
-    .rob-hint { font-size: 0.72rem; color: rgba(255,255,255,0.25); margin-top: 0.4rem; font-weight: 500; }
+    /* SECTION */
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.5rem; }
+    .section-hint { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 0.85rem; line-height: 1.5; }
 
-    /* SECTION TITLE */
-    .section-title {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em;
-      text-transform: uppercase; color: rgba(255,255,255,0.3);
-      margin-bottom: 0.75rem; margin-top: 1.25rem;
-    }
-
-    /* VIDEO CARDS */
-    .video-grid { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
+    /* VÍDEOS */
+    .video-grid { display: flex; flex-direction: column; gap: 0.6rem; }
 
     .video-card {
-      border-radius: 14px; padding: 0.9rem 1rem;
+      border-radius: 14px; padding: 1rem;
       display: flex; align-items: center; gap: 0.9rem;
       cursor: pointer; transition: transform 0.15s, background 0.2s;
-      border: 1px solid rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(8px);
     }
-
-    .video-card:hover { transform: scale(1.01); background: rgba(255,255,255,0.07); }
+    .video-card:hover { background: rgba(255,255,255,0.08); transform: scale(1.01); }
     .video-card:active { transform: scale(0.99); }
     .video-card.done { border-color: rgba(255,214,10,0.25); background: rgba(255,214,10,0.05); }
 
-    .vc-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; flex-shrink: 0;
-      background: rgba(255,255,255,0.06);
-    }
+    .vc-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; background: rgba(255,255,255,0.06); }
     .video-card.done .vc-icon { background: rgba(255,214,10,0.1); }
 
-    .vc-info { flex: 1; min-width: 0; }
-    .vc-name { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.15rem; }
-    .vc-desc { font-size: 0.73rem; color: rgba(255,255,255,0.35); font-weight: 500; }
+    .vc-info { flex: 1; }
+    .vc-name { font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 0.15rem; }
+    .vc-desc { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
 
-    .vc-badge {
-      font-size: 0.62rem; font-weight: 700; padding: 0.2rem 0.5rem;
-      border-radius: 100px; background: rgba(255,214,10,0.15);
-      color: #FFD60A; border: 1px solid rgba(255,214,10,0.3);
-      white-space: nowrap; flex-shrink: 0;
-    }
+    .vc-badge { font-size: 0.62rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 100px; background: rgba(255,214,10,0.15); color: #FFD60A; border: 1px solid rgba(255,214,10,0.3); white-space: nowrap; flex-shrink: 0; }
+    .vc-add { font-size: 1.4rem; color: rgba(255,255,255,0.35); flex-shrink: 0; font-weight: 300; }
 
-    .vc-add {
-      font-size: 1.2rem; color: rgba(255,255,255,0.2);
-      font-weight: 300; flex-shrink: 0;
-    }
-
-    /* CHALLENGE */
-    .challenge-card {
-      background: rgba(255,107,0,0.08);
-      border: 1px solid rgba(255,107,0,0.2);
+    /* IA INFO */
+    .ia-info {
+      background: rgba(0,180,216,0.06); border: 1px solid rgba(0,180,216,0.15);
       border-radius: 14px; padding: 1rem;
-      display: flex; align-items: center; gap: 0.9rem;
-      cursor: pointer; margin-bottom: 1.25rem;
-      transition: transform 0.15s, background 0.2s;
-      backdrop-filter: blur(8px);
+      display: flex; gap: 0.85rem; align-items: flex-start;
     }
-    .challenge-card:hover { background: rgba(255,107,0,0.12); transform: scale(1.01); }
-    .cc-icon { width: 46px; height: 46px; border-radius: 12px; background: rgba(255,107,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
-    .cc-info { flex: 1; }
-    .cc-name { font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
-    .cc-desc { font-size: 0.75rem; color: rgba(255,255,255,0.45); line-height: 1.4; }
-    .cc-arrow { font-size: 1.1rem; color: #FF6B00; flex-shrink: 0; }
-
-    /* JOCS */
-    .games-grid { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; }
-
-    .game-card {
-      border-radius: 14px; padding: 0.9rem 1rem;
-      display: flex; align-items: center; gap: 0.9rem;
-      cursor: pointer; transition: transform 0.15s;
-      backdrop-filter: blur(8px);
-    }
-    .game-card:active { transform: scale(0.99); }
-
-    .game-card.available { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.2); }
-    .game-card.available:hover { background: rgba(0,180,216,0.12); transform: scale(1.01); }
-    .game-card.completed { background: rgba(48,209,88,0.07); border: 1px solid rgba(48,209,88,0.18); }
-    .game-card.locked { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); opacity: 0.45; cursor: not-allowed; }
-
-    .gc-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
-    .game-card.available .gc-icon { background: rgba(0,180,216,0.12); }
-    .game-card.completed .gc-icon { background: rgba(48,209,88,0.12); }
-    .game-card.locked .gc-icon { background: rgba(255,255,255,0.04); }
-
-    .gc-info { flex: 1; }
-    .gc-name { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.15rem; }
-    .gc-desc { font-size: 0.73rem; color: rgba(255,255,255,0.35); font-weight: 500; }
-    .gc-model { font-size: 0.62rem; color: rgba(255,255,255,0.2); font-weight: 600; margin-top: 0.25rem; letter-spacing: 0.05em; text-transform: uppercase; }
-
-    .gc-right { flex-shrink: 0; text-align: right; }
-    .gc-score { font-size: 1rem; font-weight: 900; color: #30D158; }
-    .gc-plays { font-size: 0.62rem; color: rgba(255,255,255,0.3); font-weight: 600; }
-    .gc-play { font-size: 0.68rem; color: #00B4D8; font-weight: 700; }
-
-    /* DAILY */
-    .daily-badge {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      background: rgba(255,107,0,0.12); border: 1px solid rgba(255,107,0,0.25);
-      border-radius: 100px; padding: 0.25rem 0.65rem;
-      font-size: 0.65rem; font-weight: 700; color: #FF6B00;
-      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem;
-    }
-
-    /* PERFIL BARRES */
-    .profile-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 1.1rem;
-      margin-bottom: 2rem; backdrop-filter: blur(8px);
-    }
-
-    .profile-hint { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-bottom: 0.75rem; font-weight: 500; line-height: 1.5; }
-
-    .skill-row { margin-bottom: 0.6rem; }
-    .skill-top { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .skill-bar { height: 4px; background: rgba(255,255,255,0.07); border-radius: 100px; overflow: hidden; }
-    .skill-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); }
+    .ia-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+    .ia-text { font-size: 0.82rem; color: rgba(255,255,255,0.65); line-height: 1.6; }
+    .ia-text strong { color: #00B4D8; }
 
     /* NAV BOTTOM */
     .nav-bottom {
       position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
       display: flex; align-items: center; justify-content: space-around;
-      background: rgba(2,11,24,0.85); backdrop-filter: blur(16px);
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
       border-top: 1px solid rgba(255,255,255,0.06); z-index: 50;
-      padding-bottom: env(safe-area-inset-bottom);
     }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; transition: opacity 0.2s; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: #fff; }
     .nav-item.active { opacity: 1; }
     .nav-item.active .nav-icon { color: #FFD60A; }
     .nav-icon { font-size: 1.3rem; line-height: 1; }
-    .nav-center { width: 46px; height: 46px; border-radius: 50%; background: #FFD60A; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); transition: transform 0.15s; opacity: 1 !important; }
-    .nav-center:hover { transform: scale(1.08); }
+    .nav-center { width: 46px; height: 46px; border-radius: 50%; background: #FFD60A; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); opacity: 1 !important; }
   </style>
 </head>
 <body>
@@ -227,167 +111,88 @@
     <!-- HEADER -->
     <div class="room-header">
       <div class="room-title">✨ Magic Room</div>
-      <div class="room-subtitle">Tu escenario. Tu talento. Tu mundo.</div>
-      <div>
-        <div class="robustness-top">
-          <span class="robustness-label">Robustez del perfil</span>
-          <span class="robustness-score">15%</span>
-        </div>
-        <div class="rob-bar"><div class="rob-fill"></div></div>
-        <div class="rob-hint">Añade vídeos y juega para aumentar tu robustez. Los Seekers confían más en perfiles robustos.</div>
+      <div class="room-subtitle">Tu escenario en vídeo. Aquí muestras quién eres. La IA analiza cada vídeo automáticamente y construye tu perfil.</div>
+      <div class="rob-top">
+        <span class="rob-label">Robustez de tus vídeos</span>
+        <span class="rob-score">0 / 6</span>
+      </div>
+      <div class="rob-bar"><div class="rob-fill"></div></div>
+      <div class="rob-status">
+        <span>🔴</span>
+        <span>Sin vídeos aún · Sube el primero para empezar</span>
       </div>
     </div>
 
     <!-- VÍDEOS -->
-    <div class="section-title">Vídeos</div>
-    <div class="video-grid">
+    <div class="section">
+      <div class="section-title">Tus vídeos</div>
+      <div class="section-hint">Cada categoría muestra una faceta diferente de ti. Puedes grabar directamente o subir un vídeo. Máximo 90 segundos.</div>
+      <div class="video-grid">
 
-      <div class="video-card done">
-        <div class="vc-icon">🎤</div>
-        <div class="vc-info">
-          <div class="vc-name">Presentación personal</div>
-          <div class="vc-desc">Cuéntanos quién eres en 60 segundos</div>
+        <div class="video-card" onclick="window.location.href='video-upload.html'">
+          <div class="vc-icon">🎤</div>
+          <div class="vc-info">
+            <div class="vc-name">Presentación personal</div>
+            <div class="vc-desc">Cuéntanos quién eres en 90 segundos</div>
+          </div>
+          <span class="vc-add">＋</span>
         </div>
-        <span class="vc-badge">✓ Subido</span>
-      </div>
 
-      <div class="video-card">
-        <div class="vc-icon">💼</div>
-        <div class="vc-info">
-          <div class="vc-name">Experiencia</div>
-          <div class="vc-desc">¿Qué has hecho hasta ahora?</div>
+        <div class="video-card" onclick="window.location.href='video-upload.html'">
+          <div class="vc-icon">💼</div>
+          <div class="vc-info">
+            <div class="vc-name">Experiencia</div>
+            <div class="vc-desc">¿Qué has hecho hasta ahora?</div>
+          </div>
+          <span class="vc-add">＋</span>
         </div>
-        <span class="vc-add">＋</span>
-      </div>
 
-      <div class="video-card">
-        <div class="vc-icon">🧠</div>
-        <div class="vc-info">
-          <div class="vc-name">Habilidades</div>
-          <div class="vc-desc">¿En qué eres realmente bueno?</div>
+        <div class="video-card" onclick="window.location.href='video-upload.html'">
+          <div class="vc-icon">🧠</div>
+          <div class="vc-info">
+            <div class="vc-name">Habilidades</div>
+            <div class="vc-desc">¿En qué eres realmente bueno?</div>
+          </div>
+          <span class="vc-add">＋</span>
         </div>
-        <span class="vc-add">＋</span>
-      </div>
 
-      <div class="video-card">
-        <div class="vc-icon">🌍</div>
-        <div class="vc-info">
-          <div class="vc-name">Idiomas</div>
-          <div class="vc-desc">Muestra tu nivel real hablando</div>
+        <div class="video-card" onclick="window.location.href='video-upload.html'">
+          <div class="vc-icon">🌍</div>
+          <div class="vc-info">
+            <div class="vc-name">Idiomas</div>
+            <div class="vc-desc">Muestra tu nivel real hablando</div>
+          </div>
+          <span class="vc-add">＋</span>
         </div>
-        <span class="vc-add">＋</span>
-      </div>
 
-      <div class="video-card">
-        <div class="vc-icon">🎯</div>
-        <div class="vc-info">
-          <div class="vc-name">Objetivos</div>
-          <div class="vc-desc">¿Hacia dónde quieres ir?</div>
+        <div class="video-card" onclick="window.location.href='video-upload.html'">
+          <div class="vc-icon">🎯</div>
+          <div class="vc-info">
+            <div class="vc-name">Objetivos</div>
+            <div class="vc-desc">¿Hacia dónde quieres ir?</div>
+          </div>
+          <span class="vc-add">＋</span>
         </div>
-        <span class="vc-add">＋</span>
-      </div>
 
-      <div class="video-card">
-        <div class="vc-icon">🎨</div>
-        <div class="vc-info">
-          <div class="vc-name">Hobbies</div>
-          <div class="vc-desc">¿Qué te apasiona fuera del trabajo?</div>
+        <div class="video-card" onclick="window.location.href='video-upload.html'">
+          <div class="vc-icon">🎨</div>
+          <div class="vc-info">
+            <div class="vc-name">Hobbies</div>
+            <div class="vc-desc">¿Qué te apasiona fuera del trabajo?</div>
+          </div>
+          <span class="vc-add">＋</span>
         </div>
-        <span class="vc-add">＋</span>
-      </div>
 
+      </div>
     </div>
 
-    <!-- CHALLENGE -->
-    <div class="section-title">Reto de autenticidad</div>
-    <div class="challenge-card" onclick="window.location.href='challenge.html'">
-      <div class="cc-icon">⚡</div>
-      <div class="cc-info">
-        <div class="cc-name">Challenge Room</div>
-        <div class="cc-desc">Una pregunta. 60 seg. Sin edición. Los Seekers lo ven todo.</div>
-      </div>
-      <div class="cc-arrow">→</div>
-    </div>
-
-    <!-- JOCS -->
-    <div class="section-title">Mini-juegos</div>
-    <div class="daily-badge">🔥 Nuevo reto diario disponible</div>
-    <div class="games-grid">
-
-      <div class="game-card available">
-        <div class="gc-icon">🧩</div>
-        <div class="gc-info">
-          <div class="gc-name">Patrones y lógica</div>
-          <div class="gc-desc">Secuencias visuales bajo presión</div>
-          <div class="gc-model">Big Five · Conscientiousness</div>
+    <!-- IA INFO -->
+    <div class="section">
+      <div class="ia-info">
+        <div class="ia-icon">🤖</div>
+        <div class="ia-text">
+          Cada vídeo que subes es analizado por <strong>Talpot IA</strong> — transcribe lo que dices, extrae palabras clave, detecta tu nivel de idiomas y construye tu perfil de personalidad. Los Seekers te encuentran por lo que dices, no por lo que escribes.
         </div>
-        <div class="gc-right"><div class="gc-play">JUGAR →</div></div>
-      </div>
-
-      <div class="game-card available">
-        <div class="gc-icon">⚡</div>
-        <div class="gc-info">
-          <div class="gc-name">Decisiones rápidas</div>
-          <div class="gc-desc">Situaciones laborales en 3 segundos</div>
-          <div class="gc-model">Big Five · Extraversion · Holland E</div>
-        </div>
-        <div class="gc-right"><div class="gc-play">JUGAR →</div></div>
-      </div>
-
-      <div class="game-card completed">
-        <div class="gc-icon">🎨</div>
-        <div class="gc-info">
-          <div class="gc-name">Creatividad visual</div>
-          <div class="gc-desc">Completa figuras y elige combinaciones</div>
-          <div class="gc-model">Big Five · Openness · Holland A</div>
-        </div>
-        <div class="gc-right">
-          <div class="gc-score">82%</div>
-          <div class="gc-plays">3 partidas</div>
-        </div>
-      </div>
-
-      <div class="game-card locked">
-        <div class="gc-icon">🤝</div>
-        <div class="gc-info">
-          <div class="gc-name">Situaciones sociales</div>
-          <div class="gc-desc">Cómo reaccionas en equipo</div>
-          <div class="gc-model">Big Five · Agreeableness · Holland S</div>
-        </div>
-        <div class="gc-right"><div style="font-size:0.9rem;">🔒</div></div>
-      </div>
-
-      <div class="game-card locked">
-        <div class="gc-icon">🗺️</div>
-        <div class="gc-info">
-          <div class="gc-name">Orientación espacial</div>
-          <div class="gc-desc">Pensamiento técnico y estructural</div>
-          <div class="gc-model">Holland R · I</div>
-        </div>
-        <div class="gc-right"><div style="font-size:0.9rem;">🔒</div></div>
-      </div>
-
-    </div>
-
-    <!-- PERFIL -->
-    <div class="section-title">Tu perfil actual</div>
-    <div class="profile-card">
-      <div class="profile-hint">Basado en 1 juego. Cuantos más juegos completes, más robusto y fiable será tu perfil para los Seekers.</div>
-      <div class="skill-row">
-        <div class="skill-top"><span>Creatividad</span><span style="color:#FFD60A;">82%</span></div>
-        <div class="skill-bar"><div class="skill-fill" style="width:82%"></div></div>
-      </div>
-      <div class="skill-row">
-        <div class="skill-top"><span style="color:rgba(255,255,255,0.3);">Lógica</span><span style="color:rgba(255,255,255,0.2);">—</span></div>
-        <div class="skill-bar"></div>
-      </div>
-      <div class="skill-row">
-        <div class="skill-top"><span style="color:rgba(255,255,255,0.3);">Liderazgo</span><span style="color:rgba(255,255,255,0.2);">—</span></div>
-        <div class="skill-bar"></div>
-      </div>
-      <div class="skill-row">
-        <div class="skill-top"><span style="color:rgba(255,255,255,0.3);">Empatía</span><span style="color:rgba(255,255,255,0.2);">—</span></div>
-        <div class="skill-bar"></div>
       </div>
     </div>
 
@@ -398,14 +203,14 @@
       <div class="nav-icon">🏠</div>
       <span>Feed</span>
     </div>
-    <div class="nav-item active" onclick="window.location.href='magic-room.html'">
+    <div class="nav-item active">
       <div class="nav-icon">✨</div>
       <span>Mi Room</span>
     </div>
-    <div class="nav-center" onclick="window.location.href='magic-room.html'">✚</div>
-    <div class="nav-item" onclick="window.location.href='seeker.html'">
-      <div class="nav-icon">🔭</div>
-      <span>Seekers</span>
+    <div class="nav-center" onclick="window.location.href='video-upload.html'">＋</div>
+    <div class="nav-item" onclick="window.location.href='creators-feed.html'">
+      <div class="nav-icon">👥</div>
+      <span>Creators</span>
     </div>
     <div class="nav-item" onclick="window.location.href='profile.html'">
       <div class="nav-icon">👤</div>

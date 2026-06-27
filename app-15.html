@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Feed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow-x: hidden; }
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-notif { position: relative; cursor: pointer; font-size: 1.3rem; }
+    .nav-notif-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: #FF2D55; border: 2px solid #020B18; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #020B18; cursor: pointer; }
+
+    /* SCROLL */
+    .scroll { padding-top: 56px; padding-bottom: 80px; overflow-y: auto; min-height: 100dvh; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* SALUTACIÓ */
+    .greeting { padding: 1.5rem 1.25rem 1rem; }
+    .greeting-time { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+    .greeting-name { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 900; letter-spacing: -0.5px; color: #fff; }
+    .greeting-name span { color: #FFD60A; }
+
+    /* ROBUSTESA */
+    .rob-banner {
+      margin: 0 1.25rem 1.25rem;
+      background: rgba(255,214,10,0.06); border: 1px solid rgba(255,214,10,0.15);
+      border-radius: 16px; padding: 1rem;
+      display: flex; align-items: center; gap: 1rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .rob-banner:hover { background: rgba(255,214,10,0.1); }
+    .rob-left { flex: 1; }
+    .rob-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 0.4rem; }
+    .rob-bar { height: 8px; background: rgba(255,255,255,0.12); border-radius: 100px; overflow: hidden; margin-bottom: 0.35rem; }
+    .rob-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); width: 0%; transition: width 1s ease; }
+    .rob-hint { font-size: 0.78rem; color: rgba(255,255,255,0.6); font-weight: 500; }
+    .rob-score { font-size: 2rem; font-weight: 900; color: #FFD60A; line-height: 1; text-shadow: 0 0 20px rgba(255,214,10,0.4); }
+
+    /* SECTION */
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+    .section-link { font-size: 0.75rem; font-weight: 700; color: #FFD60A; cursor: pointer; }
+
+    /* MISSIONS */
+    .missions { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .mission-card {
+      border-radius: 16px; padding: 1rem 1.1rem;
+      display: flex; align-items: center; gap: 0.9rem;
+      cursor: pointer; transition: transform 0.15s, background 0.2s;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+    .mission-card:hover { background: rgba(255,255,255,0.08); transform: scale(1.01); }
+    .mission-card:active { transform: scale(0.99); }
+
+    .mission-card.priority { border-color: rgba(255,214,10,0.25); background: rgba(255,214,10,0.06); }
+    .mission-card.done { opacity: 0.5; }
+
+    .mc-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .mc-info { flex: 1; }
+    .mc-title { font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .mc-desc { font-size: 0.75rem; color: rgba(255,255,255,0.65); line-height: 1.4; }
+    .mc-right { flex-shrink: 0; }
+    .mc-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 100px; }
+    .badge-new { background: rgba(255,45,85,0.15); color: #FF2D55; border: 1px solid rgba(255,45,85,0.3); }
+    .badge-pending { background: rgba(255,214,10,0.1); color: #FFD60A; border: 1px solid rgba(255,214,10,0.25); }
+    .badge-done { background: rgba(48,209,88,0.1); color: #30D158; border: 1px solid rgba(48,209,88,0.2); }
+
+    /* ACTIVITAT SEEKERS */
+    .seekers-activity {
+      background: rgba(0,180,216,0.06); border: 1px solid rgba(0,180,216,0.15);
+      border-radius: 16px; padding: 1rem 1.1rem;
+      display: flex; align-items: center; gap: 0.9rem;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .seekers-activity:hover { background: rgba(0,180,216,0.1); }
+    .sa-icon { font-size: 1.8rem; }
+    .sa-info { flex: 1; }
+    .sa-title { font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .sa-desc { font-size: 0.75rem; color: rgba(255,255,255,0.55); }
+    .sa-arrow { color: #00B4D8; font-size: 1rem; }
+
+    /* CREATORS ACTIUS */
+    .creators-row { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; }
+    .creators-row::-webkit-scrollbar { display: none; }
+
+    .creator-pill {
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      cursor: pointer; flex-shrink: 0; transition: transform 0.15s;
+    }
+    .creator-pill:hover { transform: scale(1.05); }
+    .creator-pill:active { transform: scale(0.97); }
+
+    .cp-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 800; color: #020B18;
+      border: 2px solid rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .cp-badge {
+      position: absolute; bottom: -2px; right: -2px;
+      font-size: 0.7rem; background: #020B18;
+      border-radius: 50%; width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cp-name { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.75); text-align: center; max-width: 56px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* JOCS */
+    .games-row { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.25rem; }
+    .games-row::-webkit-scrollbar { display: none; }
+
+    .game-pill {
+      flex-shrink: 0; width: 130px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 0.85rem; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .game-pill:hover { background: rgba(255,255,255,0.08); transform: scale(1.02); }
+    .gp-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .gp-name { font-size: 0.8rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; line-height: 1.2; }
+    .gp-model { font-size: 0.62rem; color: rgba(255,255,255,0.45); font-weight: 600; }
+    .gp-badge { display: inline-block; margin-top: 0.4rem; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 100px; background: rgba(0,180,216,0.12); color: #00B4D8; border: 1px solid rgba(0,180,216,0.2); }
+
+    /* NAV BOTTOM */
+    .nav-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+      display: flex; align-items: center; justify-content: space-around;
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.06); z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; transition: opacity 0.2s; }
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon { color: #FFD60A; }
+    .nav-icon { font-size: 1.3rem; line-height: 1; }
+    .nav-center { width: 46px; height: 46px; border-radius: 50%; background: #FFD60A; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); opacity: 1 !important; transition: transform 0.15s; }
+    .nav-center:hover { transform: scale(1.08); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div class="nav-right">
+      <div class="nav-notif" onclick="window.location.href='notifications.html'">
+        🔔<div class="nav-notif-dot"></div>
+      </div>
+      <div class="nav-avatar" onclick="window.location.href='profile.html'">E</div>
+    </div>
+  </nav>
+
+  <div class="scroll">
+
+    <!-- SALUTACIÓ -->
+    <div class="greeting">
+      <div class="greeting-time" id="greeting-time">Buenos días</div>
+      <div class="greeting-name">Hola, <span>Eduard.</span></div>
+    </div>
+
+    <!-- ROBUSTESA -->
+    <div class="rob-banner" onclick="window.location.href='profile.html'">
+      <div class="rob-left">
+        <div class="rob-label">Robustez del perfil</div>
+        <div class="rob-bar"><div class="rob-fill" id="rob-fill"></div></div>
+        <div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.35rem;">
+          <span style="font-size:0.7rem;">🔴</span>
+          <span style="font-size:0.75rem;color:rgba(255,255,255,0.55);font-weight:500;">Perfil nuevo · Sin historial aún</span>
+        </div>
+      </div>
+      <div class="rob-score">0%</div>
+    </div>
+
+    <!-- MISSIONS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Tus misiones</div>
+      </div>
+      <div class="missions">
+
+        <div class="mission-card priority" onclick="window.location.href='magic-room.html'">
+          <div class="mc-icon" style="background:rgba(255,214,10,0.12);">✨</div>
+          <div class="mc-info">
+            <div class="mc-title">Crea tu Magic Room</div>
+            <div class="mc-desc">Sube tu primer vídeo y empieza a ser descubierto</div>
+          </div>
+          <div class="mc-right"><span class="mc-badge badge-pending">Empieza</span></div>
+        </div>
+
+        <div class="mission-card priority" onclick="window.location.href='challenge.html'">
+          <div class="mc-icon" style="background:rgba(255,107,0,0.12);">⚡</div>
+          <div class="mc-info">
+            <div class="mc-title">Challenge Room</div>
+            <div class="mc-desc">10 retos para empezar · Después 2 nuevos cada día</div>
+          </div>
+          <div class="mc-right"><span class="mc-badge badge-new">10 hoy</span></div>
+        </div>
+
+        <div class="mission-card priority" onclick="window.location.href='game.html'">
+          <div class="mc-icon" style="background:rgba(0,180,216,0.12);">🎮</div>
+          <div class="mc-info">
+            <div class="mc-title">Mini-juegos</div>
+            <div class="mc-desc">Juega cada día · Cada partida construye tu perfil</div>
+          </div>
+          <div class="mc-right"><span class="mc-badge badge-new">Nuevo</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SEEKERS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Actividad Seekers</div>
+      </div>
+      <div class="seekers-activity">
+        <div class="sa-icon">🔭</div>
+        <div class="sa-info">
+          <div class="sa-title">Aún no tienes visitas</div>
+          <div class="sa-desc">Completa tu perfil para aparecer en las búsquedas</div>
+        </div>
+        <div class="sa-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- CREATORS ACTIUS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Creators que han interactuado contigo</div>
+        <div class="section-link" onclick="window.location.href='creators-feed.html'">Ver todos →</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1rem;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:0.4rem;">👥</div>
+        <div style="font-size:0.85rem;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:0.2rem;">Aún no hay interacciones</div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);">Cuando un Creator te rete o te dé un badge, aparecerá aquí</div>
+      </div>
+    </div>
+
+    <!-- TALENT BADGES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Talent Badges — Cómo te ven otros Creators</div>
+        <div class="section-link" onclick="window.location.href='profile.html'">Ver perfil →</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:1rem;">
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:0.75rem;">
+          Cuando otro Creator reconozca tu talento, construirás un ranking visible para los Seekers. La validación de tus iguales es la más honesta.
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">🔥 Pasión · 0</div>
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">💡 Creatividad · 0</div>
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">🎯 Claridad · 0</div>
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">🤝 Empatía · 0</div>
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">⚡ Decisión · 0</div>
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">🧠 Analítico · 0</div>
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">🚀 Ambición · 0</div>
+          <div style="padding:0.3rem 0.7rem;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.25);">🎤 Comunicación · 0</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAV BOTTOM -->
+  <nav class="nav-bottom">
+    <div class="nav-item active">
+      <div class="nav-icon">🏠</div>
+      <span>Feed</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='magic-room.html'">
+      <div class="nav-icon">✨</div>
+      <span>Mi Room</span>
+    </div>
+    <div class="nav-center" onclick="window.location.href='video-upload.html'">＋</div>
+    <div class="nav-item" onclick="window.location.href='creators-feed.html'">
+      <div class="nav-icon">👥</div>
+      <span>Creators</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <div class="nav-icon">👤</div>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+  <script>
+    // Salutació per hora
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+    document.getElementById('greeting-time').textContent = greet;
+
+    // Robustesa 0 per usuari nou
+    setTimeout(() => {
+      document.getElementById('rob-fill').style.width = '0%';
+    }, 300);
+  </script>
+
+</body>
+</html>
