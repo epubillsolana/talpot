@@ -51,6 +51,10 @@ export default {
       }
     }
 
+    return new Response('Talpot AI Worker OK', { headers: cors });
+  }
+};
+
     return new Response('Talpot AI Worker OK', { headers: cors }); 
   }
 };
