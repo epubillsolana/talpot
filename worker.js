@@ -33,11 +33,11 @@ export default {
     if (url.pathname === '/analyze') {
       try {
         const b = await request.json();
-        const prompt = 'Analiza este video de categoria ' + b.category + '. Transcripcion: ' + b.transcription + '. Devuelve SOLO este JSON sin markdown: {"keywords":["k1","k2","k3","k4","k5"],"personality_traits":[{"name":"rasgo1","score":80},{"name":"rasgo2","score":70}],"professional_profiles":["Perfil1","Perfil2"],"summary_for_seeker":"Resumen breve."}';
+        const prompt = 'Eres un experto en analisis de talento profesional. Analiza esta transcripcion de un video de categoria "' + b.category + '" y extrae TODA la informacion relevante. Transcripcion completa: "' + b.transcription + '". Devuelve SOLO este JSON sin markdown ni texto adicional: {"keywords":["minimo 10 palabras clave profesionales especificas que aparecen en el texto, no genericas"],"habilidades":["lista de habilidades tecnicas y blandas mencionadas"],"experiencia_anos":"anos de experiencia mencionados o vacio","sectores":["sectores profesionales detectados"],"logros":["logros o resultados concretos mencionados"],"personality_traits":[{"name":"rasgo detectado","score":85}],"professional_profiles":["perfiles profesionales que encajan"],"summary_for_seeker":"resumen de 2-3 frases del candidato para que una empresa lo entienda rapidamente"}';
         const r = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + env.OPENAI_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.3, max_tokens: 500 })
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.2, max_tokens: 1500 })
         });
         const d = await r.json();
         const raw = d.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -52,9 +52,5 @@ export default {
     }
 
     return new Response('Talpot AI Worker OK', { headers: cors });
-  }
-};
-
-    return new Response('Talpot AI Worker OK', { headers: cors }); 
   }
 };
