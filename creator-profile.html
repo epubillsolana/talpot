@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Perfil Creator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body { background: linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%); }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(2,11,24,0.7); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
+
+    .scroll { position: fixed; inset: 0; padding-top: 56px; overflow-y: auto; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* HERO */
+    .hero { display: flex; flex-direction: column; align-items: center; padding: 1.75rem 1.25rem 1.25rem; gap: 0.6rem; text-align: center; }
+    .avatar { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 1.9rem; font-weight: 900; color: #020B18; border: 3px solid rgba(255,255,255,0.15); }
+    .hero-name { font-size: 1.45rem; font-weight: 900; letter-spacing: -0.5px; }
+    .hero-tag { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+
+    .hero-keywords { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; padding: 0 1.5rem; }
+    .kw { font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 100px; background: rgba(255,214,10,0.1); color: #FFD60A; border: 1px solid rgba(255,214,10,0.22); }
+
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.75rem; }
+
+    /* VIDEOS CAROUSEL */
+    .vids-scroll { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scroll-snap-type: x mandatory; }
+    .vids-scroll::-webkit-scrollbar { display: none; }
+    .vid-card { flex: 0 0 200px; scroll-snap-align: start; border-radius: 16px; overflow: hidden; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); position: relative; aspect-ratio: 3/4; }
+    .vid-card video { width: 100%; height: 100%; object-fit: cover; }
+    .vid-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2,11,24,0.3); cursor: pointer; }
+    .vid-play { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,214,10,0.95); color: #020B18; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; padding-left: 3px; }
+    .vid-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.6rem 0.75rem; background: linear-gradient(transparent, rgba(2,11,24,0.9)); font-size: 0.75rem; font-weight: 700; }
+
+    /* ENTREVISTA MAGAZINE */
+    .mag-portada { background: linear-gradient(180deg, rgba(255,107,0,0.15) 0%, transparent 100%); border-radius: 20px; padding: 1.5rem; margin-bottom: 1rem; border: 1px solid rgba(255,107,0,0.15); }
+    .mag-badge { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #FF6B00; margin-bottom: 0.5rem; }
+    .mag-titol { font-size: clamp(1.3rem, 5vw, 1.7rem); font-weight: 900; letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 0.5rem; }
+    .mag-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
+
+    .pregunta-block { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; padding: 1.25rem; margin-bottom: 0.85rem; }
+    .pb-num { font-size: 0.62rem; font-weight: 700; color: #FF6B00; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.45rem; }
+    .pb-pregunta { font-size: 0.92rem; font-weight: 800; color: rgba(255,255,255,0.92); line-height: 1.4; margin-bottom: 0.75rem; font-style: italic; }
+    .pb-pregunta::before { content: '— '; color: #FF6B00; }
+    .pb-titular { font-size: 1.15rem; font-weight: 900; color: #fff; line-height: 1.25; letter-spacing: -0.3px; margin-bottom: 0.75rem; border-left: 3px solid #FFD60A; padding-left: 0.85rem; }
+    .pb-transcripcio { font-size: 0.87rem; color: rgba(255,255,255,0.72); line-height: 1.75; margin-bottom: 0.9rem; }
+    .pb-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+    .pb-audio { display: flex; align-items: center; gap: 0.6rem; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.2); border-radius: 100px; padding: 0.55rem 1rem; cursor: pointer; transition: background 0.2s; }
+    .pb-audio:hover { background: rgba(0,180,216,0.18); }
+    .pb-audio-text { font-size: 0.74rem; font-weight: 700; color: #00B4D8; }
+    .pb-stars { display: flex; gap: 0.25rem; }
+    .star { font-size: 1.25rem; color: rgba(255,255,255,0.18); cursor: pointer; transition: color 0.15s, transform 0.1s; }
+    .star:hover { transform: scale(1.15); }
+    .star.active { color: #FFD60A; }
+
+    /* RESUM IA — NOMÉS SEEKER */
+    .resum-ia { background: linear-gradient(135deg, rgba(0,180,216,0.1), rgba(191,90,242,0.08)); border: 1px solid rgba(0,180,216,0.25); border-radius: 20px; padding: 1.4rem; margin-top: 1rem; }
+    .resum-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #00B4D8; background: rgba(0,180,216,0.12); border: 1px solid rgba(0,180,216,0.25); border-radius: 100px; padding: 0.3rem 0.75rem; margin-bottom: 0.85rem; }
+    .resum-text { font-size: 0.88rem; color: rgba(255,255,255,0.8); line-height: 1.8; }
+    .resum-loading { font-size: 0.8rem; color: rgba(255,255,255,0.4); font-style: italic; }
+
+    /* JOCS */
+    .jocs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .joc-mini { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 0.85rem; }
+    .jm-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .jm-icon { font-size: 1.2rem; }
+    .jm-name { font-size: 0.75rem; font-weight: 800; }
+    .jm-virtuts { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .jm-virtut { font-size: 0.58rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 100px; }
+    .jm-stats { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 0.4rem; }
+
+    .empty-mini { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 1rem; text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+
+    .footer-space { height: 3rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" onclick="history.back()">← Volver</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <div class="scroll">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="avatar" id="avatar">?</div>
+      <div class="hero-name" id="hero-name">Cargando...</div>
+      <div class="hero-tag" id="hero-tag">Creator en Talpot</div>
+    </div>
+    <div class="hero-keywords" id="hero-keywords" style="margin-bottom:1.5rem;"></div>
+
+    <!-- MAGIC ROOM -->
+    <div class="section">
+      <div class="section-title">✨ Magic Room</div>
+      <div class="vids-scroll" id="vids-scroll"></div>
+    </div>
+
+    <!-- ENTREVISTA -->
+    <div class="section">
+      <div class="section-title">🎤 Entrevista</div>
+      <div id="mag-container"></div>
+    </div>
+
+    <!-- JOCS -->
+    <div class="section">
+      <div class="section-title">🎮 Jocs i virtuts</div>
+      <div class="jocs-grid" id="jocs-grid"></div>
+    </div>
+
+    <div class="footer-space"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://dlxeqzdgsejoywwwnchi.supabase.co',
+      'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo'
+    );
+    const WORKER_URL = 'https://talpot-ai-v2.e-pubill.workers.dev';
+
+    const CATEGORIES = {
+      presentacion: { icon: '🎤', name: 'Presentación' },
+      experiencia: { icon: '💼', name: 'Experiencia' },
+      estudios: { icon: '🎓', name: 'Estudios' },
+      habilidades: { icon: '🧠', name: 'Habilidades' },
+      idioma: { icon: '🌍', name: 'Idiomas' },
+      objetivos: { icon: '🎯', name: 'Objetivos' },
+      hobbies: { icon: '🎨', name: 'Hobbies' }
+    };
+
+    const JOCS = [
+      { icon:'⚡', name:'Decisions Ràpides', virtuts:[{n:'Lideratge',c:'#FFD60A'},{n:'Intuïció',c:'#FF6B00'}] },
+      { icon:'🃏', name:'Memòria Visual', virtuts:[{n:'Atenció',c:'#BF5AF2'},{n:'Memòria',c:'#9B59B6'}] },
+      { icon:'🔢', name:'Seqüències', virtuts:[{n:'Lògica',c:'#00B4D8'},{n:'IQ analític',c:'#0096B4'}] },
+      { icon:'🔲', name:'Sudoku', virtuts:[{n:'Lògica',c:'#00B4D8'},{n:'Perseverança',c:'#30D158'}] },
+      { icon:'🗺️', name:'Laberint', virtuts:[{n:'Orientació',c:'#FF6B00'},{n:'Planificació',c:'#E65C00'}] },
+      { icon:'🎯', name:'Punteria Mental', virtuts:[{n:'Velocitat',c:'#00B4D8'},{n:'Precisió',c:'#FF6B00'}] },
+    ];
+
+    // El Seeker arriba amb ?user=<id>. Sense param, mostra el perfil de l'usuari loguejat (demo).
+    const params = new URLSearchParams(window.location.search);
+    let targetUserId = params.get('user');
+
+    async function loadCreator() {
+      if (!targetUserId) {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) { window.location.href = 'index6.html'; return; }
+        targetUserId = user.id;
+        document.getElementById('hero-name').textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+        document.getElementById('avatar').textContent = (user.email || '?').charAt(0).toUpperCase();
+      }
+
+      const { data: videos } = await sb.from('magic_room_videos').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false });
+      const { data: challenges } = await sb.from('challenge_respostes').select('*').eq('user_id', targetUserId).order('created_at', { ascending: true });
+
+      renderKeywords(videos || []);
+      renderVideos(videos || []);
+      renderEntrevista(challenges || []);
+      renderJocs();
+    }
+
+    function renderKeywords(videos) {
+      const allKw = [...new Set(videos.flatMap(v => v.keywords || []))];
+      const wrap = document.getElementById('hero-keywords');
+      wrap.innerHTML = allKw.slice(0, 8).map(k => `<span class="kw">${k}</span>`).join('');
+    }
+
+    function renderVideos(videos) {
+      const wrap = document.getElementById('vids-scroll');
+      if (videos.length === 0) {
+        wrap.innerHTML = '<div class="empty-mini" style="flex:1;">Aquest Creator encara no té vídeos</div>';
+        return;
+      }
+      wrap.innerHTML = '';
+      videos.forEach((v, i) => {
+        const cat = CATEGORIES[v.categoria] || { icon: '🎬', name: v.categoria };
+        const card = document.createElement('div');
+        card.className = 'vid-card';
+        card.innerHTML = `
+          <video src="${v.video_url}" playsinline preload="metadata" id="cv-${i}"></video>
+          <div class="vid-overlay" id="cvo-${i}" onclick="playVid(${i})">
+            <div class="vid-play">▶</div>
+          </div>
+          <div class="vid-label">${cat.icon} ${cat.name}</div>
+        `;
+        wrap.appendChild(card);
+      });
+    }
+
+    function playVid(i) {
+      const vid = document.getElementById('cv-' + i);
+      const ov = document.getElementById('cvo-' + i);
+      if (vid.paused) {
+        // pausa els altres
+        document.querySelectorAll('video').forEach(v => { if (v !== vid) v.pause(); });
+        vid.play();
+        ov.style.display = 'none';
+        vid.onclick = () => { vid.pause(); ov.style.display = 'flex'; };
+        vid.onended = () => { ov.style.display = 'flex'; };
+      }
+    }
+
+    function renderEntrevista(challenges) {
+      const container = document.getElementById('mag-container');
+      if (challenges.length === 0) {
+        container.innerHTML = '<div class="empty-mini">Aquest Creator encara no ha fet la roda de premsa</div>';
+        return;
+      }
+
+      const nom = document.getElementById('hero-name').textContent;
+
+      let html = `
+        <div class="mag-portada">
+          <div class="mag-badge">⚡ Talpot · Roda de premsa</div>
+          <div class="mag-titol">${nom}, sense filtres</div>
+          <div class="mag-sub">${challenges.length} preguntes · Respostes espontànies sense edició</div>
+        </div>
+      `;
+
+      // Ordenar per estrelles (les més valorades primer)
+      const sorted = [...challenges].sort((a, b) => (b.estrelles || 0) - (a.estrelles || 0));
+
+      sorted.forEach((c, i) => {
+        html += `
+          <div class="pregunta-block">
+            <div class="pb-num">Pregunta ${i + 1}</div>
+            <div class="pb-pregunta">${c.pregunta}</div>
+            ${c.titular ? '<div class="pb-titular">' + c.titular + '</div>' : ''}
+            ${c.transcripcio ? '<div class="pb-transcripcio">' + c.transcripcio + '</div>' : ''}
+            <div class="pb-bottom">
+              ${c.audio_url ? `
+                <div class="pb-audio" onclick="playAudio('${c.audio_url}', this)">
+                  <span>▶️</span><span class="pb-audio-text">Escuchar</span>
+                </div>` : '<div></div>'}
+              <div class="pb-stars" data-id="${c.id}">
+                ${[1,2,3,4,5].map(s => `<span class="star ${(c.estrelles||0) >= s ? 'active' : ''}" onclick="rate('${c.id}', ${s}, this)">★</span>`).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // RESUM IA — només per al Seeker
+      html += `
+        <div class="resum-ia">
+          <div class="resum-badge">🤖 Anàlisi IA Talpot · Només visible per a Seekers</div>
+          <div class="resum-text resum-loading" id="resum-text">Generant anàlisi de l'entrevista...</div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+      generateResumIA(challenges);
+    }
+
+    async function generateResumIA(challenges) {
+      const el = document.getElementById('resum-text');
+      const transcripcions = challenges.filter(c => c.transcripcio).map((c, i) => `P${i+1}: ${c.pregunta}\nR: ${c.transcripcio}`).join('\n\n');
+
+      if (!transcripcions) {
+        el.textContent = 'No hi ha prou respostes per generar una anàlisi.';
+        return;
+      }
+
+      try {
+        const res = await fetch(WORKER_URL + '/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcription: transcripcions, category: 'resum_entrevista' })
+        });
+        const data = await res.json();
+        if (data.ok && data.analysis) {
+          const a = data.analysis;
+          el.classList.remove('resum-loading');
+          el.textContent = a.summary_for_seeker || a.resum || (a.keywords ? 'Perfil amb fortaleses en: ' + a.keywords.join(', ') : 'Anàlisi disponible properament.');
+        } else {
+          el.textContent = 'Anàlisi disponible properament.';
+        }
+      } catch(e) {
+        el.textContent = 'Anàlisi disponible properament.';
+      }
+    }
+
+    let currentAudio = null;
+    function playAudio(url, el) {
+      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+      const audio = new Audio(url);
+      currentAudio = audio;
+      const txt = el.querySelector('.pb-audio-text');
+      txt.textContent = 'Escuchando...';
+      audio.play();
+      audio.onended = () => { txt.textContent = 'Escuchar'; currentAudio = null; };
+    }
+
+    async function rate(id, stars, el) {
+      const wrap = el.parentElement;
+      wrap.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < stars));
+      await sb.from('challenge_respostes').update({ estrelles: stars }).eq('id', id);
+    }
+
+    function renderJocs() {
+      const grid = document.getElementById('jocs-grid');
+      grid.innerHTML = JOCS.map(j => `
+        <div class="joc-mini">
+          <div class="jm-top"><span class="jm-icon">${j.icon}</span><span class="jm-name">${j.name}</span></div>
+          <div class="jm-virtuts">${j.virtuts.map(v => `<span class="jm-virtut" style="background:${v.c}20;color:${v.c};border:1px solid ${v.c}40;">${v.n}</span>`).join('')}</div>
+          <div class="jm-stats">Encara sense partides</div>
+        </div>
+      `).join('');
+    }
+
+    loadCreator();
+  </script>
+
+</body>
+</html>
