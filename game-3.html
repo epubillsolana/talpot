@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Talpot — Jocs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body { background: linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%); }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(2,11,24,0.7); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
+
+    .view { position: fixed; inset: 0; padding-top: 56px; padding-bottom: 64px; overflow-y: auto; transition: opacity 0.25s; }
+    .view.hidden { opacity: 0; pointer-events: none; }
+    .view::-webkit-scrollbar { display: none; }
+
+    /* LLISTA */
+    .games-header { padding: 1.25rem 1.25rem 0.5rem; }
+    .games-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 0.2rem; }
+    .games-sub { font-size: 0.82rem; color: rgba(255,255,255,0.55); }
+    .games-grid { display: flex; flex-direction: column; gap: 0.55rem; padding: 0.75rem 1.25rem 1rem; }
+
+    .game-card { border-radius: 16px; padding: 1rem 1.1rem; cursor: pointer; transition: transform 0.15s; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); display: flex; align-items: center; gap: 0.9rem; }
+    .game-card:active { transform: scale(0.99); }
+    .gc-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; background: rgba(255,255,255,0.07); }
+    .gc-info { flex: 1; min-width: 0; }
+    .gc-name { font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 0.15rem; }
+    .gc-mesura { font-size: 0.75rem; color: rgba(255,255,255,0.6); line-height: 1.4; }
+    .gc-right { text-align: right; flex-shrink: 0; }
+    .gc-play { font-size: 0.72rem; font-weight: 800; padding: 0.35rem 0.8rem; border-radius: 100px; background: #FFD60A; color: #020B18; display: inline-block; margin-bottom: 0.25rem; }
+    .gc-stats { font-size: 0.62rem; color: rgba(255,255,255,0.4); display: block; }
+
+    /* JOC */
+    .game-view { background: #020B18; }
+    .game-header { padding: 0.85rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .gh-top { display: flex; align-items: center; gap: 0.75rem; }
+    .gh-icon { font-size: 1.35rem; }
+    .gh-name { font-size: 0.95rem; font-weight: 800; flex: 1; }
+    .gh-scores { display: flex; gap: 0.7rem; align-items: center; }
+    .gh-enc { font-size: 0.78rem; color: #30D158; font-weight: 800; }
+    .gh-err { font-size: 0.78rem; color: #FF453A; font-weight: 800; }
+    .gh-count { font-size: 0.72rem; color: #FFD60A; font-weight: 700; }
+    .gh-progress { font-size: 0.7rem; color: rgba(255,255,255,0.55); margin-top: 0.35rem; }
+    .gh-timer { font-size: 0.85rem; color: #FFD60A; font-weight: 800; }
+
+    .game-arena { padding: 1rem 1.25rem 2rem; }
+
+    .info-strip { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 0.85rem; line-height: 1.5; }
+    .rank-strip { display: flex; justify-content: center; gap: 1.25rem; font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-bottom: 0.85rem; }
+    .rank-strip strong { color: #FFD60A; }
+
+    /* DECISIONS */
+    .dr-situacio { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.1rem; margin-bottom: 1rem; font-size: 0.92rem; line-height: 1.65; min-height: 90px; }
+    .dr-opcio { padding: 0.9rem 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); cursor: pointer; font-size: 0.86rem; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 0.5rem; transition: all 0.15s; }
+    .dr-opcio:active { background: rgba(255,214,10,0.15); border-color: #FFD60A; }
+    .dr-timer { height: 5px; background: rgba(255,255,255,0.1); border-radius: 100px; overflow: hidden; margin-bottom: 0.85rem; }
+    .dr-timer-fill { height: 100%; border-radius: 100px; background: #FFD60A; transition: width linear; }
+
+    /* MEMÒRIA */
+    .mem-grid { display: grid; gap: 0.55rem; }
+    .mem-card { aspect-ratio: 1; border-radius: 12px; border: 2px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: all 0.2s; }
+    .mem-card.revealed { background: rgba(255,214,10,0.12); border-color: rgba(255,214,10,0.4); }
+    .mem-card.matched { background: rgba(48,209,88,0.14); border-color: #30D158; }
+    .mem-card.face-down { font-size: 0; }
+    .simon-cell { aspect-ratio: 1; border-radius: 14px; cursor: pointer; opacity: 0.35; transition: all 0.15s; }
+    .simon-cell.lit { opacity: 1; transform: scale(1.05); }
+    .pos-cell { aspect-ratio: 1; border-radius: 10px; background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.12); cursor: pointer; transition: all 0.15s; }
+    .pos-cell.marked { background: rgba(255,214,10,0.35); border-color: #FFD60A; }
+    .pos-cell.sel { background: rgba(0,180,216,0.3); border-color: #00B4D8; }
+
+    /* SEQÜÈNCIES */
+    .seq-nums { display: flex; justify-content: center; gap: 0.55rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .seq-num { min-width: 48px; height: 48px; padding: 0 0.5rem; border-radius: 12px; background: rgba(0,180,216,0.12); border: 1px solid rgba(0,180,216,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 800; color: #7FDBEE; }
+    .seq-missing { background: rgba(255,214,10,0.12); border-color: rgba(255,214,10,0.4); color: #FFD60A; font-size: 1.3rem; }
+    .seq-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .seq-opt { padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); text-align: center; cursor: pointer; font-size: 1.2rem; font-weight: 800; }
+    .seq-opt:active { background: rgba(0,180,216,0.15); }
+
+    /* SUDOKU */
+    .sdk-grid { display: grid; grid-template-columns: repeat(9,1fr); gap: 1px; background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.25); border-radius: 8px; overflow: hidden; max-width: 400px; margin: 0 auto 0.85rem; }
+    .sdk-cell { background: #041426; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; font-size: clamp(0.85rem, 3.4vw, 1.1rem); font-weight: 700; cursor: pointer; }
+    .sdk-cell.given { color: #7FDBEE; }
+    .sdk-cell.user { color: #FFD60A; }
+    .sdk-cell.selected { background: rgba(255,214,10,0.18); }
+    .sdk-cell.br { border-right: 2px solid rgba(255,255,255,0.3); }
+    .sdk-cell.bb { border-bottom: 2px solid rgba(255,255,255,0.3); }
+    .sdk-pad { display: grid; grid-template-columns: repeat(5,1fr); gap: 0.4rem; max-width: 400px; margin: 0 auto; }
+    .sdk-num { padding: 0.7rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.07); text-align: center; cursor: pointer; font-size: 1.05rem; font-weight: 800; }
+    .sdk-num:active { background: rgba(0,180,216,0.2); }
+    .sdk-erase { color: #FF453A; }
+
+    /* ZIP */
+    .zip-grid { display: grid; gap: 3px; margin: 0 auto 0.85rem; touch-action: none; width: fit-content; }
+    .zip-cell { border-radius: 8px; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-weight: 900; position: relative; }
+    .zip-cell.path { background: rgba(255,214,10,0.3); border-color: #FFD60A; }
+    .zip-cell.numcell { font-size: 0.95rem; }
+    .zip-num-badge { width: 70%; height: 70%; border-radius: 50%; background: #0A1E33; border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; }
+    .zip-cell.path .zip-num-badge { background: #FFD60A; color: #020B18; border-color: #FFD60A; }
+    .zip-actions { display: flex; gap: 0.6rem; justify-content: center; }
+    .zip-btn { padding: 0.65rem 1.4rem; border-radius: 100px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
+
+    /* REFLEXOS */
+    .rf-area { border-radius: 20px; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; cursor: pointer; padding: 1.5rem; text-align: center; transition: background 0.1s; }
+    .rf-big { font-size: 1.5rem; font-weight: 900; }
+    .rf-sub { font-size: 0.8rem; opacity: 0.7; }
+    .stroop-word { font-size: 2.6rem; font-weight: 900; text-align: center; margin: 1.5rem 0; letter-spacing: 1px; }
+    .stroop-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .stroop-opt { padding: 1rem; border-radius: 14px; text-align: center; font-weight: 800; font-size: 0.95rem; cursor: pointer; border: 2px solid; }
+    .intru-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.6rem; }
+    .intru-cell { aspect-ratio: 1; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; }
+
+    /* PRIORITATS */
+    .prio-item { padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.55rem; user-select: none; touch-action: none; transition: transform 0.15s, box-shadow 0.15s; }
+    .prio-item.lifting { background: rgba(255,214,10,0.12); border-color: #FFD60A; box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 10; position: relative; }
+    .prio-handle { color: rgba(255,255,255,0.45); font-size: 1.2rem; }
+    .prio-check { padding: 0.9rem; border-radius: 100px; border: none; font-family: 'Space Grotesk', sans-serif; font-weight: 800; background: #FFD60A; color: #020B18; cursor: pointer; font-size: 0.95rem; width: 100%; margin-top: 0.5rem; }
+
+    /* DETALL */
+    .det-grid { display: grid; gap: 0.55rem; }
+    .det-cell { aspect-ratio: 1; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; font-weight: 700; }
+    .det-opts { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.5rem; margin-top: 0.85rem; }
+    .det-opt { padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); text-align: center; font-weight: 800; font-size: 1rem; cursor: pointer; }
+
+    /* EMOCIONAL */
+    .emo-display { text-align: center; margin: 1.25rem 0; }
+    .emo-face { font-size: 4.5rem; margin-bottom: 0.75rem; }
+    .emo-situacio { font-size: 0.95rem; line-height: 1.65; color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.1rem; margin-bottom: 0.5rem; }
+    .emo-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .emo-opt { padding: 0.9rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); text-align: center; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+    .emo-opt:active { background: rgba(255,45,85,0.15); }
+
+    /* BLOCS */
+    .blocs-target { display: grid; gap: 2px; margin: 0 auto 1rem; width: fit-content; }
+    .bt-cell { width: 34px; height: 34px; border-radius: 5px; }
+    .bt-filled { background: rgba(255,255,255,0.14); }
+    .bt-hole { background: rgba(255,214,10,0.12); border: 2px dashed rgba(255,214,10,0.5); }
+    .bt-empty { background: transparent; }
+    .blocs-opts { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .bloc-opt { padding: 0.6rem; border-radius: 12px; border: 2px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); cursor: pointer; }
+    .bloc-opt:active { border-color: #30D158; }
+    .bo-grid { display: grid; gap: 2px; }
+    .bo-cell { width: 22px; height: 22px; border-radius: 4px; }
+    .bo-on { background: #30D158; }
+    .bo-off { background: transparent; }
+
+    .feedback-flash { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 3rem; z-index: 100; pointer-events: none; animation: flashUp 0.7s ease forwards; }
+    @keyframes flashUp { 0%{opacity:0;transform:translate(-50%,-40%) scale(0.6);} 30%{opacity:1;transform:translate(-50%,-50%) scale(1.1);} 100%{opacity:0;transform:translate(-50%,-70%) scale(1);} }
+
+    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; display: flex; align-items: center; justify-content: space-around; background: rgba(2,11,24,0.92); backdrop-filter: blur(16px); border-top: 1px solid rgba(255,255,255,0.06); z-index: 50; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.4; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: #fff; }
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon { color: #FFD60A; }
+    .nav-icon { font-size: 1.3rem; }
+    .nav-center { width: 46px; height: 46px; border-radius: 50%; background: #FFD60A; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); opacity: 1 !important; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-back" id="nav-back" onclick="goBack()">← Feed</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <div class="view" id="view-list">
+    <div class="games-header">
+      <div class="games-title">🎮 Jocs</div>
+      <div class="games-sub">Cada joc construeix el teu perfil. Mínim 100 respostes per consolidar — sense límit.</div>
+    </div>
+    <div class="games-grid" id="games-grid"></div>
+  </div>
+
+  <div class="view hidden game-view" id="view-game">
+    <div class="game-header">
+      <div class="gh-top">
+        <div class="gh-icon" id="gh-icon">⚡</div>
+        <div class="gh-name" id="gh-name">Joc</div>
+        <div class="gh-scores" id="gh-scores"></div>
+      </div>
+      <div class="gh-progress" id="gh-progress"></div>
+    </div>
+    <div class="game-arena" id="game-arena"></div>
+  </div>
+
+  <nav class="nav-bottom">
+    <div class="nav-item" onclick="window.location.href='app.html'"><div class="nav-icon">🏠</div><span>Feed</span></div>
+    <div class="nav-item" onclick="window.location.href='magic-room.html'"><div class="nav-icon">✨</div><span>Mi Room</span></div>
+    <div class="nav-center" onclick="window.location.href='video-upload.html'">＋</div>
+    <div class="nav-item" onclick="window.location.href='creators-feed.html'"><div class="nav-icon">👥</div><span>Creators</span></div>
+    <div class="nav-item" onclick="window.location.href='profile.html'"><div class="nav-icon">👤</div><span>Perfil</span></div>
+  </nav>
+
+  <script>
+    // ═══════ SISTEMA DIARI ═══════
+    let RNG = Math.random;
+
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    function seedFrom(str) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0; }
+      return h;
+    }
+    function todayStr() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function loadDaily() {
+      try { return JSON.parse(localStorage.getItem('talpot_daily')) || { done: {}, streak: 0, lastDate: '' }; } catch(e) { return { done: {}, streak: 0, lastDate: '' }; }
+    }
+    function saveDaily() { localStorage.setItem('talpot_daily', JSON.stringify(daily)); }
+    const daily = loadDaily();
+
+    let dailyMode = false;
+
+    function isDailyDone(id) {
+      return daily.done[id] === todayStr();
+    }
+    function completeDaily(ok) {
+      daily.done[currentGame] = todayStr();
+      // Streak global: puja si és el primer repte completat avui
+      const avui = todayStr();
+      if (daily.lastDate !== avui) {
+        const ahir = new Date(); ahir.setDate(ahir.getDate() - 1);
+        const ahirStr = ahir.getFullYear() + '-' + String(ahir.getMonth()+1).padStart(2,'0') + '-' + String(ahir.getDate()).padStart(2,'0');
+        daily.streak = (daily.lastDate === ahirStr) ? daily.streak + 1 : 1;
+        daily.lastDate = avui;
+      }
+      saveDaily();
+      dailyMode = false;
+      RNG = Math.random;
+      showDailyResult(ok);
+    }
+    function showDailyResult(ok) {
+      const arena = document.getElementById('game-arena');
+      arena.innerHTML = `
+        <div style="text-align:center;padding:2.5rem 1rem;">
+          <div style="font-size:3.5rem;margin-bottom:0.75rem;">${ok ? '🏆' : '😅'}</div>
+          <div style="font-size:1.3rem;font-weight:900;margin-bottom:0.4rem;">${ok ? 'Repte diari completat!' : 'Repte diari fallat'}</div>
+          <div style="font-size:1rem;color:#FFD60A;font-weight:800;margin-bottom:0.35rem;">🔥 Ratxa: ${daily.streak} ${daily.streak === 1 ? 'dia' : 'dies'}</div>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:1.75rem;">Demà tindràs un repte nou. Tothom juga el mateix.</div>
+          <button style="padding:0.9rem 1.8rem;border-radius:100px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:0.92rem;background:#FFD60A;color:#020B18;cursor:pointer;margin:0 0.25rem;" onclick="startPractica()">∞ Mode pràctica</button>
+          <button style="padding:0.9rem 1.8rem;border-radius:100px;border:1px solid rgba(255,255,255,0.2);font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:0.92rem;background:rgba(255,255,255,0.07);color:#fff;cursor:pointer;margin:0 0.25rem;" onclick="goBack()">← Jocs</button>
+        </div>
+      `;
+    }
+    function startPractica() {
+      dailyMode = false;
+      RNG = Math.random;
+      renderCurrentGame();
+    }
+
+    // ═══════ CONFIG + PERSISTÈNCIA ═══════
+    const GAMES = [
+      { id:'decisions', icon:'⚡', name:'Decisions Ràpides', mesura:'Lideratge · Intuïció · Gestió pressió', daily:false },
+      { id:'memoria', icon:'🃏', name:'Memòria Visual', mesura:'Atenció · Memòria · Concentració', daily:true },
+      { id:'sequencies', icon:'🔢', name:'Seqüències', mesura:'Lògica · IQ analític · Pensament crític', daily:true },
+      { id:'sudoku', icon:'🔲', name:'Sudoku', mesura:'Lògica · Perseverança · Ordre mental', daily:true },
+      { id:'zip', icon:'🗺️', name:'Camí Zip', mesura:'Orientació espacial · Planificació · Resolució', daily:true },
+      { id:'reflexos', icon:'⚡', name:'Reflexos', mesura:'Velocitat · Precisió · Control cognitiu', daily:true },
+      { id:'prioritats', icon:'⚖️', name:'Prioritats', mesura:'Valors · Criteri · Decisió', daily:false },
+      { id:'detall', icon:'🔍', name:'Ull de Detall', mesura:'Atenció detall · Percepció · Precisió visual', daily:true },
+      { id:'emocional', icon:'🎭', name:'Lectura Emocional', mesura:'Empatia · Intel·ligència emocional · Social', daily:false },
+      { id:'blocs', icon:'🧩', name:'Blocs Cau', mesura:'Espacialitat · Velocitat cognitiva · Gestió estrès', daily:true },
+    ];
+
+    function loadStats() {
+      try { return JSON.parse(localStorage.getItem('talpot_game_stats')) || {}; } catch(e) { return {}; }
+    }
+    function saveStats() { localStorage.setItem('talpot_game_stats', JSON.stringify(stats)); }
+    const stats = loadStats();
+    GAMES.forEach(g => { if (!stats[g.id]) stats[g.id] = { enc:0, err:0, temps:[], total:0 }; });
+
+    const MITJANA_TALPOT = { memoria: 24, sudoku: 210, zip: 18, reflexos: 480 };
+
+    let currentGame = '';
+    let timerInterval = null;
+    let gameTimerInterval = null;
+    let gameSeconds = 0;
+    let partidaActiva = false;
+
+    // ═══════ NAVEGACIÓ ═══════
+    function renderGameList() {
+      const grid = document.getElementById('games-grid');
+      grid.innerHTML = '';
+      // Banner de ratxa
+      const sub = document.querySelector('.games-sub');
+      sub.innerHTML = `🔥 Ratxa: <strong style="color:#FFD60A;">${daily.streak} ${daily.streak === 1 ? 'dia' : 'dies'}</strong> · Un repte diari per joc — tothom juga el mateix.`;
+
+      GAMES.forEach(g => {
+        const s = stats[g.id];
+        const done = g.daily && isDailyDone(g.id);
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.innerHTML = `
+          <div class="gc-icon">${g.icon}</div>
+          <div class="gc-info">
+            <div class="gc-name">${g.name} ${g.daily ? (done ? '<span style="font-size:0.62rem;color:#30D158;font-weight:800;">✓ DIARI FET</span>' : '<span style="font-size:0.62rem;color:#FF6B00;font-weight:800;">🌟 REPTE DIARI</span>') : '<span style="font-size:0.62rem;color:rgba(255,255,255,0.35);font-weight:800;">∞ IL·LIMITAT</span>'}</div>
+            <div class="gc-mesura">${g.mesura}</div>
+          </div>
+          <div class="gc-right">
+            <span class="gc-play">JUGAR →</span>
+            <span class="gc-stats">${s.total} respostes</span>
+          </div>
+        `;
+        card.onclick = () => startGame(g.id);
+        grid.appendChild(card);
+      });
+    }
+
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function goBack() {
+      clearInterval(timerInterval);
+      clearInterval(gameTimerInterval);
+      if (!document.getElementById('view-list').classList.contains('hidden')) {
+        window.location.href = 'app.html';
+      } else {
+        // Sortir amb partida activa = partida perduda
+        if (partidaActiva && ['memoria','sudoku','zip'].includes(currentGame)) {
+          addError();
+        }
+        partidaActiva = false;
+        renderGameList();
+        showView('view-list');
+        document.getElementById('nav-back').textContent = '← Feed';
+      }
+    }
+
+    function startGame(id) {
+      currentGame = id;
+      const g = GAMES.find(x => x.id === id);
+      document.getElementById('gh-icon').textContent = g.icon;
+      document.getElementById('gh-name').textContent = g.name;
+      document.getElementById('nav-back').textContent = '← Jocs';
+      updateHeader();
+      showView('view-game');
+
+      if (g.daily && !isDailyDone(id)) {
+        // MODE DIARI — seed compartit per tothom avui
+        dailyMode = true;
+        RNG = mulberry32(seedFrom(todayStr() + '-' + id));
+        const arena = document.getElementById('game-arena');
+        arena.innerHTML = `
+          <div style="text-align:center;padding:2.5rem 1rem;">
+            <div style="font-size:3rem;margin-bottom:0.6rem;">🌟</div>
+            <div style="font-size:1.25rem;font-weight:900;margin-bottom:0.4rem;">Repte diari</div>
+            <div style="font-size:0.82rem;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:0.35rem;">Tothom juga exactament el mateix repte avui.<br>Una sola oportunitat. 🔥 Ratxa: <strong style="color:#FFD60A;">${daily.streak}</strong></div>
+            <button style="padding:1rem 2.2rem;border-radius:100px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1rem;background:#FF6B00;color:#fff;cursor:pointer;margin-top:1.25rem;box-shadow:0 4px 18px rgba(255,107,0,0.35);" onclick="renderCurrentGame()">⚡ Començar el repte</button>
+          </div>
+        `;
+      } else {
+        dailyMode = false;
+        RNG = Math.random;
+        renderCurrentGame();
+      }
+    }
+
+    function updateHeader() {
+      const s = stats[currentGame];
+      const scoresEl = document.getElementById('gh-scores');
+      if (currentGame === 'prioritats') {
+        scoresEl.innerHTML = `<div class="gh-count">${s.total} respostes</div>`;
+      } else {
+        scoresEl.innerHTML = `<div class="gh-enc">✓ ${s.enc}</div><div class="gh-err">✗ ${s.err}</div>`;
+      }
+      const prog = document.getElementById('gh-progress');
+      if (s.total < 100) {
+        prog.textContent = `${s.total} respostes · Mínim 100 per consolidar el perfil`;
+      } else {
+        prog.textContent = `${s.total} respostes · Perfil consolidat — segueix sumant, com més millor`;
+      }
+    }
+
+    function addEncert() {
+      stats[currentGame].enc++; stats[currentGame].total++; saveStats(); updateHeader(); flash('✓', '#30D158');
+      if (dailyMode) { setTimeout(() => completeDaily(true), 700); }
+    }
+    function addError() {
+      stats[currentGame].err++; stats[currentGame].total++; saveStats(); updateHeader(); flash('✗', '#FF453A');
+      if (dailyMode) { setTimeout(() => completeDaily(false), 700); }
+    }
+    function addResposta() { stats[currentGame].total++; saveStats(); updateHeader(); }
+
+    function flash(txt, color) {
+      const f = document.createElement('div');
+      f.className = 'feedback-flash';
+      f.style.color = color;
+      f.textContent = txt;
+      document.body.appendChild(f);
+      setTimeout(() => f.remove(), 700);
+    }
+
+    function tempsPropi(id) {
+      const t = stats[id].temps;
+      if (!t.length) return null;
+      return Math.round(t.reduce((a,b) => a+b, 0) / t.length);
+    }
+
+    function rankStrip(id, unit) {
+      const propi = tempsPropi(id);
+      const mitjana = MITJANA_TALPOT[id];
+      return `<div class="rank-strip">
+        <span>Tu: <strong>${propi !== null ? propi + unit : '—'}</strong></span>
+        <span>Mitjana Talpot: <strong>${mitjana}${unit}</strong></span>
+      </div>`;
+    }
+
+    function startGameTimer(elId) {
+      gameSeconds = 0;
+      clearInterval(gameTimerInterval);
+      gameTimerInterval = setInterval(() => {
+        gameSeconds++;
+        const el = document.getElementById(elId);
+        if (el) el.textContent = gameSeconds + 's';
+      }, 1000);
+    }
+
+    function renderCurrentGame() {
+      clearInterval(timerInterval);
+      clearInterval(gameTimerInterval);
+      const r = { decisions:renderDecisions, memoria:renderMemoria, sequencies:renderSequencies, sudoku:renderSudoku, zip:renderZip, reflexos:renderReflexos, prioritats:renderPrioritats, detall:renderDetall, emocional:renderEmocional, blocs:renderBlocs };
+      if (r[currentGame]) r[currentGame]();
+    }
+
+    // ═══════ 1. DECISIONS RÀPIDES ═══════
+    const DECISIONS = [
+      {s:"El teu cap t'assigna una tasca impossible d'urgent i tu ja estàs al límit.",ops:["Dic que no puc assumir-ho ara","Ho accepto i reorganitzo les prioritats","Demano ajuda a un company"]},
+      {s:"Un company es porta la glòria d'una idea que era teva.",ops:["Ho comento en privat amb ell","Ho deixo passar","Ho menciono al cap discretament"]},
+      {s:"Descobreixes un error important hores abans de l'entrega.",ops:["Aviso immediatament al cap","Intento solucionar-ho sol","Ho presento i menciono l'error al final"]},
+      {s:"Un client t'insulta durant una reunió.",ops:["Li dic que no parlaré així","Mantinc la calma i continuo","Acabo la reunió educadament"]},
+      {s:"Et demanen fer alguna cosa que consideres poc ètica.",ops:["Em nego rotundament","Demano explicacions primer","Ho faig però ho registro tot"]},
+      {s:"El teu equip no arriba als objectius i tu ets el responsable.",ops:["Analitzo les causes amb l'equip","Ho assumeixo davant del cap","Proposo un pla de millora immediat"]},
+      {s:"Tens dues reunions importants a la mateixa hora.",ops:["Prioritzo la més crítica i aviso l'altra","Busco qui pot substituir-me en una","Intento assistir a les dues parcialment"]},
+      {s:"Un company nou comet un error greu per inexperiència.",ops:["Li ajudo a solucionar-ho","Ho informo al responsable","Li explico en privat com evitar-ho"]},
+      {s:"Et proposen un ascens però implica traslladar-te.",ops:["Ho accepto sense dubtar","Demano temps per pensar-ho","Nego les condicions del trasllat"]},
+      {s:"El teu cap pren una decisió amb la qual no estàs d'acord.",ops:["Ho expresso respectuosament","La respecte i la executo","Busco aliats per canviar-la"]},
+      {s:"Un proveïdor no lliura a temps i posa en risc el projecte.",ops:["Exigeixo explicacions i alternativa","Busco un proveïdor alternatiu","Nego una solució d'urgència"]},
+      {s:"T'assabentes que un company guanya molt més que tu fent el mateix.",ops:["Demano un augment al cap","Busco feina en una altra empresa","Ho deixo estar per ara"]},
+      {s:"Has d'acomiadar algú del teu equip.",ops:["Ho faig de forma directa i empàtica","Delego la tasca a RRHH","Busco primer una solució alternativa"]},
+      {s:"T'equivoques en una presentació davant de clients importants.",ops:["Ho reconeixo i continuo","Ho ignoro i segueixo","Faig una pausa i corregueixo"]},
+      {s:"Has de donar feedback negatiu a algú d'alt rendiment.",ops:["Soc directe i concret","Ho suavitzo amb molts positius","Ho faig per escrit prèviament"]},
+      {s:"Un client demana canvis fora d'abast a mig projecte.",ops:["Li explico les implicacions de cost","Ho assumeixo per no perdre el client","Nego un pressupost addicional"]},
+      {s:"Estàs sobrecarregat i un company et demana ajuda.",ops:["L'ajudo tot i que em costa","Li dic que ara no puc","Busquem una solució junts"]},
+      {s:"El teu cap et demana treballar el cap de setmana sense compensació.",ops:["Demano compensació alternativa","Ho faig sense dir res","Em nego educadament"]},
+      {s:"Descobreixes que un company menteix als clients.",ops:["Ho comunico immediatament al cap","Parlo primer amb el company","Ho registro per protegir-me"]},
+      {s:"El teu cap canvia les prioritats constantment.",ops:["Li demano reunions de clarificació","M'adapto a cada canvi","Prioritzo el que crec més important"]},
+      {s:"Un company difon rumors sobre tu.",ops:["L'enfronto directament","Ho ignoro completament","Ho poso en coneixement del cap"]},
+      {s:"Has de triar entre dos candidats igualment bons.",ops:["Faig una prova pràctica final","Trio el que millor encaixa culturalment","Consulto l'equip"]},
+      {s:"T'ofereixen un contracte millor en una empresa rival.",ops:["Ho exploro seriosament","Ho comento al meu cap primer","Ho rebuig per lleialtat"]},
+      {s:"El teu equip perd la motivació a mig projecte.",ops:["Organitzo una reunió per re-engegar","Parle individualment amb cadascú","Proposo un incentiu concret"]},
+      {s:"Has de presentar resultats dolents a la directiva.",ops:["Presento les dades amb context i pla","Minimitzo els aspectes negatius","Proposo solucions abans"]},
+      {s:"Un membre de l'equip té problemes personals que afecten el treball.",ops:["Parlo amb ell empàticament","Ho derivo a RRHH","Ajusto les seves tasques temporalment"]},
+      {s:"Un company superior et tracta malament davant d'altres.",ops:["Li dic que pari en el moment","Ho comento en privat després","Ho ignoro però ho registro"]},
+      {s:"Has d'implementar un canvi que l'equip rebutja.",ops:["Explico el perquè en detall","Ho implemento i espero adaptació","Busco la seva implicació"]},
+      {s:"Un proveïdor t'ofereix un regal car fora de política.",ops:["El rebuig educadament","L'accepto però ho notifico","El retorno amb una nota formal"]},
+      {s:"Et demanen liderar un projecte fora de la teva expertise.",ops:["Ho accepto com a repte","Demano formació o suport","Proposo un co-lideratge"]},
+      {s:"Has de delegar una tasca clau a algú que no confies del tot.",ops:["La delego amb supervisió estreta","La faig jo mateix","Busco una altra persona"]},
+      {s:"El teu cap pren crèdit pel teu treball.",ops:["Ho comento en privat amb ell","Ho deixo estar","Ho menciono amb tact a la direcció"]},
+      {s:"Un client important amenaça amb marxar per un problema menor.",ops:["Resolo el problema immediatament","Analitzo si val la pena retenir-lo","Li ofereixo compensació"]},
+      {s:"Has de comunicar un canvi impopular a l'equip.",ops:["Ho explico de forma transparent","Ho presento com a oportunitat","Implico l'equip en la transició"]},
+      {s:"Dos departaments et demanen ajuda al mateix temps.",ops:["Priorizo per impacte al negoci","Atenc els dos parcialment","Demano a la direcció que prioritzi"]},
+      {s:"Un company amenaça amb dimitir si no té més recursos.",ops:["Escolto les seves necessitats reals","Ho comunico a RRHH","Intento negociar el que puc"]},
+      {s:"Has de decidir amb poc temps i menys informació.",ops:["Decideixo amb el que tinc","Demano una petita extensió","Busco la informació mínima"]},
+      {s:"Un projecte que lideres fracassa públicament.",ops:["Assumeixo la responsabilitat","Analitzo les causes amb l'equip","Proposo un pla de millora"]},
+      {s:"T'ofereix una empresa rival doblar el sou.",ops:["Ho exploro seriosament","Ho nego sense gaires dubtes","Ho uso per negociar"]},
+      {s:"El teu equip vol una decisió arriscada que no comparteixeixes.",ops:["Expresso la meva opinió i deixo decidir","Veto la decisió","Proposo una alternativa"]},
+    ];
+
+    let drUsed = [];
+    function renderDecisions() {
+      let avail = DECISIONS.filter((_,i) => !drUsed.includes(i));
+      if (!avail.length) { drUsed = []; avail = DECISIONS; }
+      const d = avail[Math.floor(RNG()*avail.length)];
+      drUsed.push(DECISIONS.indexOf(d));
+      const timeLimit = 20; // menys velocitat
+
+      document.getElementById('game-arena').innerHTML = `
+        <div class="dr-timer"><div class="dr-timer-fill" id="dtf" style="width:100%;transition:width ${timeLimit}s linear;"></div></div>
+        <div class="dr-situacio">${d.s}</div>
+        ${d.ops.map(op => `<div class="dr-opcio" onclick="drSelect(this)">${op}</div>`).join('')}
+      `;
+      setTimeout(() => { const f = document.getElementById('dtf'); if (f) f.style.width = '0%'; }, 50);
+      clearInterval(timerInterval);
+      let t = timeLimit;
+      timerInterval = setInterval(() => {
+        t--;
+        if (t <= 0) { clearInterval(timerInterval); addError(); setTimeout(renderDecisions, 700); }
+      }, 1000);
+    }
+    function drSelect(el) {
+      clearInterval(timerInterval);
+      el.style.background = 'rgba(255,214,10,0.18)'; el.style.borderColor = '#FFD60A';
+      addEncert();
+      setTimeout(renderDecisions, 550);
+    }
+
+    // ═══════ 2. MEMÒRIA (4 variants rotatives) ═══════
+    const EMOJI_SETS = [['🚀','⭐','🎯','💡','🔥','🌊','🎨','🏆'],['🦁','🐯','🦊','🐺','🦝','🐻','🦄','🐼'],['🍎','🍊','🍋','🍇','🍓','🥝','🍑','🍒'],['🎸','🎹','🎺','🎻','🥁','🎷','🪗','🎤']];
+    const SIMON_COLORS = ['#FF453A','#30D158','#FFD60A','#00B4D8'];
+    let memVariant = 0;
+
+    function renderMemoria() {
+      partidaActiva = true;
+      const variants = [memParelles, memSimon, memPosicions, memCanvi];
+      variants[memVariant % variants.length]();
+      memVariant++;
+    }
+
+    // 2a — Parelles
+    let mpFlip = [], mpMatch = 0, mpTot = 0, mpLock = false;
+    function memParelles() {
+      const pairs = Math.min(4 + Math.floor(stats.memoria.enc / 5), 8);
+      const set = EMOJI_SETS[Math.floor(RNG()*EMOJI_SETS.length)].slice(0, pairs);
+      const cards = [...set, ...set].sort(() => RNG()-.5);
+      mpFlip = []; mpMatch = 0; mpTot = pairs; mpLock = false;
+
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🃏 Troba les ${pairs} parelles · <span style="color:#FFD60A;" id="mem-timer">0s</span></div>
+        ${rankStrip('memoria','s')}
+        <div class="mem-grid" style="grid-template-columns:repeat(4,1fr);">
+          ${cards.map(e => `<div class="mem-card face-down" data-e="${e}" onclick="mpFlipCard(this)"></div>`).join('')}
+        </div>
+      `;
+      startGameTimer('mem-timer');
+    }
+    function mpFlipCard(c) {
+      if (mpLock || c.classList.contains('matched') || c.classList.contains('revealed')) return;
+      c.classList.remove('face-down'); c.classList.add('revealed'); c.textContent = c.dataset.e;
+      mpFlip.push(c);
+      if (mpFlip.length === 2) {
+        mpLock = true;
+        if (mpFlip[0].dataset.e === mpFlip[1].dataset.e) {
+          mpFlip.forEach(x => { x.classList.remove('revealed'); x.classList.add('matched'); });
+          mpFlip = []; mpLock = false; mpMatch++;
+          if (mpMatch === mpTot) {
+            clearInterval(gameTimerInterval);
+            stats.memoria.temps.push(gameSeconds);
+            partidaActiva = false;
+            addEncert();
+            setTimeout(renderMemoria, 1100);
+          }
+        } else {
+          setTimeout(() => {
+            mpFlip.forEach(x => { x.classList.remove('revealed'); x.classList.add('face-down'); x.textContent = ''; });
+            mpFlip = []; mpLock = false;
+          }, 750);
+        }
+      }
+    }
+
+    // 2b — Simon (seqüència de colors)
+    let simonSeq = [], simonInput = [], simonPlaying = false;
+    function memSimon() {
+      const len = 3 + Math.floor(stats.memoria.enc / 6);
+      simonSeq = Array.from({length: len}, () => Math.floor(RNG()*4));
+      simonInput = [];
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">👀 Memoritza la seqüència de colors i repeteix-la</div>
+        <div class="mem-grid" style="grid-template-columns:repeat(2,1fr);max-width:280px;margin:0 auto;">
+          ${SIMON_COLORS.map((c,i) => `<div class="simon-cell" id="sim-${i}" style="background:${c};" onclick="simonTap(${i})"></div>`).join('')}
+        </div>
+        <div class="info-strip" style="margin-top:0.85rem;" id="simon-status">Mira bé...</div>
+      `;
+      simonPlaying = true;
+      let i = 0;
+      const play = setInterval(() => {
+        if (i > 0) document.getElementById('sim-' + simonSeq[i-1])?.classList.remove('lit');
+        if (i >= simonSeq.length) {
+          clearInterval(play);
+          simonPlaying = false;
+          document.getElementById('simon-status').textContent = 'Ara tu! Repeteix la seqüència';
+          return;
+        }
+        document.getElementById('sim-' + simonSeq[i])?.classList.add('lit');
+        i++;
+      }, 650);
+    }
+    function simonTap(idx) {
+      if (simonPlaying) return;
+      const cell = document.getElementById('sim-' + idx);
+      cell.classList.add('lit');
+      setTimeout(() => cell.classList.remove('lit'), 200);
+      simonInput.push(idx);
+      const pos = simonInput.length - 1;
+      if (simonSeq[pos] !== idx) { addError(); setTimeout(renderMemoria, 900); return; }
+      if (simonInput.length === simonSeq.length) { addEncert(); setTimeout(renderMemoria, 900); }
+    }
+
+    // 2c — Posicions
+    let posMarked = [], posSel = [], posShow = true;
+    function memPosicions() {
+      const size = 4;
+      const nMarks = 3 + Math.floor(stats.memoria.enc / 8);
+      const total = size * size;
+      posMarked = [];
+      while (posMarked.length < Math.min(nMarks, 8)) {
+        const p = Math.floor(RNG() * total);
+        if (!posMarked.includes(p)) posMarked.push(p);
+      }
+      posSel = []; posShow = true;
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip" id="pos-status">📍 Memoritza les caselles marcades</div>
+        <div class="mem-grid" style="grid-template-columns:repeat(${size},1fr);max-width:300px;margin:0 auto;">
+          ${Array.from({length: total}, (_,i) => `<div class="pos-cell ${posMarked.includes(i) ? 'marked' : ''}" id="pos-${i}" onclick="posTap(${i})"></div>`).join('')}
+        </div>
+      `;
+      setTimeout(() => {
+        posShow = false;
+        posMarked.forEach(i => document.getElementById('pos-' + i)?.classList.remove('marked'));
+        document.getElementById('pos-status').textContent = 'Toca les caselles que estaven marcades';
+      }, 2200);
+    }
+    function posTap(i) {
+      if (posShow || posSel.includes(i)) return;
+      posSel.push(i);
+      const cell = document.getElementById('pos-' + i);
+      if (posMarked.includes(i)) {
+        cell.classList.add('sel');
+        if (posSel.filter(x => posMarked.includes(x)).length === posMarked.length) {
+          addEncert(); setTimeout(renderMemoria, 800);
+        }
+      } else {
+        cell.style.background = 'rgba(255,69,58,0.3)';
+        addError(); setTimeout(renderMemoria, 900);
+      }
+    }
+
+    // 2d — Què ha canviat
+    let canviGrid = [], canviIdx = -1;
+    function memCanvi() {
+      const set = EMOJI_SETS[Math.floor(RNG()*EMOJI_SETS.length)];
+      const n = 6;
+      canviGrid = Array.from({length: n}, () => set[Math.floor(RNG()*set.length)]);
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip" id="canvi-status">👁️ Memoritza aquests elements — un canviarà</div>
+        <div class="mem-grid" style="grid-template-columns:repeat(3,1fr);max-width:300px;margin:0 auto;" id="canvi-grid">
+          ${canviGrid.map((e,i) => `<div class="mem-card" id="cv-${i}">${e}</div>`).join('')}
+        </div>
+      `;
+      setTimeout(() => {
+        canviIdx = Math.floor(RNG() * n);
+        let nou;
+        do { nou = set[Math.floor(RNG()*set.length)]; } while (nou === canviGrid[canviIdx]);
+        canviGrid[canviIdx] = nou;
+        document.getElementById('cv-' + canviIdx).textContent = nou;
+        document.getElementById('canvi-status').textContent = 'Quin ha canviat? Toca\'l!';
+        document.querySelectorAll('#canvi-grid .mem-card').forEach((c, i) => {
+          c.onclick = () => {
+            if (i === canviIdx) { addEncert(); } else { addError(); }
+            setTimeout(renderMemoria, 800);
+          };
+        });
+      }, 2500);
+    }
+
+    // ═══════ 3. SEQÜÈNCIES (números + formes) ═══════
+    let seqAns = null, seqFallades = [];
+    const SHAPES = ['🔴','🔵','🟡','🟢','🟣','⬛','🔺','⭐'];
+
+    function renderSequencies() {
+      // Reintrodueix fallades de tant en tant
+      let seq;
+      if (seqFallades.length > 0 && RNG() < 0.3) {
+        seq = seqFallades.shift();
+      } else {
+        seq = RNG() < 0.5 ? genSeqNum() : genSeqShape();
+      }
+      seqAns = seq.ans;
+      window._seqActual = seq;
+
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">⚠️ La primera resposta és la que compta</div>
+        <div class="seq-nums">
+          ${seq.mostrats.map(n => `<div class="seq-num">${n}</div>`).join('')}
+          <div class="seq-num seq-missing">?</div>
+        </div>
+        <div class="seq-options">
+          ${seq.opts.map(o => `<div class="seq-opt" onclick="seqCheck(this, '${String(o).replace(/'/g,"\\'")}')">${o}</div>`).join('')}
+        </div>
+      `;
+    }
+
+    function genSeqNum() {
+      const d = Math.floor(stats.sequencies.enc / 4);
+      const gens = [
+        () => { const s=Math.floor(RNG()*10)+1, df=Math.floor(RNG()*4)+2+d; return { m:[s,s+df,s+df*2,s+df*3], a:s+df*4 }; },
+        () => { const s=Math.floor(RNG()*3)+2, m=2; return { m:[s,s*m,s*m*m,s*m*m*m], a:s*m*m*m*m }; },
+        () => { const a=Math.floor(RNG()*5)+1, b=Math.floor(RNG()*5)+1, c=a+b, e=b+c; return { m:[a,b,c,e], a:c+e }; },
+        () => { const s=Math.floor(RNG()*4)+1; return { m:[s*s,(s+1)**2,(s+2)**2,(s+3)**2], a:(s+4)**2 }; },
+      ];
+      const g = gens[Math.min(d, gens.length-1)]();
+      const wrongs = [g.a+2, g.a-2, g.a+5].filter(w => w !== g.a && w > 0);
+      return { mostrats: g.m, ans: String(g.a), opts: [String(g.a), ...wrongs.map(String)].sort(() => RNG()-.5) };
+    }
+
+    function genSeqShape() {
+      const a = SHAPES[Math.floor(RNG()*SHAPES.length)];
+      let b; do { b = SHAPES[Math.floor(RNG()*SHAPES.length)]; } while (b === a);
+      let c; do { c = SHAPES[Math.floor(RNG()*SHAPES.length)]; } while (c === a || c === b);
+      const patterns = [
+        { m: [a,b,a,b], ans: a },
+        { m: [a,a,b,a,a], ans: b },
+        { m: [a,b,c,a,b], ans: c },
+        { m: [a,b,b,a,b], ans: b },
+      ];
+      const p = patterns[Math.floor(RNG()*patterns.length)];
+      const opts = [...new Set([p.ans, a, b, c])].slice(0,4).sort(() => RNG()-.5);
+      return { mostrats: p.m, ans: p.ans, opts };
+    }
+
+    function seqCheck(el, val) {
+      document.querySelectorAll('.seq-opt').forEach(o => o.style.pointerEvents = 'none');
+      if (val === seqAns) {
+        el.style.background = 'rgba(48,209,88,0.2)'; el.style.borderColor = '#30D158';
+        addEncert();
+      } else {
+        el.style.background = 'rgba(255,69,58,0.15)'; el.style.borderColor = '#FF453A';
+        seqFallades.push(window._seqActual); // pot tornar a sortir
+        addError();
+        // NO es mostra la solució
+      }
+      setTimeout(renderSequencies, 700);
+    }
+
+    // ═══════ 4. SUDOKU 9x9 ═══════
+    let sdkSol = [], sdkGrid = [], sdkGiven = [], sdkSel = null;
+
+    function genSudoku9() {
+      const base = [];
+      for (let r = 0; r < 9; r++) {
+        base.push([]);
+        for (let c = 0; c < 9; c++) base[r].push((r*3 + Math.floor(r/3) + c) % 9 + 1);
+      }
+      // Shuffle files dins bandes i columnes dins piles
+      for (let band = 0; band < 3; band++) {
+        const rows = [band*3, band*3+1, band*3+2].sort(() => RNG()-.5);
+        const copy = rows.map(r => base[r]);
+        for (let i = 0; i < 3; i++) base[band*3+i] = copy[i];
+      }
+      for (let pile = 0; pile < 3; pile++) {
+        const cols = [pile*3, pile*3+1, pile*3+2].sort(() => RNG()-.5);
+        base.forEach(row => {
+          const copy = cols.map(c => row[c]);
+          for (let i = 0; i < 3; i++) row[pile*3+i] = copy[i];
+        });
+      }
+      return base;
+    }
+
+    function renderSudoku() {
+      partidaActiva = true;
+      sdkSol = genSudoku9();
+      sdkGrid = sdkSol.map(r => [...r]);
+      const reveal = Math.max(28, 40 - Math.floor(stats.sudoku.enc / 2) * 2);
+      const positions = [];
+      for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) positions.push([r,c]);
+      positions.sort(() => RNG()-.5);
+      positions.slice(reveal).forEach(([r,c]) => sdkGrid[r][c] = 0);
+      sdkGiven = sdkGrid.map(row => row.map(v => v !== 0));
+      sdkSel = null;
+
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🔲 1-9 per fila, columna i caixa · <span style="color:#FFD60A;" id="sdk-timer">0s</span></div>
+        ${rankStrip('sudoku','s')}
+        <div class="sdk-grid" id="sdk-grid"></div>
+        <div class="sdk-pad">
+          ${[1,2,3,4,5,6,7,8,9].map(n => `<div class="sdk-num" onclick="sdkInput(${n})">${n}</div>`).join('')}
+          <div class="sdk-num sdk-erase" onclick="sdkInput(0)">✕</div>
+        </div>
+      `;
+      renderSdkGrid();
+      startGameTimer('sdk-timer');
+    }
+
+    function renderSdkGrid() {
+      const grid = document.getElementById('sdk-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'sdk-cell'
+          + (sdkGiven[r][c] ? ' given' : ' user')
+          + (sdkSel && sdkSel[0] === r && sdkSel[1] === c ? ' selected' : '')
+          + ((c === 2 || c === 5) ? ' br' : '')
+          + ((r === 2 || r === 5) ? ' bb' : '');
+        if (sdkGrid[r][c] !== 0) cell.textContent = sdkGrid[r][c];
+        if (!sdkGiven[r][c]) cell.onclick = () => { sdkSel = [r,c]; renderSdkGrid(); };
+        grid.appendChild(cell);
+      }
+    }
+
+    function sdkInput(n) {
+      if (!sdkSel) return;
+      const [r,c] = sdkSel;
+      sdkGrid[r][c] = n;
+      renderSdkGrid();
+      // Comprova si complet
+      let complete = true;
+      for (let rr = 0; rr < 9; rr++) for (let cc = 0; cc < 9; cc++) if (sdkGrid[rr][cc] === 0) complete = false;
+      if (complete) {
+        const correct = sdkGrid.every((row, rr) => row.every((v, cc) => v === sdkSol[rr][cc]));
+        clearInterval(gameTimerInterval);
+        partidaActiva = false;
+        if (correct) {
+          stats.sudoku.temps.push(gameSeconds);
+          addEncert();
+        } else {
+          addError();
+        }
+        setTimeout(renderSudoku, 1100);
+      }
+    }
+
+    // ═══════ 5. CAMÍ ZIP ═══════
+    let zipPath = [], zipCells = [], zipNums = {}, zipSize = 4, zipTracking = false;
+
+    function renderZip() {
+      partidaActiva = true;
+      zipSize = Math.min(4 + Math.floor(stats.zip.enc / 6), 6);
+      // Genera camí hamiltonià serpentina amb variació
+      const path = [];
+      for (let r = 0; r < zipSize; r++) {
+        const row = [];
+        for (let c = 0; c < zipSize; c++) row.push(r * zipSize + (r % 2 === 0 ? c : zipSize - 1 - c));
+        path.push(...row);
+      }
+      // Col·loca números al llarg del camí
+      const nNums = Math.min(3 + Math.floor(stats.zip.enc / 4), 6);
+      zipNums = {};
+      zipNums[path[0]] = 1;
+      zipNums[path[path.length-1]] = nNums;
+      for (let i = 2; i < nNums; i++) {
+        const pos = Math.floor((i-1) * path.length / (nNums-1));
+        zipNums[path[pos]] = i;
+      }
+      zipPath = [];
+      zipTracking = false;
+
+      const cellPx = Math.min(64, Math.floor(300 / zipSize));
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🗺️ Arrossega el dit: connecta <strong style="color:#FFD60A;">1→${nNums}</strong> passant per TOTES les caselles · <span style="color:#FFD60A;" id="zip-timer">0s</span></div>
+        ${rankStrip('zip','s')}
+        <div class="zip-grid" id="zip-grid" style="grid-template-columns:repeat(${zipSize},${cellPx}px);"></div>
+        <div class="zip-actions">
+          <button class="zip-btn" onclick="zipPath=[];zipRender();">↺ Reiniciar camí</button>
+        </div>
+      `;
+      const grid = document.getElementById('zip-grid');
+      zipCells = [];
+      for (let i = 0; i < zipSize * zipSize; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'zip-cell' + (zipNums[i] ? ' numcell' : '');
+        cell.style.width = cellPx + 'px';
+        cell.style.height = cellPx + 'px';
+        cell.dataset.idx = i;
+        if (zipNums[i]) cell.innerHTML = `<div class="zip-num-badge">${zipNums[i]}</div>`;
+        grid.appendChild(cell);
+        zipCells.push(cell);
+      }
+      // Touch tracking
+      grid.addEventListener('touchstart', zipTouch, { passive: false });
+      grid.addEventListener('touchmove', zipTouch, { passive: false });
+      grid.addEventListener('touchend', () => { zipTracking = false; zipCheckComplete(); });
+      startGameTimer('zip-timer');
+    }
+
+    function zipTouch(e) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (!el) return;
+      const cell = el.closest('.zip-cell');
+      if (!cell) return;
+      const idx = parseInt(cell.dataset.idx);
+
+      if (zipPath.length === 0) {
+        // Ha de començar a l'1
+        if (zipNums[idx] === 1) { zipPath.push(idx); zipTracking = true; zipRender(); }
+        return;
+      }
+      if (!zipTracking && e.type === 'touchstart') {
+        // Continua des de l'últim
+        if (idx === zipPath[zipPath.length-1]) zipTracking = true;
+        return;
+      }
+      if (!zipTracking) return;
+
+      const last = zipPath[zipPath.length-1];
+      if (idx === last) return;
+      // Retrocedir
+      if (zipPath.length >= 2 && idx === zipPath[zipPath.length-2]) { zipPath.pop(); zipRender(); return; }
+      // Adjacent?
+      const r1 = Math.floor(last/zipSize), c1 = last%zipSize, r2 = Math.floor(idx/zipSize), c2 = idx%zipSize;
+      if (Math.abs(r1-r2) + Math.abs(c1-c2) !== 1) return;
+      if (zipPath.includes(idx)) return;
+      // Ordre de números
+      if (zipNums[idx]) {
+        const passats = zipPath.filter(p => zipNums[p]).map(p => zipNums[p]);
+        const maxPassat = Math.max(...passats);
+        if (zipNums[idx] !== maxPassat + 1) return; // número fora d'ordre
+      }
+      zipPath.push(idx);
+      zipRender();
+    }
+
+    function zipRender() {
+      zipCells.forEach((c, i) => c.classList.toggle('path', zipPath.includes(i)));
+    }
+
+    function zipCheckComplete() {
+      if (zipPath.length === zipSize * zipSize) {
+        const nums = Object.values(zipNums);
+        const passats = zipPath.filter(p => zipNums[p]).map(p => zipNums[p]);
+        const enOrdre = passats.every((n, i) => n === i + 1);
+        clearInterval(gameTimerInterval);
+        partidaActiva = false;
+        if (enOrdre && passats.length === nums.length) {
+          stats.zip.temps.push(gameSeconds);
+          addEncert();
+        } else {
+          addError();
+        }
+        setTimeout(renderZip, 1000);
+      }
+    }
+
+    // ═══════ 6. REFLEXOS (3 variants) ═══════
+    let rfVariant = 0;
+    function renderReflexos() {
+      const variants = [rfReflex, rfStroop, rfIntrus];
+      variants[rfVariant % variants.length]();
+      rfVariant++;
+    }
+
+    let rfState = 'wait', rfStart = 0, rfTimeout = null;
+    function rfReflex() {
+      rfState = 'wait';
+      document.getElementById('game-arena').innerHTML = `
+        ${rankStrip('reflexos','ms')}
+        <div class="rf-area" id="rf-area" style="background:rgba(255,69,58,0.15);border:2px solid rgba(255,69,58,0.4);" onclick="rfTap()">
+          <div class="rf-big">Espera...</div>
+          <div class="rf-sub">Toca quan la pantalla es posi VERDA</div>
+        </div>
+      `;
+      rfTimeout = setTimeout(() => {
+        rfState = 'go';
+        rfStart = Date.now();
+        const area = document.getElementById('rf-area');
+        if (area) {
+          area.style.background = 'rgba(48,209,88,0.25)';
+          area.style.borderColor = '#30D158';
+          area.innerHTML = '<div class="rf-big">ARA! 👆</div>';
+        }
+      }, 1500 + RNG() * 3000);
+    }
+    function rfTap() {
+      if (rfState === 'wait') {
+        clearTimeout(rfTimeout);
+        addError();
+        document.getElementById('rf-area').innerHTML = '<div class="rf-big">Massa aviat! ⏱️</div>';
+        setTimeout(renderReflexos, 1000);
+      } else if (rfState === 'go') {
+        const ms = Date.now() - rfStart;
+        stats.reflexos.temps.push(ms);
+        addEncert();
+        document.getElementById('rf-area').innerHTML = `<div class="rf-big">${ms} ms ⚡</div><div class="rf-sub">${ms < 300 ? 'Reflexos de gat!' : ms < 450 ? 'Molt bé!' : 'Segueix entrenant'}</div>`;
+        rfState = 'done';
+        setTimeout(renderReflexos, 1300);
+      }
+    }
+
+    const COLOR_MAP = [{n:'VERMELL',c:'#FF453A'},{n:'VERD',c:'#30D158'},{n:'GROC',c:'#FFD60A'},{n:'BLAU',c:'#00B4D8'}];
+    function rfStroop() {
+      const word = COLOR_MAP[Math.floor(RNG()*4)];
+      let tinta; do { tinta = COLOR_MAP[Math.floor(RNG()*4)]; } while (tinta.n === word.n);
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🧠 Toca el color de la <strong>TINTA</strong>, no el que diu la paraula</div>
+        <div class="stroop-word" style="color:${tinta.c};">${word.n}</div>
+        <div class="stroop-opts">
+          ${COLOR_MAP.map(c => `<div class="stroop-opt" style="border-color:${c.c};color:${c.c};" onclick="stroopTap('${c.n}','${tinta.n}')">${c.n}</div>`).join('')}
+        </div>
+      `;
+    }
+    function stroopTap(sel, correcte) {
+      if (sel === correcte) addEncert(); else addError();
+      setTimeout(renderReflexos, 600);
+    }
+
+    function rfIntrus() {
+      const base = SHAPES[Math.floor(RNG()*SHAPES.length)];
+      let intru; do { intru = SHAPES[Math.floor(RNG()*SHAPES.length)]; } while (intru === base);
+      const pos = Math.floor(RNG()*9);
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">⚡ Toca el diferent — <span id="intru-count" style="color:#FFD60A;">3</span>s</div>
+        <div class="intru-grid">
+          ${Array.from({length:9}, (_,i) => `<div class="intru-cell" onclick="intruTap(${i === pos})">${i === pos ? intru : base}</div>`).join('')}
+        </div>
+      `;
+      let t = 3;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        t--;
+        const el = document.getElementById('intru-count');
+        if (el) el.textContent = t;
+        if (t <= 0) { clearInterval(timerInterval); addError(); setTimeout(renderReflexos, 700); }
+      }, 1000);
+    }
+    function intruTap(ok) {
+      clearInterval(timerInterval);
+      if (ok) addEncert(); else addError();
+      setTimeout(renderReflexos, 600);
+    }
+
+    // ═══════ 7. PRIORITATS (drag tàctil real) ═══════
+    const PRIO_SETS = [
+      {t:'Ordre de prioritat al treball:',items:['Acabar la tasca urgent','Ajudar un company','Assistir a una reunió','Revisar el correu','Formació personal']},
+      {t:'Davant d\'un conflicte d\'equip:',items:['Parlar individualment','Reunió de grup','Ignorar temporalment','Demanar mediació','Documentar el problema']},
+      {t:'Quan tens massa feina:',items:['Demanar ajuda','Fer hores extres','Descartar tasques','Parlar amb el cap','Prioritzar les urgents']},
+      {t:'Per créixer professionalment:',items:['Formació contínua','Ampliar xarxa','Buscar un mentor','Assumir nous reptes','Millorar habilitats actuals']},
+      {t:'Què valores més d\'una empresa:',items:['Salari competitiu','Flexibilitat horària','Projecte engrescador','Bon ambient','Creixement professional']},
+      {t:'En un projecte nou, primer:',items:['Entendre l\'objectiu','Conèixer l\'equip','Planificar les fases','Identificar riscos','Definir el meu rol']},
+    ];
+
+    function renderPrioritats() {
+      const set = PRIO_SETS[Math.floor(RNG()*PRIO_SETS.length)];
+      const sh = [...set.items].sort(() => RNG()-.5);
+      document.getElementById('game-arena').innerHTML = `
+        <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.35rem;">${set.t}</div>
+        <div class="info-strip" style="text-align:left;margin-bottom:0.85rem;">Mantén premut i arrossega per ordenar — el més important a dalt. No hi ha resposta correcta.</div>
+        <div id="prio-list">${sh.map(item => `<div class="prio-item"><span class="prio-handle">⠿</span><span>${item}</span></div>`).join('')}</div>
+        <button class="prio-check" onclick="prioConfirm()">Confirmar el meu ordre →</button>
+      `;
+      attachPrioTouch();
+    }
+
+    function attachPrioTouch() {
+      const list = document.getElementById('prio-list');
+      let dragEl = null, startY = 0, offsetY = 0;
+
+      list.querySelectorAll('.prio-item').forEach(item => {
+        item.addEventListener('touchstart', (e) => {
+          dragEl = item;
+          startY = e.touches[0].clientY;
+          item.classList.add('lifting');
+        }, { passive: true });
+
+        item.addEventListener('touchmove', (e) => {
+          if (!dragEl) return;
+          e.preventDefault();
+          offsetY = e.touches[0].clientY - startY;
+          dragEl.style.transform = `translateY(${offsetY}px)`;
+          // Reordena quan creua el centre d'un altre
+          const siblings = [...list.querySelectorAll('.prio-item')].filter(s => s !== dragEl);
+          for (const sib of siblings) {
+            const rect = sib.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            const dragRect = dragEl.getBoundingClientRect();
+            const dragMid = dragRect.top + dragRect.height / 2;
+            if (offsetY > 0 && dragMid > mid && sib.compareDocumentPosition(dragEl) & Node.DOCUMENT_POSITION_PRECEDING) {
+              sib.after(dragEl);
+              startY = e.touches[0].clientY; offsetY = 0;
+              dragEl.style.transform = '';
+            } else if (offsetY < 0 && dragMid < mid && sib.compareDocumentPosition(dragEl) & Node.DOCUMENT_POSITION_FOLLOWING) {
+              sib.before(dragEl);
+              startY = e.touches[0].clientY; offsetY = 0;
+              dragEl.style.transform = '';
+            }
+          }
+        }, { passive: false });
+
+        item.addEventListener('touchend', () => {
+          if (dragEl) {
+            dragEl.classList.remove('lifting');
+            dragEl.style.transform = '';
+            dragEl = null;
+          }
+        });
+      });
+    }
+
+    function prioConfirm() {
+      addResposta();
+      flash('✓', '#FFD60A');
+      setTimeout(renderPrioritats, 500);
+    }
+
+    // ═══════ 8. ULL DE DETALL (variants) ═══════
+    let detVariant = 0;
+    function renderDetall() {
+      const variants = [detImpostor, detComptador, detCadena];
+      variants[detVariant % variants.length]();
+      detVariant++;
+    }
+
+    const IMPOSTOR_PAIRS = [['😀','😃'],['🐶','🐕'],['❤️','🧡'],['🌑','🌒'],['⭐','🌟'],['🔵','🔷'],['✈️','🛩️'],['🌲','🌳']];
+    function detImpostor() {
+      const [base, intru] = IMPOSTOR_PAIRS[Math.floor(RNG()*IMPOSTOR_PAIRS.length)];
+      const n = 12;
+      const pos = Math.floor(RNG()*n);
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🔍 Troba l'impostor — n'hi ha un de subtilment diferent</div>
+        <div class="det-grid" style="grid-template-columns:repeat(4,1fr);">
+          ${Array.from({length:n}, (_,i) => `<div class="det-cell" onclick="detTap(${i === pos})">${i === pos ? intru : base}</div>`).join('')}
+        </div>
+      `;
+    }
+
+    function detComptador() {
+      const target = SHAPES[Math.floor(RNG()*SHAPES.length)];
+      const others = SHAPES.filter(s => s !== target);
+      const nTarget = 3 + Math.floor(RNG()*5);
+      const cells = Array(nTarget).fill(target);
+      while (cells.length < 16) cells.push(others[Math.floor(RNG()*others.length)]);
+      cells.sort(() => RNG()-.5);
+      const opts = [nTarget, nTarget+1, nTarget-1, nTarget+2].sort(() => RNG()-.5);
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🔢 Quants <span style="font-size:1.2rem;">${target}</span> hi ha?</div>
+        <div class="det-grid" style="grid-template-columns:repeat(4,1fr);">
+          ${cells.map(c => `<div class="det-cell" style="cursor:default;">${c}</div>`).join('')}
+        </div>
+        <div class="det-opts">
+          ${opts.map(o => `<div class="det-opt" onclick="detTap(${o === nTarget})">${o}</div>`).join('')}
+        </div>
+      `;
+    }
+
+    const CADENES = [['TALPOT','TALP0T'],['58291','58281'],['mnmnm','mnnmn'],['OQOQO','OQQOO'],['bdbdb','bdbbd'],['XYXYX','XYYXX']];
+    function detCadena() {
+      const [base, diff] = CADENES[Math.floor(RNG()*CADENES.length)];
+      const n = 8;
+      const pos = Math.floor(RNG()*n);
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">👁️ Una cadena és diferent — troba-la</div>
+        <div class="det-grid" style="grid-template-columns:repeat(2,1fr);">
+          ${Array.from({length:n}, (_,i) => `<div class="det-cell" style="font-size:0.95rem;letter-spacing:1px;aspect-ratio:2.4;" onclick="detTap(${i === pos})">${i === pos ? diff : base}</div>`).join('')}
+        </div>
+      `;
+    }
+
+    function detTap(ok) {
+      if (ok) addEncert(); else addError();
+      setTimeout(renderDetall, 650);
+    }
+
+    // ═══════ 9. LECTURA EMOCIONAL ═══════
+    let emoVariant = 0;
+    const EMOCIONS_CARA = [
+      { e:'😤', ans:'Frustració', opts:['Frustració','Alegria','Sorpresa','Calma'] },
+      { e:'🥺', ans:'Vulnerabilitat', opts:['Vulnerabilitat','Ràbia','Avorriment','Eufòria'] },
+      { e:'😰', ans:'Ansietat', opts:['Ansietat','Tristesa','Confiança','Diversió'] },
+      { e:'😒', ans:'Escepticisme', opts:['Escepticisme','Il·lusió','Por','Serenitat'] },
+      { e:'🤔', ans:'Reflexió', opts:['Reflexió','Enuig','Alegria','Fatiga'] },
+      { e:'😔', ans:'Decepció', opts:['Decepció','Entusiasme','Sorpresa','Orgull'] },
+      { e:'😅', ans:'Nerviosisme', opts:['Nerviosisme','Tristesa','Ràbia','Indiferència'] },
+      { e:'🙄', ans:'Exasperació', opts:['Exasperació','Timidesa','Alegria','Curiositat'] },
+      { e:'😌', ans:'Alleujament', opts:['Alleujament','Enveja','Angoixa','Eufòria'] },
+      { e:'😬', ans:'Incomoditat', opts:['Incomoditat','Felicitat','Calma','Avorriment'] },
+    ];
+    const EMOCIONS_SITUACIO = [
+      { s:'Un company tanca el portàtil de cop, sospira fort i mira per la finestra.', ans:'Frustració', opts:['Frustració','Alegria','Concentració','Sorpresa'] },
+      { s:'A la reunió, la teva companya parla més ràpid del normal i es toca el coll constantment.', ans:'Nerviosisme', opts:['Nerviosisme','Confiança','Avorriment','Enuig'] },
+      { s:'El teu cap llegeix el teu informe, aixeca les celles i es recolza cap enrere.', ans:'Sorpresa', opts:['Sorpresa','Ràbia','Tristesa','Indiferència'] },
+      { s:'Un client creua els braços i respon amb monosíl·labs des de fa deu minuts.', ans:'Resistència', opts:['Resistència','Entusiasme','Curiositat','Alegria'] },
+      { s:'La teva companya somriu però els seus ulls no somriuen i mira el rellotge.', ans:'Impaciència', opts:['Impaciència','Felicitat','Interès','Calma'] },
+      { s:'Un membre de l\'equip evita el contacte visual quan es parla del termini.', ans:'Preocupació', opts:['Preocupació','Confiança','Diversió','Orgull'] },
+    ];
+
+    function renderEmocional() {
+      const useCara = emoVariant % 2 === 0;
+      emoVariant++;
+      const set = useCara ? EMOCIONS_CARA : EMOCIONS_SITUACIO;
+      const q = set[Math.floor(RNG()*set.length)];
+      const opts = [...q.opts].sort(() => RNG()-.5);
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🎭 ${useCara ? 'Quina emoció expressa?' : 'Què sent probablement aquesta persona?'}</div>
+        <div class="emo-display">
+          ${useCara ? `<div class="emo-face">${q.e}</div>` : `<div class="emo-situacio">${q.s}</div>`}
+        </div>
+        <div class="emo-opts">
+          ${opts.map(o => `<div class="emo-opt" onclick="emoTap('${o}','${q.ans}')">${o}</div>`).join('')}
+        </div>
+      `;
+    }
+    function emoTap(sel, ans) {
+      if (sel === ans) addEncert(); else addError();
+      setTimeout(renderEmocional, 650);
+    }
+
+    // ═══════ 10. BLOCS CAU ═══════
+    const PECES = [
+      [[1,1],[1,1]], [[1,1,1]], [[1],[1],[1]], [[1,0],[1,1]], [[0,1],[1,1]], [[1,1],[1,0]], [[1,1],[0,1]], [[1,1,1],[0,1,0]], [[1],[1]], [[1,1]]
+    ];
+
+    function renderBlocs() {
+      const size = 4;
+      // Tria peça-forat
+      const pesa = PECES[Math.floor(RNG()*PECES.length)];
+      const pRows = pesa.length, pCols = pesa[0].length;
+      const offR = Math.floor(RNG()*(size - pRows + 1));
+      const offC = Math.floor(RNG()*(size - pCols + 1));
+      const grid = Array.from({length:size}, () => Array(size).fill(1));
+      for (let r = 0; r < pRows; r++) for (let c = 0; c < pCols; c++) {
+        if (pesa[r][c]) grid[offR+r][offC+c] = 2; // forat
+      }
+      // Opcions: la correcta + 2 similars
+      const opcions = [pesa];
+      while (opcions.length < 3) {
+        const alt = PECES[Math.floor(RNG()*PECES.length)];
+        if (!opcions.some(o => JSON.stringify(o) === JSON.stringify(alt))) opcions.push(alt);
+      }
+      opcions.sort(() => RNG()-.5);
+      const correctIdx = opcions.findIndex(o => JSON.stringify(o) === JSON.stringify(pesa));
+
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🧩 Quina peça encaixa exactament al forat?</div>
+        <div class="blocs-target" style="grid-template-columns:repeat(${size},34px);">
+          ${grid.flat().map(v => `<div class="bt-cell ${v === 2 ? 'bt-hole' : 'bt-filled'}"></div>`).join('')}
+        </div>
+        <div class="blocs-opts">
+          ${opcions.map((o, i) => `
+            <div class="bloc-opt" onclick="blocTap(${i === correctIdx})">
+              <div class="bo-grid" style="grid-template-columns:repeat(${o[0].length},22px);">
+                ${o.flat().map(v => `<div class="bo-cell ${v ? 'bo-on' : 'bo-off'}"></div>`).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    function blocTap(ok) {
+      if (ok) addEncert(); else addError();
+      setTimeout(renderBlocs, 650);
+    }
+
+    renderGameList();
+  </script>
+</body>
+</html>
