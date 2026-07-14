@@ -37,6 +37,35 @@ export default {
         const { transcription, category } = await request.json();
         if (!transcription) return json({ ok: false, error: 'No transcription' }, 400, cors);
 
+        // Avaluació de NIVELL D'IDIOMA (qualsevol idioma) — CEFR real
+        if (category === 'idioma') {
+          const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              temperature: 0.1,
+              response_format: { type: 'json_object' },
+              messages: [
+                { role: 'system', content: `Ets examinador oficial de nivells d'idioma (marc CEFR). Avalues transcripcions de parla espontània de candidats en QUALSEVOL idioma.
+
+AVALUA amb rigor segons: riquesa de vocabulari, correcció gramatical, complexitat de les estructures, fluïdesa aparent i naturalitat. Una transcripció curta amb frases simples i errors = A2/B1. Estructures complexes, connectors variats i lèxic precís = B2/C1. Sigues realista, no generós.
+
+Respon NOMÉS JSON:
+{"idioma_detectat":"nom de l'idioma en català (ex: Anglès, Francès, Alemany)","nivell":"A1|A2|B1|B2|C1|C2","justificacio":"1-2 frases concretes del perquè","keywords":["2-4 fortaleses lingüístiques detectades"]}` },
+                { role: 'user', content: transcription },
+              ],
+            }),
+          });
+          if (!gRes.ok) return json({ ok: false, error: 'GPT error' }, 500, cors);
+          const gData = await gRes.json();
+          let extracted = {};
+          try { extracted = JSON.parse(gData.choices[0].message.content); } catch(e) {
+            return json({ ok: false, error: 'Parse error' }, 500, cors);
+          }
+          return json({ ok: true, extracted }, 200, cors);
+        }
+
         const currentYear = new Date().getFullYear();
         const system = `Ets l'analista de talent de Talpot. Analitzes transcripcions de vídeos de candidats i n'extreus informació estructurada i PRECISA.
 
@@ -47,9 +76,10 @@ REGLES:
 - experiencies: només si el vídeo parla de feina/experiència. Cada una amb sector, rol (si es pot inferir) i anys (número, null si no es pot calcular).
 - perfils_laborals: 1-3 rols laborals CONCRETS on aquest candidat encaixaria (ex: "Tècnic/a de medi ambient", "Responsable de logística", NO genèrics com "medi ambient").
 - idiomes: només si es mencionen o es detecten.
+- Si la categoria és "idioma": AVALUA el nivell CEFR real del text transcrit (A1, A2, B1, B2, C1 o C2) segons vocabulari, gramàtica, complexitat de frases i fluïdesa. Sigues rigorós: errors bàsics = A2/B1; frases complexes correctes i connectors = B2+; matisos i precisió = C1+. Afegeix camp "nivell_idioma".
 
 FORMAT:
-{"keywords":["..."],"experiencies":[{"sector":"...","rol":"...","anys":N}],"perfils_laborals":["..."],"idiomes":["..."],"anys_experiencia_total":N}`;
+{"keywords":["..."],"experiencies":[{"sector":"...","rol":"...","anys":N}],"perfils_laborals":["..."],"idiomes":["..."],"anys_experiencia_total":N,"nivell_idioma":{"idioma":"anglès","nivell":"B2","justificacio":"1 frase breu"}}`;
 
         const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
