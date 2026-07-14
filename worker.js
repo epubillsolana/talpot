@@ -105,6 +105,37 @@ FORMAT:
         return json({ ok: true, analysis }, 200, cors);
       }
 
+      // ═══ /oferta — genera requisits per a QUALSEVOL tipologia d'oferta ═══
+      if (url.pathname === '/oferta') {
+        const { tipologia } = await request.json();
+        if (!tipologia) return json({ ok: false, error: 'No tipologia' }, 400, cors);
+
+        const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            temperature: 0.2,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: `Ets expert en el mercat laboral espanyol. Donada una tipologia d'oferta de feina, defineix els requisits REALS habituals. Respon NOMÉS JSON:
+{"titol":"nom professional de l'oferta","kw":["6-10 keywords tècniques en minúscula, arrels de paraula per matching (ex: 'logíst' cobreix logística/logístic)"],"soft":["4-6 competències soft"],"expMin":anys mínims habituals (número)}` },
+              { role: 'user', content: tipologia },
+            ],
+          }),
+        });
+        if (!gRes.ok) return json({ ok: false, error: 'GPT error' }, 500, cors);
+        const gData = await gRes.json();
+        let oferta = {};
+        try { oferta = JSON.parse(gData.choices[0].message.content); } catch(e) {
+          return json({ ok: false, error: 'Parse error' }, 500, cors);
+        }
+        return json({ ok: true, oferta }, 200, cors);
+      }
+
       return json({ ok: false, error: 'Not found' }, 404, cors);
     } catch (err) {
       return json({ ok: false, error: err.message }, 500, cors);
