@@ -1,3 +1,4 @@
+// TALPOT AI WORKER v3 — Whisper + extracció intel·ligent
 export default {
   async fetch(request, env) {
     const cors = {
@@ -6,51 +7,114 @@ export default {
       'Access-Control-Allow-Headers': 'Content-Type',
     };
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
+    if (request.method !== 'POST') return json({ ok: false, error: 'POST only' }, 405, cors);
+
     const url = new URL(request.url);
 
-    if (url.pathname === '/transcribe') {
-      try {
-        const fd = await request.formData();
-        const wfd = new FormData();
-        wfd.append('file', fd.get('file'), 'audio.webm');
-        wfd.append('model', 'whisper-1');
-        const r = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: { Authorization: 'Bearer ' + env.OPENAI_KEY },
-          body: wfd,
-        });
-        const d = await r.json();
-        return new Response(JSON.stringify({ ok: true, transcription: d.text || '' }), {
-          headers: Object.assign({ 'Content-Type': 'application/json' }, cors)
-        });
-      } catch (e) {
-        return new Response(JSON.stringify({ ok: false, error: e.message }), {
-          status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, cors)
-        });
-      }
-    }
+    try {
+      // ═══ /transcribe — àudio → text (Whisper) ═══
+      if (url.pathname === '/transcribe') {
+        const formData = await request.formData();
+        const audio = formData.get('audio');
+        if (!audio) return json({ ok: false, error: 'No audio' }, 400, cors);
 
-    if (url.pathname === '/analyze') {
-      try {
-        const b = await request.json();
-        const prompt = 'Eres un experto en analisis de talento profesional. Analiza esta transcripcion de un video de categoria "' + b.category + '" y extrae TODA la informacion relevante. Transcripcion completa: "' + b.transcription + '". Devuelve SOLO este JSON sin markdown ni texto adicional: {"keywords":["minimo 10 palabras clave profesionales especificas que aparecen en el texto, no genericas"],"habilidades":["lista de habilidades tecnicas y blandas mencionadas"],"experiencia_anos":"anos de experiencia mencionados o vacio","sectores":["sectores profesionales detectados"],"logros":["logros o resultados concretos mencionados"],"personality_traits":[{"name":"rasgo detectado","score":85}],"professional_profiles":["perfiles profesionales que encajan"],"summary_for_seeker":"resumen de 2-3 frases del candidato para que una empresa lo entienda rapidamente"}';
-        const r = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { Authorization: 'Bearer ' + env.OPENAI_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.2, max_tokens: 1500 })
-        });
-        const d = await r.json();
-        const raw = d.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim();
-        return new Response(JSON.stringify({ ok: true, analysis: JSON.parse(raw) }), {
-          headers: Object.assign({ 'Content-Type': 'application/json' }, cors)
-        });
-      } catch (e) {
-        return new Response(JSON.stringify({ ok: false, error: e.message }), {
-          status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, cors)
-        });
-      }
-    }
+        const whisperForm = new FormData();
+        whisperForm.append('file', audio, 'audio.webm');
+        whisperForm.append('model', 'whisper-1');
 
-    return new Response('Talpot AI Worker OK', { headers: cors });
-  }
+        const wRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}` },
+          body: whisperForm,
+        });
+        if (!wRes.ok) return json({ ok: false, error: 'Whisper error ' + wRes.status }, 500, cors);
+        const wData = await wRes.json();
+        return json({ ok: true, transcription: wData.text }, 200, cors);
+      }
+
+      // ═══ /extract — transcripció → intel·ligència estructurada ═══
+      if (url.pathname === '/extract') {
+        const { transcription, category } = await request.json();
+        if (!transcription) return json({ ok: false, error: 'No transcription' }, 400, cors);
+
+        const currentYear = new Date().getFullYear();
+        const system = `Ets l'analista de talent de Talpot. Analitzes transcripcions de vídeos de candidats i n'extreus informació estructurada i PRECISA.
+
+REGLES:
+- Respon NOMÉS amb JSON vàlid, sense markdown ni text extra.
+- keywords: competències i coneixements REALS mencionats (màx 8, en l'idioma del candidat, capitalitzades).
+- Si mencionen anys o dates (ex: "del 2006 al 2010", "durant 3 anys", "des del 2020"), CALCULA els anys d'experiència. Any actual: ${currentYear}. "Des de 2020" = ${currentYear - 2020} anys.
+- experiencies: només si el vídeo parla de feina/experiència. Cada una amb sector, rol (si es pot inferir) i anys (número, null si no es pot calcular).
+- perfils_laborals: 1-3 rols laborals CONCRETS on aquest candidat encaixaria (ex: "Tècnic/a de medi ambient", "Responsable de logística", NO genèrics com "medi ambient").
+- idiomes: només si es mencionen o es detecten.
+
+FORMAT:
+{"keywords":["..."],"experiencies":[{"sector":"...","rol":"...","anys":N}],"perfils_laborals":["..."],"idiomes":["..."],"anys_experiencia_total":N}`;
+
+        const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            temperature: 0.2,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: system },
+              { role: 'user', content: `Categoria del vídeo: ${category || 'general'}\n\nTranscripció:\n${transcription}` },
+            ],
+          }),
+        });
+        if (!gRes.ok) return json({ ok: false, error: 'GPT error ' + gRes.status }, 500, cors);
+        const gData = await gRes.json();
+        let extracted = {};
+        try { extracted = JSON.parse(gData.choices[0].message.content); } catch(e) {
+          return json({ ok: false, error: 'Parse error' }, 500, cors);
+        }
+        return json({ ok: true, extracted }, 200, cors);
+      }
+
+      // ═══ /analyze — anàlisi per al Seeker (existent, mantingut) ═══
+      if (url.pathname === '/analyze') {
+        const { transcription, category } = await request.json();
+        if (!transcription) return json({ ok: false, error: 'No transcription' }, 400, cors);
+
+        const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            temperature: 0.3,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: `Ets l'analista de RRHH de Talpot. Analitza el contingut del candidat i respon NOMÉS JSON:
+{"keywords":["màx 6 competències"],"summary_for_seeker":"2-4 frases professionals descrivint el candidat per a un reclutador","titular":"la frase TEXTUAL més potent dita pel candidat (còpia literal, màx 15 paraules)"}` },
+              { role: 'user', content: `Categoria: ${category || 'general'}\n\n${transcription}` },
+            ],
+          }),
+        });
+        if (!gRes.ok) return json({ ok: false, error: 'GPT error' }, 500, cors);
+        const gData = await gRes.json();
+        let analysis = {};
+        try { analysis = JSON.parse(gData.choices[0].message.content); } catch(e) {}
+        return json({ ok: true, analysis }, 200, cors);
+      }
+
+      return json({ ok: false, error: 'Not found' }, 404, cors);
+    } catch (err) {
+      return json({ ok: false, error: err.message }, 500, cors);
+    }
+  },
 };
+
+function json(obj, status, cors) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...cors },
+  });
+}

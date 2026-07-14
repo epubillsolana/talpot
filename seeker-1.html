@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Seeker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body { background: linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%); }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(2,11,24,0.7); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
+    .seeker-badge { font-size: 0.62rem; font-weight: 800; padding: 0.3rem 0.7rem; border-radius: 100px; background: rgba(0,180,216,0.15); color: #00B4D8; border: 1px solid rgba(0,180,216,0.35); }
+
+    .scroll { position: fixed; inset: 0; padding-top: 56px; overflow-y: auto; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .header { padding: 1.5rem 1.25rem 0.75rem; }
+    .h-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 0.25rem; }
+    .h-sub { font-size: 0.82rem; color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+    .search-box { margin: 0.75rem 1.25rem 1.25rem; display: flex; gap: 0.5rem; }
+    .search-input { flex: 1; padding: 0.85rem 1.1rem; border-radius: 100px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; outline: none; }
+    .search-input::placeholder { color: rgba(255,255,255,0.35); }
+    .search-btn { padding: 0.85rem 1.3rem; border-radius: 100px; border: none; background: #FFD60A; color: #020B18; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.85rem; cursor: pointer; }
+
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.75rem; }
+
+    /* PERFILS LABORALS */
+    .perfils-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .perfil-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1rem; cursor: pointer; transition: transform 0.15s; }
+    .perfil-card:active { transform: scale(0.98); }
+    .pc-icon { font-size: 1.6rem; margin-bottom: 0.4rem; }
+    .pc-nom { font-size: 0.85rem; font-weight: 800; margin-bottom: 0.2rem; line-height: 1.25; }
+    .pc-count { font-size: 0.7rem; color: #FFD60A; font-weight: 700; }
+    .pc-count.zero { color: rgba(255,255,255,0.3); }
+
+    /* LLISTA CANDIDATS */
+    .cand-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1rem; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.85rem; cursor: pointer; transition: transform 0.15s; }
+    .cand-card:active { transform: scale(0.99); }
+    .cand-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; color: #020B18; flex-shrink: 0; }
+    .cand-info { flex: 1; min-width: 0; }
+    .cand-nom { font-size: 0.92rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .cand-kws { font-size: 0.72rem; color: rgba(255,255,255,0.6); line-height: 1.45; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .cand-match { flex-shrink: 0; text-align: center; }
+    .cand-match-val { font-size: 1.05rem; font-weight: 900; color: #30D158; }
+    .cand-match-lbl { font-size: 0.58rem; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 700; }
+
+    .back-perfils { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; color: #FFD60A; cursor: pointer; margin-bottom: 0.85rem; }
+
+    .empty { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2rem 1.25rem; text-align: center; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.6rem; }
+    .empty-text { font-size: 0.85rem; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+    .footer-space { height: 3rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" onclick="window.location.href='app.html'">← Feed</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div class="seeker-badge">🔍 SEEKER</div>
+  </nav>
+
+  <div class="scroll">
+    <div class="header">
+      <div class="h-title">🔍 Buscar talento</div>
+      <div class="h-sub">Explora per perfil laboral o busca competències concretes. La IA analitza el contingut real dels candidats.</div>
+    </div>
+
+    <div class="search-box">
+      <input class="search-input" id="search-input" placeholder="Ex: vendes, gestió, comunicació..." onkeydown="if(event.key==='Enter')searchKeyword()" />
+      <button class="search-btn" onclick="searchKeyword()">Buscar</button>
+    </div>
+
+    <!-- VISTA PERFILS -->
+    <div class="section" id="view-perfils">
+      <div class="section-title">💼 Perfils laborals</div>
+      <div class="perfils-grid" id="perfils-grid"></div>
+    </div>
+
+    <!-- VISTA CANDIDATS -->
+    <div class="section" id="view-candidats" style="display:none;">
+      <div class="back-perfils" onclick="showPerfils()">← Tots els perfils</div>
+      <div class="section-title" id="cand-title">Candidats</div>
+      <div id="cand-list"></div>
+    </div>
+
+    <div class="footer-space"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient(
+      'https://dlxeqzdgsejoywwwnchi.supabase.co',
+      'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo'
+    );
+
+    // FAMÍLIES amb ROLS CONCRETS (no coneixements genèrics)
+    const PERFILS = [
+      { id:'com1', fam:'Comercial i Vendes', icon:'💼', nom:'Comercial / Account Manager', kw:['comercial','vend','client','negocia','venta','sales','cartera'] },
+      { id:'com2', fam:'Comercial i Vendes', icon:'📈', nom:'Business Developer', kw:['negoci','business','desenvolup','creixement','captació','prospec'] },
+      { id:'ges1', fam:'Gestió', icon:'📊', nom:'Project Manager', kw:['project','projecte','planific','coordin','terminis','equips'] },
+      { id:'ges2', fam:'Gestió', icon:'👔', nom:'Responsable d\'equip / Team Lead', kw:['equip','lider','responsab','gestion','dirigir','supervis'] },
+      { id:'tec1', fam:'Tècnic', icon:'🌱', nom:'Tècnic/a de Medi Ambient', kw:['mediambient','ambiental','residu','sosteni','recicl','contenidor'] },
+      { id:'tec2', fam:'Tècnic', icon:'🛠️', nom:'Tècnic/a de Manteniment', kw:['manteniment','instal','repara','màquin','maquin','avaria'] },
+      { id:'log1', fam:'Logística', icon:'🚚', nom:'Responsable de Logística', kw:['logíst','logist','transport','magatzem','almacen','distribu','rutes'] },
+      { id:'ate1', fam:'Atenció al Client', icon:'🤝', nom:'Atenció al Client / Suport', kw:['atenció','atencion','client','suport','servei','servicio','incidèn'] },
+      { id:'adm1', fam:'Administració', icon:'📋', nom:'Administratiu/va', kw:['admin','factur','comptab','contab','oficina','documents','gestori'] },
+      { id:'mkt1', fam:'Màrqueting', icon:'📣', nom:'Tècnic/a de Màrqueting Digital', kw:['màrqueting','marketing','comunica','xarxes','redes','contingut','campanyes'] },
+      { id:'dig1', fam:'Digital / IT', icon:'💻', nom:'Desenvolupador/a Web', kw:['web','software','programa','codi','desenvolup','javascript','html'] },
+      { id:'dig2', fam:'Digital / IT', icon:'📊', nom:'Analista de Dades', kw:['dades','datos','anàlisi','analisis','sql','excel','power bi','informes'] },
+      { id:'rh1', fam:'RRHH', icon:'👥', nom:'Tècnic/a de Selecció', kw:['rrhh','recursos','selecció','seleccion','talent','entrevist','reclutament'] },
+    ];
+
+    // OFERTES DE FEINA per tipologia — de moment dataset representatiu del mercat; després connectarem font real
+    const OFERTES = [
+      { titol:'Comercial B2B sector industrial', empresa:'Sector industrial · Barcelona', perfilId:'com1', kw:['comercial','vend','client','negocia','b2b'] },
+      { titol:'Account Manager cartera clients', empresa:'Serveis · Girona', perfilId:'com1', kw:['client','cartera','comercial','fideli'] },
+      { titol:'Business Developer mercats nous', empresa:'Tech · Remot', perfilId:'com2', kw:['negoci','captació','creixement','prospec'] },
+      { titol:'Project Manager obres i serveis', empresa:'Construcció · Tarragona', perfilId:'ges1', kw:['project','planific','coordin','obra'] },
+      { titol:'Cap d\'equip torn de tarda', empresa:'Producció · Lleida', perfilId:'ges2', kw:['equip','lider','supervis','torn'] },
+      { titol:'Tècnic/a de medi ambient — gestió de residus', empresa:'Gestió ambiental · Catalunya', perfilId:'tec1', kw:['residu','mediambient','ambiental','contenidor','recollida'] },
+      { titol:'Tècnic/a de sostenibilitat i economia circular', empresa:'Consultoria · Barcelona', perfilId:'tec1', kw:['sosteni','circular','ambiental','recicl'] },
+      { titol:'Tècnic/a de manteniment industrial', empresa:'Indústria · Vallès', perfilId:'tec2', kw:['manteniment','màquin','maquin','avaria','preventiu'] },
+      { titol:'Responsable de logística i rutes', empresa:'Distribució · Baix Llobregat', perfilId:'log1', kw:['logíst','rutes','transport','flota'] },
+      { titol:'Gestor/a de magatzem', empresa:'Retail · Girona', perfilId:'log1', kw:['magatzem','almacen','estoc','inventari'] },
+      { titol:'Agent d\'atenció al client', empresa:'Serveis · Remot', perfilId:'ate1', kw:['atenció','client','suport','incidèn'] },
+      { titol:'Administratiu/va comptable', empresa:'Gestoria · Barcelona', perfilId:'adm1', kw:['factur','comptab','contab','admin'] },
+      { titol:'Tècnic/a de màrqueting digital', empresa:'Agència · Barcelona', perfilId:'mkt1', kw:['màrqueting','marketing','xarxes','campanyes','contingut'] },
+      { titol:'Desenvolupador/a web front-end', empresa:'Startup · Remot', perfilId:'dig1', kw:['web','javascript','html','front'] },
+      { titol:'Analista de dades júnior', empresa:'Consultoria · Barcelona', perfilId:'dig2', kw:['dades','sql','excel','power bi','anàlisi'] },
+      { titol:'Tècnic/a de selecció de personal', empresa:'RRHH · Barcelona', perfilId:'rh1', kw:['selecció','talent','entrevist','reclutament'] },
+    ];
+
+    let candidats = []; // { user_id, nom, kws[], nVideos, nChallenges }
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'index6.html'; return; }
+
+      // Upsert del propi perfil a la taula profiles (nom visible)
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name
+        || user.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      try { await sb.from('profiles').upsert({ id: user.id, full_name: fullName }); } catch(e) {}
+
+      await loadCandidats();
+      renderPerfils();
+    }
+
+    async function loadCandidats() {
+      // Tots els vídeos amb keywords + challenges, agrupats per usuari
+      const { data: videos } = await sb.from('magic_room_videos').select('user_id, keywords, transcripcio');
+      const { data: challenges } = await sb.from('challenge_respostes').select('user_id, transcripcio');
+      const { data: profiles } = await sb.from('profiles').select('id, full_name');
+
+      const nomMap = {};
+      (profiles || []).forEach(p => { nomMap[p.id] = p.full_name; });
+
+      const map = {};
+      (videos || []).forEach(v => {
+        if (!map[v.user_id]) map[v.user_id] = { user_id: v.user_id, kws: new Set(), text: '', nVideos: 0, nChallenges: 0 };
+        map[v.user_id].nVideos++;
+        (v.keywords || []).forEach(k => map[v.user_id].kws.add(k));
+        if (v.transcripcio) map[v.user_id].text += ' ' + v.transcripcio;
+      });
+      (challenges || []).forEach(c => {
+        if (!map[c.user_id]) map[c.user_id] = { user_id: c.user_id, kws: new Set(), text: '', nVideos: 0, nChallenges: 0 };
+        map[c.user_id].nChallenges++;
+        if (c.transcripcio) map[c.user_id].text += ' ' + c.transcripcio;
+      });
+
+      candidats = Object.values(map).map(c => ({
+        user_id: c.user_id,
+        nom: nomMap[c.user_id] || 'Talent Talpot',
+        kws: [...c.kws],
+        text: c.text.toLowerCase(),
+        nVideos: c.nVideos,
+        nChallenges: c.nChallenges,
+      }));
+    }
+
+    function matchScore(cand, kwList) {
+      let hits = 0;
+      const kwText = cand.kws.join(' ').toLowerCase() + ' ' + cand.text;
+      kwList.forEach(k => { if (kwText.includes(k)) hits++; });
+      if (hits === 0) return 0;
+      // % segons cobertura de keywords + volum de contingut
+      const cobertura = hits / kwList.length;
+      const volum = Math.min(1, (cand.nVideos * 0.15 + cand.nChallenges * 0.05));
+      return Math.round(Math.min(98, 40 + cobertura * 45 + volum * 15));
+    }
+
+    function renderPerfils() {
+      const grid = document.getElementById('perfils-grid');
+      // Agrupar per família
+      const fams = [...new Set(PERFILS.map(p => p.fam))];
+      grid.innerHTML = fams.map(fam => {
+        const rols = PERFILS.filter(p => p.fam === fam);
+        return `
+          <div style="grid-column:1/-1;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-top:0.5rem;">${fam}</div>
+          ${rols.map(p => {
+            const n = candidats.filter(c => matchScore(c, p.kw) > 0).length;
+            return `
+              <div class="perfil-card" onclick="showCandidats('${p.id}')">
+                <div class="pc-icon">${p.icon}</div>
+                <div class="pc-nom">${p.nom}</div>
+                <div class="pc-count ${n === 0 ? 'zero' : ''}">${n === 0 ? 'Sense candidats' : n + ' candidat' + (n > 1 ? 's' : '')}</div>
+              </div>`;
+          }).join('')}`;
+      }).join('');
+    }
+
+    function showPerfils() {
+      document.getElementById('view-candidats').style.display = 'none';
+      document.getElementById('view-perfils').style.display = 'block';
+    }
+
+    function showCandidats(perfilId) {
+      const p = PERFILS.find(x => x.id === perfilId);
+      const matched = candidats
+        .map(c => ({ ...c, score: matchScore(c, p.kw) }))
+        .filter(c => c.score > 0)
+        .sort((a, b) => b.score - a.score);
+      renderCandidats(p.icon + ' ' + p.nom, matched);
+    }
+
+    function searchKeyword() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      if (!q) return;
+      const terms = q.split(/[\s,]+/).filter(Boolean);
+      const matched = candidats
+        .map(c => ({ ...c, score: matchScore(c, terms) }))
+        .filter(c => c.score > 0)
+        .sort((a, b) => b.score - a.score);
+      renderCandidats('🔍 "' + q + '"', matched);
+    }
+
+    function renderCandidats(title, matched) {
+      document.getElementById('view-perfils').style.display = 'none';
+      document.getElementById('view-candidats').style.display = 'block';
+      document.getElementById('cand-title').textContent = title + ' · ' + matched.length + ' candidat' + (matched.length !== 1 ? 's' : '');
+      const list = document.getElementById('cand-list');
+      if (matched.length === 0) {
+        list.innerHTML = `
+          <div class="empty">
+            <div class="empty-icon">🔎</div>
+            <div class="empty-text">Encara no hi ha candidats que encaixin amb aquest perfil.<br>A mesura que els Creators pugin contingut, apareixeran aquí automàticament.</div>
+          </div>`;
+        return;
+      }
+      list.innerHTML = matched.map(c => {
+        // Ofertes on encaixa aquest candidat
+        const ofertesMatch = OFERTES
+          .map(o => ({ ...o, s: matchScore(c, o.kw) }))
+          .filter(o => o.s > 0)
+          .sort((a, b) => b.s - a.s)
+          .slice(0, 2);
+        return `
+        <div class="cand-card" onclick="window.location.href='creator-profile.html?user=${c.user_id}'">
+          <div class="cand-avatar">${c.nom.charAt(0).toUpperCase()}</div>
+          <div class="cand-info">
+            <div class="cand-nom">${c.nom}</div>
+            <div class="cand-kws">${c.kws.slice(0, 5).join(' · ') || (c.nChallenges + ' respostes d\'entrevista')}</div>
+            ${ofertesMatch.length ? `<div style="margin-top:0.35rem;font-size:0.68rem;color:#00B4D8;font-weight:700;">🎯 Encaixa: ${ofertesMatch.map(o => o.titol).join(' · ')}</div>` : ''}
+          </div>
+          <div class="cand-match">
+            <div class="cand-match-val">${c.score}%</div>
+            <div class="cand-match-lbl">Match</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    init();
+  </script>
+
+</body>
+</html>
