@@ -72,6 +72,7 @@ Respon NOMÉS JSON:
 REGLES:
 - Respon NOMÉS amb JSON vàlid, sense markdown ni text extra.
 - keywords: competències i coneixements REALS mencionats (màx 8, en l'idioma del candidat, capitalitzades).
+- CRÍTIC: només extreu una keyword si hi ha EVIDÈNCIA CONTEXTUAL real (el candidat en parla de debò, explica experiència o coneixement). IGNORA coincidències fonètiques, mencions trivials o de passada. Ex: "ai, quina calor" NO és "AI"; "vaig passar per Madrid" NO és coneixement de Madrid. En cas de dubte, NO l'incloguis.
 - Si mencionen anys o dates (ex: "del 2006 al 2010", "durant 3 anys", "des del 2020"), CALCULA els anys d'experiència. Any actual: ${currentYear}. "Des de 2020" = ${currentYear - 2020} anys.
 - experiencies: només si el vídeo parla de feina/experiència. Cada una amb sector, rol (si es pot inferir) i anys (número, null si no es pot calcular).
 - perfils_laborals: 1-3 rols laborals CONCRETS on aquest candidat encaixaria (ex: "Tècnic/a de medi ambient", "Responsable de logística", NO genèrics com "medi ambient").
