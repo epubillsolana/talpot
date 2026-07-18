@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Worker</title>
+<style>body{font-family:monospace;background:#020B18;color:#fff;padding:1.5rem;} button{padding:1rem 1.5rem;font-size:1rem;border-radius:10px;border:none;background:#FFD60A;font-weight:bold;cursor:pointer;margin-bottom:1rem;} pre{background:#0A1E33;padding:1rem;border-radius:10px;white-space:pre-wrap;word-break:break-all;font-size:0.8rem;}</style>
+</head>
+<body>
+<h3>🔧 Test Worker Talpot</h3>
+<button onclick="testExtract()">▶ Provar /extract</button>
+<pre id="out">Prem el botó...</pre>
+<script>
+async function testExtract() {
+  const out = document.getElementById('out');
+  out.textContent = '⏳ Cridant /extract...';
+  try {
+    const res = await fetch('https://talpot-ai-v2.e-pubill.workers.dev/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transcription: 'Hello, my name is Eduard. I have been working in logistics since 2006, managing waste collection routes and coordinating teams across Catalonia.',
+        category: 'idioma'
+      })
+    });
+    const data = await res.json();
+    out.textContent = '✅ RESPOSTA:\n\n' + JSON.stringify(data, null, 2);
+  } catch(e) {
+    out.textContent = '❌ ERROR DE XARXA:\n' + e.message;
+  }
+}
+</script>
+</body>
+</html>
