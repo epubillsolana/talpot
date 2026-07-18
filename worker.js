@@ -15,7 +15,7 @@ export default {
       // ═══ /transcribe — àudio → text (Whisper) ═══
       if (url.pathname === '/transcribe') {
         const formData = await request.formData();
-        const audio = formData.get('audio');
+        const audio = formData.get('audio') || formData.get('file');
         if (!audio) return json({ ok: false, error: 'No audio' }, 400, cors);
 
         const whisperForm = new FormData();
@@ -57,7 +57,7 @@ Respon NOMÉS JSON:
               ],
             }),
           });
-          if (!gRes.ok) return json({ ok: false, error: 'GPT error' }, 500, cors);
+          if (!gRes.ok) { const eb = await gRes.text(); return json({ ok: false, error: 'GPT ' + gRes.status + ': ' + eb.substring(0, 300) }, 500, cors); }
           const gData = await gRes.json();
           let extracted = {};
           try { extracted = JSON.parse(gData.choices[0].message.content); } catch(e) {
@@ -98,7 +98,7 @@ FORMAT:
             ],
           }),
         });
-        if (!gRes.ok) return json({ ok: false, error: 'GPT error ' + gRes.status }, 500, cors);
+        if (!gRes.ok) { const eb = await gRes.text(); return json({ ok: false, error: 'GPT ' + gRes.status + ': ' + eb.substring(0, 300) }, 500, cors); }
         const gData = await gRes.json();
         let extracted = {};
         try { extracted = JSON.parse(gData.choices[0].message.content); } catch(e) {
@@ -129,7 +129,7 @@ FORMAT:
             ],
           }),
         });
-        if (!gRes.ok) return json({ ok: false, error: 'GPT error' }, 500, cors);
+        if (!gRes.ok) { const eb = await gRes.text(); return json({ ok: false, error: 'GPT ' + gRes.status + ': ' + eb.substring(0, 300) }, 500, cors); }
         const gData = await gRes.json();
         let analysis = {};
         try { analysis = JSON.parse(gData.choices[0].message.content); } catch(e) {}
@@ -158,7 +158,7 @@ FORMAT:
             ],
           }),
         });
-        if (!gRes.ok) return json({ ok: false, error: 'GPT error' }, 500, cors);
+        if (!gRes.ok) { const eb = await gRes.text(); return json({ ok: false, error: 'GPT ' + gRes.status + ': ' + eb.substring(0, 300) }, 500, cors); }
         const gData = await gRes.json();
         let oferta = {};
         try { oferta = JSON.parse(gData.choices[0].message.content); } catch(e) {
