@@ -113,3 +113,50 @@ input, textarea, select {
 /* Empty states amb personalitat */
 .empty-mini, .empty { border-radius: var(--tp-radius) !important; }
 .empty-text { line-height: 1.65 !important; }
+
+/* ═══════════════════════════════════════════════
+   LLEGIBILITAT — mides i contrast mínims globals
+   ═══════════════════════════════════════════════ */
+
+/* Cap text per sota de 0.78rem — les micro-lletres pugen */
+.gc-mesura, .oc-meta, .cand-kws, .cand-forts, .jm-virtuts, .jm-stats,
+.gc-stats, .gh-progress, .vid-label, .card-tag, .pc-count, .oh-meta,
+.mag-sub, .hero-tag, .h-sub, .games-sub, .rob-status, .rob-cv,
+.demanar-sub, .analisi-update, .cf-count, .rk-row, .emo-context {
+  font-size: 0.8rem !important;
+}
+
+/* Etiquetes molt petites (comptadors, labels de %) — mínim absolut */
+.cand-match-lbl, .rk-pos, .oc-count, .gh-count {
+  font-size: 0.72rem !important;
+}
+
+/* Contrast mínim: cap gris per sota del 70% */
+.gc-mesura, .oc-meta, .cand-kws, .h-sub, .games-sub, .hero-tag,
+.mag-sub, .oh-meta, .demanar-sub, .jm-virtuts, .rob-status,
+.emo-context, .analisi-update, .pb-transcripcio, .an-text {
+  color: rgba(255,255,255,0.78) !important;
+}
+
+/* Labels secundaris (poden ser una mica més suaus, però mai invisibles) */
+.cand-match-lbl, .rk-pos, .gc-stats, .cards-hint {
+  color: rgba(255,255,255,0.55) !important;
+}
+
+/* Colors d'energia: sempre sobre pes de font alt (mai fins i prims) */
+[style*="color:#FFD60A"], [style*="color: #FFD60A"],
+[style*="color:#00B4D8"], [style*="color: #00B4D8"],
+[style*="color:#30D158"], [style*="color: #30D158"] {
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════
+   FONS — blau marí profund (prova A/B)
+   Per tornar al negre-nit original: comenta aquest bloc.
+   ═══════════════════════════════════════════════ */
+body {
+  background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%) !important;
+}
+.game-view, .nav, .nav-bottom {
+  background-color: rgba(6,20,38,0.85) !important;
+}
