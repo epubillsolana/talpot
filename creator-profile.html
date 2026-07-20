@@ -247,12 +247,13 @@
       } else {
         // Ve del Seeker — llegir el nom de la taula profiles
         try {
-          const { data: prof } = await sb.from('profiles').select('full_name').eq('id', targetUserId).single();
+          const { data: prof } = await sb.from('profiles').select('full_name, avatar_url').eq('id', targetUserId).single();
           userName = prof?.full_name || 'Talent Talpot';
+          if (prof?.avatar_url) document.getElementById('avatar').innerHTML = `<img src="${prof.avatar_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
         } catch(e) { userName = 'Talent Talpot'; }
       }
       document.getElementById('hero-name').textContent = userName;
-      document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
+      if (!document.getElementById('avatar').innerHTML.includes('img')) document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
 
       const { data: videos } = await sb.from('magic_room_videos').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false });
       const { data: challenges } = await sb.from('challenge_respostes').select('*').eq('user_id', targetUserId).order('created_at', { ascending: true });

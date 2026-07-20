@@ -31,7 +31,9 @@
 
     /* ===== VISTA PERFIL ===== */
     .hero { display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1.25rem 1rem; gap: 0.6rem; text-align: center; }
-    .avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #020B18; }
+    .avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #020B18; overflow: hidden; position: relative; cursor: pointer; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-edit-badge { position: absolute; bottom: 0; right: 0; width: 24px; height: 24px; border-radius: 50%; background: #00B4D8; border: 2px solid #061426; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
     .hero-name { font-size: 1.3rem; font-weight: 900; }
     .hero-email { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
 
@@ -198,7 +200,8 @@
   <div class="view" id="view-perfil">
 
     <div class="hero">
-      <div class="avatar" id="avatar">?</div>
+      <div class="avatar" id="avatar" onclick="document.getElementById('avatar-file').click()">?<div class="avatar-edit-badge">📷</div></div>
+      <input type="file" id="avatar-file" accept="image/*" style="display:none;" onchange="pujarAvatar(this)" />
       <div class="hero-name" id="hero-name">Cargando...</div>
       <div class="hero-email" id="hero-email"></div>
       <div id="loc-box" onclick="editLocation()" style="margin-top:0.5rem;display:inline-flex;align-items:center;gap:0.35rem;font-size:0.78rem;font-weight:700;color:#00B4D8;cursor:pointer;padding:0.3rem 0.8rem;border-radius:100px;background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.25);">
@@ -330,6 +333,30 @@
       } catch(e) {}
     }
 
+    async function pujarAvatar(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('⚠️ La imagen es demasiado grande (máx. 5MB).'); return; }
+      const avatarEl = document.getElementById('avatar');
+      const previ = avatarEl.innerHTML;
+      avatarEl.innerHTML = '⏳';
+      try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        const ext = file.name.split('.').pop();
+        const fileName = user.id + '/avatar.' + ext;
+        const { error: upErr } = await sb.storage.from('avatars').upload(fileName, file, { upsert: true, contentType: file.type });
+        if (upErr) { alert('⚠️ Error subiendo la foto: ' + upErr.message); avatarEl.innerHTML = previ; return; }
+        const { data: urlData } = sb.storage.from('avatars').getPublicUrl(fileName);
+        const url = urlData.publicUrl + '?t=' + Date.now();
+        await sb.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+        avatarEl.innerHTML = `<img src="${url}" alt=""><div class="avatar-edit-badge">📷</div>`;
+      } catch(e) {
+        alert('⚠️ Error: ' + e.message);
+        avatarEl.innerHTML = previ;
+      }
+    }
+
     function goBack() {
       const ent = document.getElementById('view-entrevista');
       if (!ent.classList.contains('hidden')) {
@@ -347,6 +374,14 @@
       const email = user.email || '';
       userName = user.user_metadata?.full_name || email.split('@')[0];
       document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
+
+      // Avatar existent
+      try {
+        const { data: prof } = await sb.from('profiles').select('avatar_url').eq('id', user.id).single();
+        if (prof?.avatar_url) {
+          document.getElementById('avatar').innerHTML = `<img src="${prof.avatar_url}" alt=""><div class="avatar-edit-badge">📷</div>`;
+        }
+      } catch(e) {}
       document.getElementById('hero-name').textContent = userName;
       document.getElementById('hero-email').textContent = email;
 
