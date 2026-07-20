@@ -165,7 +165,7 @@
     async function loadNotifs() {
       const cont = document.getElementById('notifs-container');
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'index6.html'; return; }
+      if (!user) { window.location.href = 'index.html'; return; }
       const { data } = await sb.from('notificacions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
       notifs = data || [];
       if (notifs.length === 0) {

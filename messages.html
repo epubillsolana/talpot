@@ -102,7 +102,7 @@
 
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'index6.html'; return; }
+      if (!user) { window.location.href = 'index.html'; return; }
       myId = user.id;
       const { data: profiles } = await sb.from('profiles').select('id, full_name');
       (profiles || []).forEach(p => { nomMap[p.id] = p.full_name; });

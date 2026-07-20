@@ -240,7 +240,7 @@
     async function loadCreator() {
       if (!targetUserId) {
         const { data: { user } } = await sb.auth.getUser();
-        if (!user) { window.location.href = 'index6.html'; return; }
+        if (!user) { window.location.href = 'index.html'; return; }
         targetUserId = user.id;
         userName = user.user_metadata?.full_name || user.user_metadata?.name
           || (user.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));

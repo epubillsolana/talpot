@@ -107,7 +107,7 @@
 
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'index6.html'; return; }
+      if (!user) { window.location.href = 'index.html'; return; }
       const fullName = user.user_metadata?.full_name || user.user_metadata?.name
         || user.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       try { await sb.from('profiles').upsert({ id: user.id, full_name: fullName }); } catch(e) {}

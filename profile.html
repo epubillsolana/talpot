@@ -328,7 +328,7 @@
 
     async function loadProfile() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'index6.html'; return; }
+      if (!user) { window.location.href = 'index.html'; return; }
 
       const email = user.email || '';
       userName = user.user_metadata?.full_name || email.split('@')[0];
