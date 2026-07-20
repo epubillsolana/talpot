@@ -201,6 +201,9 @@
       <div class="avatar" id="avatar">?</div>
       <div class="hero-name" id="hero-name">Cargando...</div>
       <div class="hero-email" id="hero-email"></div>
+      <div id="loc-box" onclick="editLocation()" style="margin-top:0.5rem;display:inline-flex;align-items:center;gap:0.35rem;font-size:0.78rem;font-weight:700;color:#00B4D8;cursor:pointer;padding:0.3rem 0.8rem;border-radius:100px;background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.25);">
+        📍 <span id="loc-text">Añadir ubicación</span>
+      </div>
     </div>
 
     <div class="rob-card">
@@ -316,6 +319,17 @@
       }
     }
 
+    async function editLocation() {
+      const actual = document.getElementById('loc-text').textContent;
+      const nova = prompt('¿Dónde resides? (ciudad, comarca o zona)', actual === 'Añadir ubicación' ? '' : actual);
+      if (nova === null || !nova.trim()) return;
+      document.getElementById('loc-text').textContent = nova.trim();
+      try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) await sb.from('profiles').update({ ubicacio: nova.trim() }).eq('id', user.id);
+      } catch(e) {}
+    }
+
     function goBack() {
       const ent = document.getElementById('view-entrevista');
       if (!ent.classList.contains('hidden')) {
@@ -335,6 +349,12 @@
       document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
       document.getElementById('hero-name').textContent = userName;
       document.getElementById('hero-email').textContent = email;
+
+      // Ubicació
+      try {
+        const { data: prof } = await sb.from('profiles').select('ubicacio').eq('id', user.id).single();
+        if (prof?.ubicacio) document.getElementById('loc-text').textContent = prof.ubicacio;
+      } catch(e) {}
 
       const { data: videos } = await sb.from('magic_room_videos').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
       const { data: challs } = await sb.from('challenge_respostes').select('*').eq('user_id', user.id).order('created_at', { ascending: true });
