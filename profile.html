@@ -114,14 +114,15 @@
 
     /* ENTREVISTA TEASER */
     .entrevista-teaser {
-      background: linear-gradient(135deg, rgba(255,107,0,0.12), rgba(255,214,10,0.06));
-      border: 1px solid rgba(255,107,0,0.2); border-radius: 16px; padding: 1.1rem;
+      background: linear-gradient(135deg, rgba(255,107,0,0.22), rgba(255,214,10,0.1));
+      border: 1px solid rgba(255,107,0,0.4); border-left: 4px solid #FF6B00; border-radius: 16px; padding: 1.35rem;
       cursor: pointer; transition: background 0.2s;
+      box-shadow: 0 6px 24px rgba(255,107,0,0.12);
     }
-    .entrevista-teaser:hover { background: linear-gradient(135deg, rgba(255,107,0,0.18), rgba(255,214,10,0.1)); }
-    .et-badge { font-size: 0.65rem; font-weight: 700; color: #FF6B00; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
-    .et-titular { font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.35; margin-bottom: 0.5rem; }
-    .et-meta { font-size: 0.75rem; color: rgba(255,255,255,0.45); margin-bottom: 0.75rem; }
+    .entrevista-teaser:hover { background: linear-gradient(135deg, rgba(255,107,0,0.3), rgba(255,214,10,0.15)); }
+    .et-badge { font-size: 0.7rem; font-weight: 800; color: #FF6B00; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 0.6rem; }
+    .et-titular { font-size: 1.3rem; font-weight: 900; color: #fff; line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+    .et-meta { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-bottom: 0.75rem; }
     .et-cta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: #FF6B00; }
 
     .empty-state { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 1.25rem; text-align: center; }
@@ -129,8 +130,8 @@
     .empty-text { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
 
     /* CV */
-    .cv-card { background: rgba(0,180,216,0.06); border: 1px solid rgba(0,180,216,0.15); border-radius: 16px; padding: 1rem; }
-    .cv-info { font-size: 0.78rem; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 0.75rem; }
+    .cv-card { background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3); border-radius: 16px; padding: 1.25rem; }
+    .cv-info { font-size: 0.8rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 0.85rem; }
     .cv-btn { width: 100%; padding: 0.8rem; border-radius: 100px; border: 1px solid rgba(0,180,216,0.3); background: rgba(0,180,216,0.08); color: #00B4D8; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
 
     /* ===== VISTA ENTREVISTA ===== */
@@ -202,9 +203,9 @@
   <div class="view" id="view-perfil">
 
     <div class="hero">
-      <div class="avatar" id="avatar" onclick="obrirCamera()">?<div class="avatar-edit-badge">📷</div></div>
+      <div class="avatar" id="avatar" onclick="obrirCamera()">?<div class="avatar-edit-badge">✏️</div></div>
       <input type="file" id="avatar-file" accept="image/*" capture="user" style="display:none;" onchange="pujarAvatar(this)" />
-      <div class="hero-name" id="hero-name" onclick="editName()" style="cursor:pointer;">Cargando...</div>
+      <div class="hero-name" id="hero-name" onclick="editName()" style="cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;">Cargando... <span style="font-size:0.9rem;opacity:0.5;">✏️</span></div>
       <div class="hero-email" id="hero-email"></div>
       <div id="loc-box" onclick="editLocation()" style="margin-top:0.5rem;display:inline-flex;align-items:center;gap:0.35rem;font-size:0.78rem;font-weight:700;color:#00B4D8;cursor:pointer;padding:0.3rem 0.8rem;border-radius:100px;background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.25);">
         📍 <span id="loc-text">Añadir ubicación</span>
@@ -314,6 +315,14 @@
 
     let challenges = [];
     let userName = '';
+    let lastVideosCount = 0, lastChallengesCount = 0, lastKwCount = 0, hasCV = false;
+
+    function actualitzarRobustesa() {
+      const rob = Math.min(100, (lastVideosCount * 10) + (lastChallengesCount * 5) + (lastKwCount * 2) + (hasCV ? 12 : 0));
+      document.getElementById('rob-score').textContent = rob + '%';
+      document.getElementById('rob-fill').style.width = rob + '%';
+      document.getElementById('rob-status').textContent = rob === 0 ? '🟡 Perfil nuevo · empieza a construirlo' : rob < 40 ? '🟡 En construcción' : '🟢 Perfil consolidado';
+    }
 
     function showView(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -366,7 +375,7 @@
       const nou = prompt('¿Cómo quieres que te vean? (nombre y apellido)', userName);
       if (nou === null || !nou.trim()) return;
       userName = nou.trim();
-      document.getElementById('hero-name').textContent = userName;
+      document.getElementById('hero-name').innerHTML = userName + ' <span style="font-size:0.9rem;opacity:0.5;">✏️</span>';
       if (!document.getElementById('avatar').innerHTML.includes('img')) document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
       try {
         const { data: { user } } = await sb.auth.getUser();
@@ -396,7 +405,7 @@
         const { data: urlData } = sb.storage.from('Avatars').getPublicUrl(fileName);
         const url = urlData.publicUrl + '?t=' + Date.now();
         await sb.from('profiles').update({ avatar_url: url }).eq('id', user.id);
-        avatarEl.innerHTML = `<img src="${url}" alt=""><div class="avatar-edit-badge">📷</div>`;
+        avatarEl.innerHTML = `<img src="${url}" alt=""><div class="avatar-edit-badge">✏️</div>`;
       } catch(e) {
         alert('⚠️ Error: ' + e.message);
         avatarEl.innerHTML = previ;
@@ -425,11 +434,11 @@
       try {
         const { data: prof } = await sb.from('profiles').select('avatar_url, full_name').eq('id', user.id).single();
         if (prof?.avatar_url) {
-          document.getElementById('avatar').innerHTML = `<img src="${prof.avatar_url}" alt=""><div class="avatar-edit-badge">📷</div>`;
+          document.getElementById('avatar').innerHTML = `<img src="${prof.avatar_url}" alt=""><div class="avatar-edit-badge">✏️</div>`;
         }
         if (prof?.full_name) userName = prof.full_name;
       } catch(e) {}
-      document.getElementById('hero-name').textContent = userName;
+      document.getElementById('hero-name').innerHTML = userName + ' <span style="font-size:0.9rem;opacity:0.5;">✏️</span>';
       document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
 
       // Ubicació
@@ -447,12 +456,20 @@
 
       document.getElementById('stat-videos').textContent = videos?.length || 0;
       document.getElementById('stat-challenges').textContent = challenges.length;
-      document.getElementById('stat-keywords').textContent = uniqueKw.length;
+      lastVideosCount = videos?.length || 0;
+      lastChallengesCount = challenges.length;
+      lastKwCount = uniqueKw.length;
 
-      const rob = Math.min(100, ((videos?.length || 0) * 10) + (challenges.length * 5) + (uniqueKw.length * 2));
-      document.getElementById('rob-score').textContent = rob + '%';
-      document.getElementById('rob-fill').style.width = rob + '%';
-      document.getElementById('rob-status').textContent = rob === 0 ? '🟡 Perfil nuevo · empieza a construirlo' : rob < 40 ? '🟡 En construcción' : '🟢 Perfil consolidado';
+      // Comprovem si ja existeix un CV pujat
+      try {
+        const { data: cvList } = await sb.storage.from('cvs').list(user.id);
+        hasCV = !!(cvList && cvList.some(f => f.name === 'cv.pdf'));
+      } catch(e) { hasCV = false; }
+      if (hasCV) {
+        document.getElementById('cv-content').innerHTML = `<div style="font-size:0.82rem;color:#00B4D8;font-weight:600;">📄 CV pujat correctament ✓</div>`;
+      }
+
+      actualitzarRobustesa();
 
       renderMagicRoom((videos || []).filter(v => v.categoria !== 'actualitat'));
       renderMiMundo((videos || []).filter(v => v.categoria === 'actualitat'));
@@ -464,7 +481,15 @@
       const section = document.getElementById('mi-mundo-section');
       const list = document.getElementById('mi-mundo-list');
       if (videos.length === 0) {
-        list.innerHTML = '<div style="font-size:0.82rem;color:rgba(255,255,255,0.5);padding:0.5rem 0;">Aún no has compartido tu opinión. Encuéntralo en el Feed → 🌍 Mi Mundo.</div>';
+        list.innerHTML = `
+          <div style="border-radius:20px;overflow:hidden;background:linear-gradient(160deg,#0A2A4D 0%,#041E3A 100%);border:1px solid rgba(255,255,255,0.12);cursor:pointer;" onclick="window.location.href='app.html'">
+            <div class="sc-video-area" style="height:180px;">
+              <div style="text-align:center;">
+                <div class="sc-empty-icon">🌍</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:0.5rem;">Toca per compartir la teva opinió</div>
+              </div>
+            </div>
+          </div>`;
         return;
       }
       list.innerHTML = videos.map((v, i) => {
@@ -743,6 +768,8 @@
       if (!user) return;
       await sb.storage.from('cvs').upload(user.id + '/cv.pdf', input.files[0], { upsert: true });
       document.getElementById('cv-content').innerHTML = `<div style="font-size:0.82rem;color:#00B4D8;font-weight:600;">📄 CV pujat correctament ✓</div>`;
+      hasCV = true;
+      actualitzarRobustesa();
     }
 
     loadProfile();
