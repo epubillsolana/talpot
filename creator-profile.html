@@ -504,6 +504,9 @@
       });
       html += '</div>';
       container.innerHTML = html;
+      container.style.border = '4px solid lime';
+      container.style.minHeight = '50px';
+      document.title = 'DEBUG-FIN-OK-' + challenges.length;
     }
 
     function toggleEntrevista(btn) {
