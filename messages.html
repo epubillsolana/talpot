@@ -5,391 +5,199 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Talpot — Mensajes</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="talpot-style.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; }
+    body { background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%); }
 
-    body {
-      background:
-        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
-        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
-        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
-      background-attachment: fixed;
-    }
-
-    /* NAV */
-    .nav {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.25rem;
-      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
-    }
-    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(6,20,38,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.07); z-index: 50; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
     .nav-logo span { color: #FFD60A; }
-    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
-    .nav-back:hover { color: #fff; }
+    .nav-back { font-weight: 800; cursor: pointer; }
 
-    /* LLISTA MISSATGES */
-    .screen { position: fixed; inset: 0; z-index: 10; transition: opacity 0.3s, transform 0.3s; }
-    .screen.hidden { opacity: 0; pointer-events: none; transform: translateX(-20px); }
+    .scroll { position: fixed; inset: 0; padding: 70px 0 76px; overflow-y: auto; }
 
-    .scroll { padding-top: 56px; padding-bottom: 80px; overflow-y: auto; height: 100%; }
-    .scroll::-webkit-scrollbar { display: none; }
+    .header { padding: 0.5rem 1.25rem 1rem; }
+    .h-title { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; }
 
-    /* TABS */
-    .tabs {
-      display: flex; padding: 1rem 1.25rem 0.75rem;
-      gap: 0.5rem;
-    }
-    .tab {
-      padding: 0.4rem 1rem; border-radius: 100px;
-      font-size: 0.78rem; font-weight: 700; cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4);
-      transition: all 0.2s;
-    }
-    .tab.active { background: rgba(255,214,10,0.12); border-color: rgba(255,214,10,0.3); color: #FFD60A; }
+    /* LLISTA DE CONVERSES */
+    .conv-card { display: flex; align-items: center; gap: 0.85rem; padding: 1rem 1.25rem; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .conv-card:active { background: rgba(255,255,255,0.04); }
+    .conv-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: #020B18; flex-shrink: 0; }
+    .conv-info { flex: 1; min-width: 0; }
+    .conv-nom { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.2rem; }
+    .conv-last { font-size: 0.8rem; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-meta { text-align: right; flex-shrink: 0; }
+    .conv-time { font-size: 0.7rem; color: rgba(255,255,255,0.45); }
+    .conv-unread { display: inline-block; margin-top: 0.3rem; min-width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 100px; background: #FFD60A; color: #020B18; font-size: 0.7rem; font-weight: 900; }
 
-    /* MISSATGE CARD */
-    .msg-list { padding: 0 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    /* XAT */
+    .xat { display: none; flex-direction: column; position: fixed; inset: 0; padding-top: 56px; background: linear-gradient(180deg, #061426 0%, #0A2540 60%, #10406E 100%); z-index: 40; }
+    .xat.open { display: flex; }
+    .xat-msgs { flex: 1; overflow-y: auto; padding: 1rem 1.25rem 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .msg { max-width: 80%; padding: 0.75rem 1rem; border-radius: 16px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .msg.mine { align-self: flex-end; background: rgba(255,214,10,0.16); border: 1px solid rgba(255,214,10,0.3); border-bottom-right-radius: 4px; }
+    .msg.theirs { align-self: flex-start; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-bottom-left-radius: 4px; }
+    .msg.peticio { border-left: 3px solid #00B4D8; }
+    .msg-time { font-size: 0.62rem; color: rgba(255,255,255,0.4); margin-top: 0.3rem; }
 
-    .msg-card {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 1rem; cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-      display: flex; gap: 0.85rem; align-items: flex-start;
-    }
-    .msg-card:hover { background: rgba(255,255,255,0.08); transform: scale(1.01); }
-    .msg-card.unread { border-color: rgba(255,214,10,0.2); background: rgba(255,214,10,0.04); }
+    .xat-input-bar { display: flex; gap: 0.5rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: rgba(6,20,38,0.95); border-top: 1px solid rgba(255,255,255,0.08); }
+    .xat-input { flex: 1; padding: 0.85rem 1.1rem; border-radius: 100px; border: 1.5px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; outline: none; }
+    .xat-send { padding: 0.85rem 1.3rem; border-radius: 100px; border: none; background: #FFD60A; color: #020B18; font-weight: 900; font-family: 'Space Grotesk', sans-serif; cursor: pointer; }
 
-    .msg-avatar {
-      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; font-weight: 800; color: #020B18;
-    }
+    .empty { padding: 3rem 1.5rem; text-align: center; color: rgba(255,255,255,0.55); line-height: 1.7; font-size: 0.9rem; }
 
-    .msg-body { flex: 1; min-width: 0; }
-    .msg-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem; }
-    .msg-company { font-size: 0.9rem; font-weight: 800; color: #fff; }
-    .msg-time { font-size: 0.68rem; color: rgba(255,255,255,0.3); font-weight: 500; white-space: nowrap; }
-    .msg-preview { font-size: 0.8rem; color: rgba(255,255,255,0.45); line-height: 1.4; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .msg-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-    .msg-tag {
-      font-size: 0.62rem; font-weight: 700; padding: 0.2rem 0.5rem;
-      border-radius: 100px;
-    }
-    .tag-video { background: rgba(191,90,242,0.12); color: #BF5AF2; border: 1px solid rgba(191,90,242,0.2); }
-    .tag-showtime { background: rgba(48,209,88,0.12); color: #30D158; border: 1px solid rgba(48,209,88,0.2); }
-    .tag-champions { background: rgba(255,214,10,0.1); color: #FFD60A; border: 1px solid rgba(255,214,10,0.2); }
-    .tag-new { background: rgba(255,45,85,0.12); color: #FF2D55; border: 1px solid rgba(255,45,85,0.2); }
-
-    .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #FFD60A; flex-shrink: 0; margin-top: 4px; }
-
-    /* DETALL MISSATGE */
-    .detail-screen {
-      position: fixed; inset: 0; z-index: 20;
-      display: flex; flex-direction: column;
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    .detail-screen.hidden { opacity: 0; pointer-events: none; transform: translateX(20px); }
-
-    .detail-nav {
-      height: 56px; display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.25rem;
-      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;
-    }
-    .detail-company { font-size: 1rem; font-weight: 800; color: #fff; }
-    .detail-meta { font-size: 0.72rem; color: rgba(255,255,255,0.35); font-weight: 500; }
-
-    .detail-scroll { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
-    .detail-scroll::-webkit-scrollbar { display: none; }
-
-    /* Seeker info */
-    .seeker-info {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 1rem;
-      display: flex; align-items: center; gap: 0.85rem;
-    }
-    .si-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 800; color: #020B18; flex-shrink: 0; }
-    .si-body { flex: 1; }
-    .si-name { font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: 0.15rem; }
-    .si-role { font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 500; }
-    .si-plan { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 100px; background: rgba(255,214,10,0.1); color: #FFD60A; border: 1px solid rgba(255,214,10,0.2); }
-
-    /* Missatge text */
-    .msg-bubble {
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 16px; padding: 1rem;
-    }
-    .bubble-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.5rem; }
-    .bubble-text { font-size: 0.9rem; color: rgba(255,255,255,0.85); line-height: 1.65; font-weight: 500; }
-
-    /* Petició de vídeo */
-    .video-request {
-      background: rgba(191,90,242,0.08); border: 1px solid rgba(191,90,242,0.2);
-      border-radius: 16px; padding: 1rem;
-    }
-    .vr-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #BF5AF2; margin-bottom: 0.75rem; }
-    .vr-question { font-size: 1rem; font-weight: 800; color: #fff; line-height: 1.4; margin-bottom: 0.5rem; }
-    .vr-hint { font-size: 0.78rem; color: rgba(255,255,255,0.4); line-height: 1.5; }
-
-    /* Accions */
-    .detail-actions { padding: 1rem 1.25rem; background: rgba(2,11,24,0.85); backdrop-filter: blur(16px); border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 0.6rem; flex-shrink: 0; }
-
-    .action-btn {
-      width: 100%; padding: 1rem; border-radius: 100px; border: none;
-      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
-      font-size: 0.95rem; cursor: pointer; transition: transform 0.15s;
-    }
-    .action-btn:active { transform: scale(0.97); }
-    .btn-primary { background: #BF5AF2; color: #fff; box-shadow: 0 6px 24px rgba(191,90,242,0.3); }
-    .btn-primary:hover { transform: scale(1.02); }
-    .btn-secondary { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); }
-
-    /* NAV BOTTOM */
-    .nav-bottom {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
-      display: flex; align-items: center; justify-content: space-around;
-      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
-      border-top: 1px solid rgba(255,255,255,0.06); z-index: 15;
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; }
-    .nav-item.active { opacity: 1; }
-    .nav-item.active .nav-icon { color: #FFD60A; }
-    .nav-icon { font-size: 1.3rem; line-height: 1; position: relative; }
-    .notif-dot { position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: #FF2D55; border: 2px solid #020B18; }
+    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; align-items: center; padding: 0.6rem 0 calc(0.6rem + env(safe-area-inset-bottom)); background: rgba(6,20,38,0.94); backdrop-filter: blur(18px); border-top: 1px solid rgba(255,255,255,0.07); z-index: 50; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.5); cursor: pointer; }
+    .nav-item.active { color: #FFD60A; }
+    .nav-icon { font-size: 1.25rem; }
   </style>
-  <link rel="stylesheet" href="talpot-style.css" />
 </head>
 <body>
 
-  <!-- LLISTA DE MISSATGES -->
-  <div class="screen" id="screen-list">
-    <nav class="nav">
-      <div class="nav-back" onclick="window.location.href='app.html'">← Feed</div>
-      <div class="nav-logo">tal<span>pot</span></div>
-      <div style="width:60px;"></div>
-    </nav>
+  <nav class="nav">
+    <div class="nav-back" id="nav-back" onclick="goBack()">← Feed</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:50px;"></div>
+  </nav>
 
-    <div class="scroll">
-      <div class="tabs">
-        <div class="tab active">Todos</div>
-        <div class="tab">Peticiones de vídeo</div>
-        <div class="tab">Showtime</div>
-      </div>
-
-      <div class="msg-list">
-
-        <!-- MISSATGE 1 — NOU, petició vídeo -->
-        <div class="msg-card unread" onclick="showDetail('msg1')">
-          <div class="unread-dot"></div>
-          <div class="msg-avatar" style="background:linear-gradient(135deg,#FFD60A,#FF6B00);">AC</div>
-          <div class="msg-body">
-            <div class="msg-top">
-              <div class="msg-company">Acme Corp</div>
-              <div class="msg-time">Hace 2h</div>
-            </div>
-            <div class="msg-preview">Nos ha encantado tu Magic Room. Nos gustaría hacerte una pregunta...</div>
-            <div class="msg-tags">
-              <span class="msg-tag tag-video">📹 Petición de vídeo</span>
-              <span class="msg-tag tag-new">Nuevo</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- MISSATGE 2 — Showtime -->
-        <div class="msg-card unread" onclick="showDetail('msg2')">
-          <div class="unread-dot"></div>
-          <div class="msg-avatar" style="background:linear-gradient(135deg,#00B4D8,#0D3B6E);">TK</div>
-          <div class="msg-body">
-            <div class="msg-top">
-              <div class="msg-company">TechKorp</div>
-              <div class="msg-time">Ayer</div>
-            </div>
-            <div class="msg-preview">Te invitamos a un Showtime. ¿Tienes disponibilidad esta semana?</div>
-            <div class="msg-tags">
-              <span class="msg-tag tag-showtime">🎬 Showtime</span>
-              <span class="msg-tag tag-new">Nuevo</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- MISSATGE 3 — Champions -->
-        <div class="msg-card" onclick="showDetail('msg3')">
-          <div class="msg-avatar" style="background:linear-gradient(135deg,#BF5AF2,#7B2FBE);">NX</div>
-          <div class="msg-body">
-            <div class="msg-top">
-              <div class="msg-company">NextGen</div>
-              <div class="msg-time">Hace 3 días</div>
-            </div>
-            <div class="msg-preview">Estás invitado a nuestra Champions el próximo sábado en Barcelona.</div>
-            <div class="msg-tags">
-              <span class="msg-tag tag-champions">🏆 Champions</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- MISSATGE 4 — llegit -->
-        <div class="msg-card" onclick="showDetail('msg4')">
-          <div class="msg-avatar" style="background:linear-gradient(135deg,#30D158,#0D3B6E);">SL</div>
-          <div class="msg-body">
-            <div class="msg-top">
-              <div class="msg-company">StartLab</div>
-              <div class="msg-time">Hace 1 semana</div>
-            </div>
-            <div class="msg-preview">Gracias por tu vídeo de respuesta. Lo hemos valorado muy positivamente...</div>
-            <div class="msg-tags">
-              <span class="msg-tag tag-video">📹 Vídeo respondido</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <nav class="nav-bottom">
-      <div class="nav-item" onclick="window.location.href='app.html'">
-        <div class="nav-icon">🏠</div>
-        <span>Feed</span>
-      </div>
-      <div class="nav-item" onclick="window.location.href='magic-room.html'">
-        <div class="nav-icon">✨</div>
-        <span>Mi Room</span>
-      </div>
-      <div class="nav-item active">
-        <div class="nav-icon" style="position:relative;">🔔<span class="notif-dot"></span></div>
-        <span>Mensajes</span>
-      </div>
-      <div class="nav-item" onclick="window.location.href='profile.html'">
-        <div class="nav-icon">👤</div>
-        <span>Perfil</span>
-      </div>
-    </nav>
+  <div class="scroll" id="view-list">
+    <div class="header"><div class="h-title">💬 Mensajes</div></div>
+    <div id="convs-container"><div class="empty">⏳ Carregant converses...</div></div>
   </div>
 
-  <!-- DETALL MSG 1 — Petició vídeo -->
-  <div class="detail-screen hidden" id="detail-msg1">
-    <div class="detail-nav">
-      <div onclick="hideDetail()" style="cursor:pointer;color:rgba(255,255,255,0.85);font-weight:700;">← Volver</div>
-      <div>
-        <div class="detail-company">Acme Corp</div>
-        <div class="detail-meta">Plan Hunt · Hace 2 horas</div>
-      </div>
-      <div style="width:60px;"></div>
-    </div>
-    <div class="detail-scroll">
-      <div class="seeker-info">
-        <div class="si-avatar" style="background:linear-gradient(135deg,#FFD60A,#FF6B00);">AC</div>
-        <div class="si-body">
-          <div class="si-name">Acme Corp</div>
-          <div class="si-role">Empresa tecnológica · Barcelona</div>
-        </div>
-        <span class="si-plan">Hunt</span>
-      </div>
-      <div class="msg-bubble">
-        <div class="bubble-label">Mensaje de Acme Corp</div>
-        <div class="bubble-text">Hola, hemos visto tu Magic Room y nos ha parecido muy interesante tu perfil creativo. Nos gustaría conocerte mejor antes de proponerte un Showtime. ¿Podrías responder a la siguiente pregunta en vídeo?</div>
-      </div>
-      <div class="video-request">
-        <div class="vr-label">📹 Petición de vídeo personalizado</div>
-        <div class="vr-question">"¿Cómo gestionarías el diseño de una app de cero si tuvieras una semana y un equipo de dos personas?"</div>
-        <div class="vr-hint">Tu respuesta en vídeo aparecerá en tu Magic Room. Como siempre, no se puede editar. Tienes 90 segundos.</div>
-      </div>
-    </div>
-    <div class="detail-actions">
-      <button class="action-btn btn-primary" onclick="window.location.href='challenge.html'">🔴 Grabar respuesta</button>
-      <button class="action-btn btn-secondary">Ignorar petición</button>
+  <!-- XAT OBERT -->
+  <div class="xat" id="view-xat">
+    <div class="xat-msgs" id="xat-msgs"></div>
+    <div class="xat-input-bar">
+      <input class="xat-input" id="xat-input" placeholder="Escriu un missatge..." onkeydown="if(event.key==='Enter')enviarMsg()" />
+      <button class="xat-send" onclick="enviarMsg()">➤</button>
     </div>
   </div>
 
-  <!-- DETALL MSG 2 — Showtime -->
-  <div class="detail-screen hidden" id="detail-msg2">
-    <div class="detail-nav">
-      <div onclick="hideDetail()" style="cursor:pointer;color:rgba(255,255,255,0.85);font-weight:700;">← Volver</div>
-      <div>
-        <div class="detail-company">TechKorp</div>
-        <div class="detail-meta">Plan Hunt · Ayer</div>
-      </div>
-      <div style="width:60px;"></div>
-    </div>
-    <div class="detail-scroll">
-      <div class="seeker-info">
-        <div class="si-avatar" style="background:linear-gradient(135deg,#00B4D8,#0D3B6E);">TK</div>
-        <div class="si-body">
-          <div class="si-name">TechKorp</div>
-          <div class="si-role">Startup tecnológica · Madrid</div>
-        </div>
-        <span class="si-plan">Hunt</span>
-      </div>
-      <div class="msg-bubble">
-        <div class="bubble-label">Mensaje de TechKorp</div>
-        <div class="bubble-text">Hola, hemos revisado tu Magic Room y tu perfil nos encaja perfectamente para una posición que tenemos abierta. Nos gustaría hacer un Showtime contigo. ¿Tienes disponibilidad esta semana o la próxima?</div>
-      </div>
-      <div style="background:rgba(48,209,88,0.08);border:1px solid rgba(48,209,88,0.2);border-radius:16px;padding:1rem;">
-        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#30D158;margin-bottom:0.75rem;">🎬 Invitación a Showtime</div>
-        <div style="font-size:0.85rem;font-weight:600;color:#fff;margin-bottom:0.4rem;">Encuentro en directo de 30 minutos</div>
-        <div style="font-size:0.78rem;color:rgba(255,255,255,0.45);line-height:1.5;">No es una entrevista. Es tu momento en el escenario. Habláis, os conocéis, decidís juntos.</div>
-      </div>
-    </div>
-    <div class="detail-actions">
-      <button class="action-btn btn-primary" style="background:#30D158;color:#020B18;">🎬 Aceptar Showtime</button>
-      <button class="action-btn btn-secondary">Proponer otra fecha</button>
-    </div>
-  </div>
+  <nav class="nav-bottom">
+    <div class="nav-item" onclick="window.location.href='app.html'"><div class="nav-icon">🏠</div><span>Feed</span></div>
+    <div class="nav-item" onclick="window.location.href='magic-room.html'"><div class="nav-icon">✨</div><span>Mi Room</span></div>
+    <div class="nav-item active"><div class="nav-icon">💬</div><span>Mensajes</span></div>
+    <div class="nav-item" onclick="window.location.href='profile.html'"><div class="nav-icon">👤</div><span>Perfil</span></div>
+  </nav>
 
-  <!-- DETALL MSG 3 — Champions -->
-  <div class="detail-screen hidden" id="detail-msg3">
-    <div class="detail-nav">
-      <div onclick="hideDetail()" style="cursor:pointer;color:rgba(255,255,255,0.85);font-weight:700;">← Volver</div>
-      <div>
-        <div class="detail-company">NextGen</div>
-        <div class="detail-meta">Champions · Hace 3 días</div>
-      </div>
-      <div style="width:60px;"></div>
-    </div>
-    <div class="detail-scroll">
-      <div class="seeker-info">
-        <div class="si-avatar" style="background:linear-gradient(135deg,#BF5AF2,#7B2FBE);">NX</div>
-        <div class="si-body">
-          <div class="si-name">NextGen</div>
-          <div class="si-role">Scale-up · Barcelona</div>
-        </div>
-        <span class="si-plan" style="background:rgba(191,90,242,0.1);color:#BF5AF2;border-color:rgba(191,90,242,0.2);">Champions</span>
-      </div>
-      <div class="msg-bubble">
-        <div class="bubble-label">Mensaje de NextGen</div>
-        <div class="bubble-text">Has sido seleccionado para nuestra Champions. Somos 5 Creators seleccionados entre más de 200. El evento será este sábado al aire libre en el Parc de la Ciutadella, Barcelona.</div>
-      </div>
-      <div style="background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.2);border-radius:16px;padding:1rem;">
-        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#FFD60A;margin-bottom:0.75rem;">🏆 Champions — Detalles</div>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          <div style="display:flex;gap:0.75rem;font-size:0.85rem;"><span style="color:rgba(255,255,255,0.35);width:70px;flex-shrink:0;">Cuándo</span><span style="color:#fff;font-weight:600;">Sábado 28 · 10:00h</span></div>
-          <div style="display:flex;gap:0.75rem;font-size:0.85rem;"><span style="color:rgba(255,255,255,0.35);width:70px;flex-shrink:0;">Dónde</span><span style="color:#fff;font-weight:600;">Parc de la Ciutadella, BCN</span></div>
-          <div style="display:flex;gap:0.75rem;font-size:0.85rem;"><span style="color:rgba(255,255,255,0.35);width:70px;flex-shrink:0;">Duración</span><span style="color:#fff;font-weight:600;">4 horas</span></div>
-          <div style="display:flex;gap:0.75rem;font-size:0.85rem;"><span style="color:rgba(255,255,255,0.35);width:70px;flex-shrink:0;">Coste</span><span style="color:#30D158;font-weight:700;">Gratuito para ti</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="detail-actions">
-      <button class="action-btn btn-primary" style="background:#FFD60A;color:#020B18;">🏆 Confirmar asistencia</button>
-      <button class="action-btn btn-secondary">No puedo asistir</button>
-    </div>
-  </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    function showDetail(id) {
-      document.getElementById('screen-list').classList.add('hidden');
-      document.getElementById('detail-' + id).classList.remove('hidden');
+    const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
+    let myId = null;
+    let msgs = [];
+    let nomMap = {};
+    let xatAmb = null;
+    let pollInterval = null;
+
+    function tempsRelatiu(iso) {
+      const diff = (Date.now() - new Date(iso).getTime()) / 60000;
+      if (diff < 1) return 'ara';
+      if (diff < 60) return Math.round(diff) + ' min';
+      if (diff < 1440) return Math.round(diff/60) + ' h';
+      return new Date(iso).toLocaleDateString('es');
     }
 
-    function hideDetail() {
-      document.querySelectorAll('.detail-screen').forEach(s => s.classList.add('hidden'));
-      document.getElementById('screen-list').classList.remove('hidden');
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'index6.html'; return; }
+      myId = user.id;
+      const { data: profiles } = await sb.from('profiles').select('id, full_name');
+      (profiles || []).forEach(p => { nomMap[p.id] = p.full_name; });
+      await loadConvs();
+      // Si venim amb ?user=X, obrir el xat directament
+      const target = new URLSearchParams(window.location.search).get('user');
+      if (target) obrirXat(target);
     }
+
+    async function loadConvs() {
+      const { data } = await sb.from('missatges').select('*').or('from_user.eq.' + myId + ',to_user.eq.' + myId).order('created_at', { ascending: true });
+      msgs = data || [];
+      const cont = document.getElementById('convs-container');
+      if (msgs.length === 0) {
+        cont.innerHTML = '<div class="empty">💬<br>Encara no tens missatges.<br>Quan un Seeker et faci una petició o interactuïs amb altres creators, apareixeran aquí.</div>';
+        return;
+      }
+      // Agrupar per interlocutor
+      const convs = {};
+      msgs.forEach(m => {
+        const other = m.from_user === myId ? m.to_user : m.from_user;
+        if (!convs[other]) convs[other] = { last: m, unread: 0 };
+        convs[other].last = m;
+        if (m.to_user === myId && !m.llegit) convs[other].unread++;
+      });
+      cont.innerHTML = Object.entries(convs)
+        .sort((a, b) => new Date(b[1].last.created_at) - new Date(a[1].last.created_at))
+        .map(([other, c]) => {
+          const nom = nomMap[other] || 'Talent Talpot';
+          return `
+          <div class="conv-card" onclick="obrirXat('${other}')">
+            <div class="conv-avatar">${nom.charAt(0).toUpperCase()}</div>
+            <div class="conv-info">
+              <div class="conv-nom">${nom}</div>
+              <div class="conv-last">${c.last.tipus === 'peticio' ? '✉️ ' : ''}${c.last.cos.substring(0, 60)}</div>
+            </div>
+            <div class="conv-meta">
+              <div class="conv-time">${tempsRelatiu(c.last.created_at)}</div>
+              ${c.unread > 0 ? '<div class="conv-unread">' + c.unread + '</div>' : ''}
+            </div>
+          </div>`;
+        }).join('');
+    }
+
+    async function obrirXat(otherId) {
+      xatAmb = otherId;
+      document.getElementById('view-xat').classList.add('open');
+      document.getElementById('nav-back').textContent = '← ' + (nomMap[otherId] || 'Talent');
+      renderXat();
+      // Marcar llegits
+      try { await sb.from('missatges').update({ llegit: true }).eq('to_user', myId).eq('from_user', otherId); } catch(e) {}
+      // Refresc cada 5s mentre el xat és obert
+      pollInterval = setInterval(async () => {
+        const { data } = await sb.from('missatges').select('*').or('from_user.eq.' + myId + ',to_user.eq.' + myId).order('created_at', { ascending: true });
+        if (data && data.length !== msgs.length) { msgs = data; renderXat(); }
+      }, 5000);
+    }
+
+    function renderXat() {
+      const box = document.getElementById('xat-msgs');
+      const conv = msgs.filter(m => m.from_user === xatAmb || m.to_user === xatAmb);
+      box.innerHTML = conv.map(m => `
+        <div class="msg ${m.from_user === myId ? 'mine' : 'theirs'} ${m.tipus === 'peticio' ? 'peticio' : ''}">
+          ${m.cos}
+          <div class="msg-time">${tempsRelatiu(m.created_at)}</div>
+        </div>`).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function enviarMsg() {
+      const input = document.getElementById('xat-input');
+      const cos = input.value.trim();
+      if (!cos || !xatAmb) return;
+      input.value = '';
+      // Pintar immediat
+      msgs.push({ from_user: myId, to_user: xatAmb, cos, tipus: 'normal', created_at: new Date().toISOString() });
+      renderXat();
+      try {
+        await sb.from('missatges').insert({ from_user: myId, to_user: xatAmb, cos, tipus: 'normal' });
+        await sb.from('notificacions').insert({ user_id: xatAmb, from_user: myId, tipus: 'missatge', titol: '💬 Nou missatge', cos: cos.substring(0, 80), link: 'messages.html?user=' + myId });
+      } catch(e) {}
+    }
+
+    function goBack() {
+      if (document.getElementById('view-xat').classList.contains('open')) {
+        document.getElementById('view-xat').classList.remove('open');
+        document.getElementById('nav-back').textContent = '← Feed';
+        if (pollInterval) clearInterval(pollInterval);
+        loadConvs();
+      } else {
+        window.location.href = 'app.html';
+      }
+    }
+
+    init();
   </script>
 
 </body>

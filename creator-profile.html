@@ -512,10 +512,27 @@
       }).join('');
     }
 
-    function demanar(el, tipus) {
+    const PETICIONS = {
+      cv: '📄 Un Seeker et demana el CV complet. Puja\'l o actualitza\'l al teu perfil.',
+      video: '🎥 Un Seeker et demana un vídeo sobre un tema específic. Revisa els teus missatges.',
+      pregunta: '❓ Un Seeker t\'ha enviat una pregunta. Respon-la des dels missatges.',
+      jocs: '🎮 Un Seeker et demana més partides per afinar el teu perfil. Juga al Repte Diari!',
+    };
+    async function demanar(el, tipus) {
+      let extra = '';
+      if (tipus === 'video' || tipus === 'pregunta') {
+        extra = prompt(tipus === 'video' ? 'Sobre quin tema vols el vídeo?' : 'Escriu la teva pregunta:') || '';
+        if (!extra) return;
+      }
       el.classList.add('sent');
       el.innerHTML = '<span>✓</span><span>Solicitud enviada al candidato</span>';
-      // Aquí es guardarà la petició a Supabase quan tinguem la taula de missatges
+      try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user || !targetUserId || user.id === targetUserId) return;
+        const cos = PETICIONS[tipus] + (extra ? '\n\n💬 "' + extra + '"' : '');
+        await sb.from('missatges').insert({ from_user: user.id, to_user: targetUserId, cos: cos, tipus: 'peticio' });
+        await sb.from('notificacions').insert({ user_id: targetUserId, from_user: user.id, tipus: 'peticio_seeker', titol: '✉️ Petició d\'un Seeker', cos: PETICIONS[tipus], link: 'messages.html' });
+      } catch(e) {}
     }
 
     // ═══════ ANÀLISI EXTENSA ═══════

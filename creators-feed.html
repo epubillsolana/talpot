@@ -308,8 +308,10 @@
     let selectedBadge = null;
     let activeLikeBtn = null;
 
-    function openBadges(btn) {
+    let badgeTarget = null;
+    function openBadges(btn, toUser, videoId) {
       activeLikeBtn = btn;
+      badgeTarget = { toUser, videoId };
       selectedBadge = null;
       document.querySelectorAll('.badge-btn').forEach(b => b.classList.remove('selected'));
       document.getElementById('bs-send').classList.remove('ready');
@@ -328,18 +330,66 @@
       document.getElementById('bs-send').textContent = icon + ' Reconocer como "' + name + '"';
     }
 
-    function sendBadge() {
+    async function sendBadge() {
       if (!selectedBadge || !activeLikeBtn) return;
       const icon = activeLikeBtn.querySelector('.action-icon');
       const count = activeLikeBtn.querySelector('.action-count');
       icon.textContent = selectedBadge.icon;
       icon.classList.add('liked');
-      icon.style.background = 'rgba(255,214,10,0.2)';
-      icon.style.borderColor = 'rgba(255,214,10,0.4)';
       count.textContent = selectedBadge.name;
       count.style.color = '#FFD60A';
-      count.style.fontSize = '0.55rem';
       closeBadges();
+      // GUARDAT REAL + notificació al creator
+      try {
+        const { data: { user } } = await sbF.auth.getUser();
+        if (!user || !badgeTarget) return;
+        await sbF.from('interaccions').insert({ from_user: user.id, to_user: badgeTarget.toUser, video_id: badgeTarget.videoId, tipus: 'badge', badge_icon: selectedBadge.icon, badge_nom: selectedBadge.name });
+        await notifica(badgeTarget.toUser, user.id, 'badge', selectedBadge.icon + ' Nou reconeixement', 'T\'han reconegut com a "' + selectedBadge.name + '"', 'profile.html');
+      } catch(e) {}
+    }
+
+    async function quickLike(btn, toUser, videoId) {
+      const icon = btn.querySelector('.action-icon');
+      const count = btn.querySelector('.action-count');
+      if (icon.classList.contains('liked')) return;
+      icon.textContent = '❤️';
+      icon.classList.add('liked');
+      count.textContent = parseInt(count.textContent || '0') + 1;
+      try {
+        const { data: { user } } = await sbF.auth.getUser();
+        if (!user) return;
+        await sbF.from('interaccions').insert({ from_user: user.id, to_user: toUser, video_id: videoId, tipus: 'like' });
+        await notifica(toUser, user.id, 'like', '❤️ Nou like', 'A algú li ha agradat el teu vídeo', 'profile.html');
+      } catch(e) {}
+    }
+
+    async function retar(toUser) {
+      try {
+        const { data: { user } } = await sbF.auth.getUser();
+        if (!user) return;
+        if (user.id === toUser) { window.location.href = 'game.html'; return; }
+        const { data: rep } = await sbF.from('reptes').insert({ from_user: user.id, to_user: toUser, game_id: 'daily' }).select().single();
+        await notifica(toUser, user.id, 'repte', '⚡ T\'han retat!', 'Un creator et reta al repte diari. Accepta i demostra el teu nivell.', 'game.html');
+        alert('⚡ Repte enviat! Quan jugui, podreu comparar resultats.');
+        window.location.href = 'game.html';
+      } catch(e) { window.location.href = 'game.html'; }
+    }
+
+    async function notifica(toUser, fromUser, tipus, titol, cos, link) {
+      try { await sbF.from('notificacions').insert({ user_id: toUser, from_user: fromUser, tipus, titol, cos, link }); } catch(e) {}
+    }
+
+    async function loadLikes() {
+      try {
+        const vids = window._feedVideos || [];
+        if (!vids.length) return;
+        const { data: ints } = await sbF.from('interaccions').select('video_id, tipus').eq('tipus', 'like');
+        vids.forEach((v, i) => {
+          const n = (ints || []).filter(x => x.video_id === v.id).length;
+          const c = document.getElementById('lkc-' + i);
+          if (c && n > 0) c.textContent = n;
+        });
+      } catch(e) {}
     }
 
     function togglePlay(btn) {
@@ -367,6 +417,7 @@
           return;
         }
 
+        window._feedVideos = videos;
         container.innerHTML = videos.map((v, i) => {
           const nom = nomMap[v.user_id] || 'Talent Talpot';
           const inicials = nom.split(' ').map(w => w.charAt(0)).join('').substring(0,2).toUpperCase();
@@ -380,8 +431,9 @@
             <div class="card-overlay"></div>
             <div class="play-btn" id="fp-${i}" onclick="feedPlay(${i})">▶</div>
             <div class="card-actions">
-              <div class="action-btn" onclick="openBadges(this)"><div class="action-icon">🤍</div><div class="action-count">0</div></div>
-              <div class="action-btn" onclick="window.location.href='game.html'"><div class="action-icon">⚡</div><div class="action-count">Retar</div></div>
+              <div class="action-btn" onclick="quickLike(this, '${v.user_id}', '${v.id}')" oncontextmenu="event.preventDefault();openBadges(this, '${v.user_id}', '${v.id}')"><div class="action-icon" id="lk-${i}">🤍</div><div class="action-count" id="lkc-${i}">0</div></div>
+              <div class="action-btn" onclick="openBadges(this, '${v.user_id}', '${v.id}')"><div class="action-icon">🏅</div><div class="action-count">Badge</div></div>
+              <div class="action-btn" onclick="retar('${v.user_id}')"><div class="action-icon">⚡</div><div class="action-count">Retar</div></div>
               <div class="action-btn" onclick="window.location.href='creator-profile.html?user=${v.user_id}'"><div class="action-icon">👤</div><div class="action-count">Perfil</div></div>
             </div>
             <div class="card-content">
@@ -407,7 +459,7 @@
         vid.onclick = () => { vid.pause(); btn.style.display = 'flex'; };
       }
     }
-    loadFeed();
+    loadFeed().then(() => loadLikes());
 </script>
 </body>
 </html>
