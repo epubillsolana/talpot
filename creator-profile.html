@@ -275,6 +275,12 @@
     }
 
     async function loadCreator() {
+      const dbg = document.createElement('div');
+      dbg.id = 'debug-banner';
+      dbg.style.cssText = 'position:fixed;top:60px;left:0;right:0;z-index:999;background:#FF453A;color:#fff;padding:0.6rem;font-size:0.75rem;font-weight:800;text-align:center;';
+      dbg.textContent = 'DEBUG: loadCreator() iniciado. targetUserId=' + targetUserId;
+      document.body.appendChild(dbg);
+
       if (!targetUserId) {
         const { data: { user } } = await sb.auth.getUser();
         if (!user) { window.location.href = 'index.html'; return; }
@@ -292,8 +298,12 @@
       document.getElementById('hero-name').textContent = userName;
       if (!document.getElementById('avatar').innerHTML.includes('img')) document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
 
-      const { data: videos } = await sb.from('magic_room_videos').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false });
-      const { data: challenges } = await sb.from('challenge_respostes').select('*').eq('user_id', targetUserId).order('created_at', { ascending: true });
+      document.getElementById('debug-banner').textContent = 'DEBUG: nombre cargado (' + userName + '). Pidiendo vídeos y challenges...';
+
+      const { data: videos, error: errV } = await sb.from('magic_room_videos').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false });
+      const { data: challenges, error: errC } = await sb.from('challenge_respostes').select('*').eq('user_id', targetUserId).order('created_at', { ascending: true });
+
+      document.getElementById('debug-banner').textContent = 'DEBUG: videos=' + (videos?.length ?? 'ERROR') + (errV ? ' [errV: '+errV.message+']' : '') + ' · challenges=' + (challenges?.length ?? 'ERROR') + (errC ? ' [errC: '+errC.message+']' : '');
 
       // CV
       let hasCV = false;
