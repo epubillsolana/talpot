@@ -305,6 +305,8 @@
 
       document.getElementById('debug-banner').textContent = 'DEBUG: videos=' + (videos?.length ?? 'ERROR') + (errV ? ' [errV: '+errV.message+']' : '') + ' · challenges=' + (challenges?.length ?? 'ERROR') + (errC ? ' [errC: '+errC.message+']' : '');
 
+      try {
+
       // CV
       let hasCV = false;
       try {
@@ -322,6 +324,11 @@
 
       renderOfertaBanner(videos || [], challenges || []);
       renderVideos(videos || []);
+      document.getElementById('debug-banner').textContent = 'DEBUG: llegando a renderEntrevista con ' + (challenges?.length || 0) + ' challenges...';
+      } catch(errMid) {
+        document.getElementById('debug-banner').textContent = '❌ ERROR antes de entrevista: ' + errMid.message;
+        return;
+      }
       renderEntrevista(challenges || []);
       renderJocs();
       generateAnalisi(challenges || [], videos || [], allKws, hasCV);
