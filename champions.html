@@ -3,390 +3,201 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Talpot — Champions</title>
+  <title>Talpot — Champions & Procesos</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="talpot-style.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow-x: hidden; }
-
-    body {
-      background:
-        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
-        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
-        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
-      background-attachment: fixed;
-    }
-
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background: linear-gradient(160deg, rgba(255,214,10,0.06) 0%, transparent 35%);
-      pointer-events: none; z-index: 0;
-    }
-
-    /* NAV */
-    .nav {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.25rem;
-      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
-    }
-    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
-    .nav-logo span { color: #FFD60A; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body { background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%); }
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(6,20,38,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.07); z-index: 50; }
     .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
-    .nav-back:hover { color: #fff; }
-
-    /* SCROLL */
-    .scroll { padding-top: 56px; padding-bottom: 100px; overflow-y: auto; min-height: 100dvh; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-logo span { color: #FFD60A; }
+    .scroll { position: fixed; inset: 0; padding: 70px 1.25rem 2rem; overflow-y: auto; }
     .scroll::-webkit-scrollbar { display: none; }
 
-    /* HERO */
-    .hero {
-      padding: 2rem 1.25rem 1.5rem;
-      text-align: center; position: relative;
-    }
+    .header { margin-bottom: 1.3rem; }
+    .h-title { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.6px; }
+    .h-sub { font-size: 0.85rem; color: rgba(255,255,255,0.68); margin-top: 0.3rem; line-height: 1.5; }
 
-    .champions-badge {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      background: rgba(255,214,10,0.1); border: 1px solid rgba(255,214,10,0.25);
-      border-radius: 100px; padding: 0.35rem 0.9rem;
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; color: #FFD60A; margin-bottom: 1rem;
-    }
+    .product-card { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 1.4rem; margin-bottom: 1.1rem; }
+    .product-card.champions { border-color: rgba(255,214,10,0.35); background: linear-gradient(160deg, rgba(255,214,10,0.08), rgba(255,255,255,0.03)); }
+    .product-card.outdoor { border-color: rgba(0,180,216,0.35); background: linear-gradient(160deg, rgba(0,180,216,0.08), rgba(255,255,255,0.03)); }
+    .pc-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
+    .pc-title { font-size: 1.25rem; font-weight: 900; margin-bottom: 0.4rem; }
+    .pc-desc { font-size: 0.86rem; color: rgba(255,255,255,0.75); line-height: 1.6; margin-bottom: 1rem; }
+    .pc-features { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.1rem; }
+    .pc-feature { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.82rem; color: rgba(255,255,255,0.7); line-height: 1.5; }
+    .pc-feature-icon { flex-shrink: 0; }
+    .pc-price-tag { display: inline-block; font-size: 0.72rem; font-weight: 800; padding: 0.35rem 0.8rem; border-radius: 100px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); margin-bottom: 1rem; }
+    .pc-btn { width: 100%; padding: 0.95rem; border-radius: 100px; border: none; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.9rem; cursor: pointer; }
+    .pc-btn.champions-btn { background: #FFD60A; color: #020B18; }
+    .pc-btn.outdoor-btn { background: #00B4D8; color: #020B18; }
 
-    .hero-title {
-      font-size: clamp(2.5rem, 9vw, 4rem);
-      font-weight: 900; letter-spacing: -2px; line-height: 1.0;
-      margin-bottom: 0.5rem;
-    }
-    .hero-title span { color: #FFD60A; }
+    .form-box { display: none; margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 14px; }
+    .form-box.open { display: block; }
+    .form-label { font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.65); margin-bottom: 0.4rem; margin-top: 0.8rem; }
+    .form-label:first-child { margin-top: 0; }
+    .form-input, .form-textarea { width: 100%; padding: 0.75rem 0.9rem; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; outline: none; }
+    .form-textarea { resize: vertical; min-height: 70px; }
+    .form-send { width: 100%; margin-top: 1rem; padding: 0.85rem; border-radius: 100px; border: none; background: #30D158; color: #020B18; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.88rem; cursor: pointer; }
 
-    .hero-desc {
-      font-size: 0.9rem; color: rgba(255,255,255,0.5);
-      line-height: 1.65; max-width: 320px; margin: 0 auto 1.5rem;
-    }
+    .sent-msg { display: none; text-align: center; padding: 1.5rem; }
+    .sent-msg.show { display: block; }
+    .sent-icon { font-size: 2.5rem; margin-bottom: 0.6rem; }
+    .sent-text { font-size: 0.88rem; color: rgba(255,255,255,0.8); line-height: 1.6; }
 
-    /* INFO EVENT */
-    .event-card {
-      margin: 0 1.25rem 1.25rem;
-      background: rgba(255,214,10,0.06); border: 1px solid rgba(255,214,10,0.15);
-      border-radius: 20px; padding: 1.25rem; position: relative; overflow: hidden;
-    }
-
-    .event-company { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
-    .ec-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#BF5AF2,#7B2FBE); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; color: #fff; flex-shrink: 0; }
-    .ec-info { flex: 1; }
-    .ec-name { font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 0.1rem; }
-    .ec-role { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
-    .ec-plan { font-size: 0.62rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 100px; background: rgba(255,214,10,0.12); color: #FFD60A; border: 1px solid rgba(255,214,10,0.25); }
-
-    .event-details { display: flex; flex-direction: column; gap: 0.6rem; }
-    .ed-row { display: flex; gap: 0.85rem; align-items: center; }
-    .ed-icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0; }
-    .ed-info { }
-    .ed-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.3); margin-bottom: 0.1rem; }
-    .ed-value { font-size: 0.88rem; font-weight: 700; color: #fff; }
-    .ed-value.green { color: #30D158; }
-
-    /* CREATORS SELECCIONATS */
-    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
-    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.75rem; }
-
-    .creators-grid { display: flex; flex-direction: column; gap: 0.6rem; }
-
-    .creator-item {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px; padding: 0.9rem 1rem;
-      display: flex; align-items: center; gap: 0.85rem;
-    }
-
-    .cr-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #020B18; flex-shrink: 0; }
-    .cr-info { flex: 1; }
-    .cr-name { font-size: 0.9rem; font-weight: 800; color: #fff; margin-bottom: 0.15rem; }
-    .cr-role { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
-    .cr-rob { display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; flex-shrink: 0; }
-    .cr-rob-num { font-size: 0.78rem; font-weight: 900; color: #FFD60A; }
-    .cr-rob-bar { width: 44px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; }
-    .cr-rob-fill { height: 100%; background: linear-gradient(90deg, #00B4D8, #FFD60A); border-radius: 100px; }
-
-    .you-badge { font-size: 0.62rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 100px; background: rgba(255,214,10,0.12); color: #FFD60A; border: 1px solid rgba(255,214,10,0.25); }
-
-    /* REPTES */
-    .reptes-list { display: flex; flex-direction: column; gap: 0.6rem; }
-
-    .repte-card {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px; padding: 0.9rem 1rem;
-      display: flex; gap: 0.85rem; align-items: flex-start;
-    }
-
-    .repte-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; background: rgba(255,255,255,0.06); }
-    .repte-info { flex: 1; }
-    .repte-name { font-size: 0.88rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
-    .repte-desc { font-size: 0.75rem; color: rgba(255,255,255,0.4); line-height: 1.4; }
-    .repte-time { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.25); margin-top: 0.3rem; }
-
-    /* QUÈ MESUREM */
-    .mesura-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-
-    .mesura-card {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px; padding: 0.9rem;
-    }
-    .mesura-icon { font-size: 1.3rem; margin-bottom: 0.4rem; }
-    .mesura-name { font-size: 0.82rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
-    .mesura-desc { font-size: 0.72rem; color: rgba(255,255,255,0.4); line-height: 1.4; }
-
-    /* COMPTE ENRERE */
-    .countdown-card {
-      margin: 0 1.25rem 1.25rem;
-      background: rgba(255,45,85,0.08); border: 1px solid rgba(255,45,85,0.2);
-      border-radius: 16px; padding: 1.1rem; text-align: center;
-    }
-    .cd-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #FF2D55; margin-bottom: 0.5rem; }
-    .cd-time { font-size: 2rem; font-weight: 900; letter-spacing: -1px; color: #fff; }
-    .cd-desc { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 0.3rem; }
-
-    /* ACCIONS */
-    .actions-fixed {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      padding: 1rem 1.25rem;
-      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      display: flex; flex-direction: column; gap: 0.6rem; z-index: 50;
-    }
-
-    .action-btn {
-      width: 100%; padding: 1rem; border-radius: 100px; border: none;
-      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
-      font-size: 0.95rem; cursor: pointer; transition: transform 0.15s;
-    }
-    .action-btn:active { transform: scale(0.97); }
-    .btn-confirm { background: #FFD60A; color: #020B18; box-shadow: 0 6px 24px rgba(255,214,10,0.3); }
-    .btn-confirm:hover { transform: scale(1.02); }
-    .btn-decline { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.12); }
+    .info-note { font-size: 0.78rem; color: rgba(255,255,255,0.45); text-align: center; padding: 1rem; line-height: 1.6; }
   </style>
-  <link rel="stylesheet" href="talpot-style.css" />
 </head>
 <body>
 
   <nav class="nav">
-    <div class="nav-back" onclick="window.location.href='messages.html'">← Mensajes</div>
+    <div class="nav-back" onclick="window.location.href='seeker-panel.html'">← Mi cuenta</div>
     <div class="nav-logo">tal<span>pot</span></div>
     <div style="width:60px;"></div>
   </nav>
 
   <div class="scroll">
-
-    <!-- HERO -->
-    <div class="hero">
-      <div class="champions-badge">🏆 Has sido seleccionado</div>
-      <div class="hero-title">Bienvenido<br>a la <span>Champions.</span></div>
-      <p class="hero-desc">Solo los mejores Talpotters llegan aquí. Tú eres uno de ellos. Esto es la gran final.</p>
+    <div class="header">
+      <div class="h-title">🏆 Champions & Procesos</div>
+      <div class="h-sub">Servicios premium de Talpot para cuando necesitas ir más allá de explorar candidatos.</div>
     </div>
 
-    <!-- COMPTE ENRERE -->
-    <div class="countdown-card">
-      <div class="cd-label">⏳ Empieza en</div>
-      <div class="cd-time">2d · 14h · 32m</div>
-      <div class="cd-desc">Sábado 28 de junio · 10:00h</div>
-    </div>
-
-    <!-- INFO EVENT -->
-    <div class="event-card">
-      <div class="event-company">
-        <div class="ec-avatar">NX</div>
-        <div class="ec-info">
-          <div class="ec-name">NextGen</div>
-          <div class="ec-role">Organiza este Champions</div>
-        </div>
-        <span class="ec-plan">Champions</span>
+    <!-- CHAMPIONS -->
+    <div class="product-card champions">
+      <div class="pc-icon">🏆</div>
+      <div class="pc-title">Champions</div>
+      <div class="pc-desc">Reúne presencialmente a tus finalistas. Organizamos una jornada donde tus candidatos favoritos compiten en pruebas reales — tú decides con datos, no solo con una entrevista.</div>
+      <div class="pc-features">
+        <div class="pc-feature"><span class="pc-feature-icon">🎯</span><span>Eliges hasta 5 candidatos finalistas de tu búsqueda en Talpot</span></div>
+        <div class="pc-feature"><span class="pc-feature-icon">📋</span><span>Diseñamos las pruebas según el perfil que buscas</span></div>
+        <div class="pc-feature"><span class="pc-feature-icon">📊</span><span>Recibes un informe comparativo al final del día</span></div>
       </div>
-      <div class="event-details">
-        <div class="ed-row">
-          <div class="ed-icon">📍</div>
-          <div class="ed-info">
-            <div class="ed-label">Lugar</div>
-            <div class="ed-value">Parc de la Ciutadella, Barcelona</div>
-          </div>
+      <div class="pc-price-tag">💬 Precio a medida — solicita información</div>
+      <button class="pc-btn champions-btn" onclick="toggleForm('champions')">Solicitar Champions</button>
+      <div class="form-box" id="form-champions">
+        <div id="champ-preseleccion" style="display:none;margin-bottom:0.9rem;padding:0.8rem;background:rgba(255,214,10,0.1);border:1px solid rgba(255,214,10,0.3);border-radius:12px;">
+          <div style="font-size:0.75rem;font-weight:800;color:#FFD60A;margin-bottom:0.5rem;">🎯 Candidatos preseleccionados</div>
+          <div id="champ-preseleccion-list" style="display:flex;flex-direction:column;gap:0.4rem;"></div>
         </div>
-        <div class="ed-row">
-          <div class="ed-icon">🕙</div>
-          <div class="ed-info">
-            <div class="ed-label">Horario</div>
-            <div class="ed-value">10:00h — 14:00h (4 horas)</div>
-          </div>
-        </div>
-        <div class="ed-row">
-          <div class="ed-icon">👥</div>
-          <div class="ed-info">
-            <div class="ed-label">Creators seleccionados</div>
-            <div class="ed-value">5 de 200+ perfiles evaluados</div>
-          </div>
-        </div>
-        <div class="ed-row">
-          <div class="ed-icon">💰</div>
-          <div class="ed-info">
-            <div class="ed-label">Coste para ti</div>
-            <div class="ed-value green">Completamente gratuito</div>
-          </div>
-        </div>
-        <div class="ed-row">
-          <div class="ed-icon">🤖</div>
-          <div class="ed-info">
-            <div class="ed-label">Análisis IA</div>
-            <div class="ed-value">Todo el evento será analizado por Talpot IA</div>
-          </div>
-        </div>
+        <div class="form-label">¿Cuántos finalistas quieres reunir?</div>
+        <input class="form-input" id="champ-num" placeholder="Ej: 5" type="number" min="2" max="10" />
+        <div class="form-label">¿Para qué perfil o puesto?</div>
+        <input class="form-input" id="champ-puesto" placeholder="Ej: Responsable de logística" />
+        <div class="form-label">Cuéntanos más (opcional)</div>
+        <textarea class="form-textarea" id="champ-notas" placeholder="Fechas posibles, ubicación preferida, qué quieres evaluar..."></textarea>
+        <button class="form-send" onclick="enviarSolicitud('champions')">✓ Enviar solicitud</button>
+      </div>
+      <div class="sent-msg" id="sent-champions">
+        <div class="sent-icon">🎉</div>
+        <div class="sent-text">¡Solicitud enviada! Nuestro equipo se pondrá en contacto contigo en menos de 48h para organizar tu Champions.</div>
       </div>
     </div>
 
-    <!-- CREATORS SELECCIONATS -->
-    <div class="section">
-      <div class="section-title">Los 5 Talpotters seleccionados</div>
-      <div class="creators-grid">
-
-        <div class="creator-item" style="border-color:rgba(255,214,10,0.2);background:rgba(255,214,10,0.05);">
-          <div class="cr-avatar" style="background:linear-gradient(135deg,#FFD60A,#FF6B00);">E</div>
-          <div class="cr-info">
-            <div class="cr-name">Eduard <span class="you-badge">Tú</span></div>
-            <div class="cr-role">Creator · Barcelona</div>
-          </div>
-          <div class="cr-rob">
-            <div class="cr-rob-num">87%</div>
-            <div class="cr-rob-bar"><div class="cr-rob-fill" style="width:87%"></div></div>
-          </div>
-        </div>
-
-        <div class="creator-item">
-          <div class="cr-avatar" style="background:linear-gradient(135deg,#00B4D8,#0D3B6E);">MA</div>
-          <div class="cr-info">
-            <div class="cr-name">María A.</div>
-            <div class="cr-role">Diseño UX · Barcelona</div>
-          </div>
-          <div class="cr-rob">
-            <div class="cr-rob-num">94%</div>
-            <div class="cr-rob-bar"><div class="cr-rob-fill" style="width:94%"></div></div>
-          </div>
-        </div>
-
-        <div class="creator-item">
-          <div class="cr-avatar" style="background:linear-gradient(135deg,#BF5AF2,#7B2FBE);">JL</div>
-          <div class="cr-info">
-            <div class="cr-name">Jordi L.</div>
-            <div class="cr-role">Marketing · Madrid</div>
-          </div>
-          <div class="cr-rob">
-            <div class="cr-rob-num">81%</div>
-            <div class="cr-rob-bar"><div class="cr-rob-fill" style="width:81%"></div></div>
-          </div>
-        </div>
-
-        <div class="creator-item">
-          <div class="cr-avatar" style="background:linear-gradient(135deg,#30D158,#0D3B6E);">SR</div>
-          <div class="cr-info">
-            <div class="cr-name">Sara R.</div>
-            <div class="cr-role">Ventas · Valencia</div>
-          </div>
-          <div class="cr-rob">
-            <div class="cr-rob-num">89%</div>
-            <div class="cr-rob-bar"><div class="cr-rob-fill" style="width:89%"></div></div>
-          </div>
-        </div>
-
-        <div class="creator-item">
-          <div class="cr-avatar" style="background:linear-gradient(135deg,#FF6B00,#FF2D55);">PG</div>
-          <div class="cr-info">
-            <div class="cr-name">Pablo G.</div>
-            <div class="cr-role">Tecnología · Bilbao</div>
-          </div>
-          <div class="cr-rob">
-            <div class="cr-rob-num">76%</div>
-            <div class="cr-rob-bar"><div class="cr-rob-fill" style="width:76%"></div></div>
-          </div>
-        </div>
-
+    <!-- PROCESO EXTERNALIZADO / OUTDOOR DAY -->
+    <div class="product-card outdoor">
+      <div class="pc-icon">🌄</div>
+      <div class="pc-title">Proceso Externalizado</div>
+      <div class="pc-desc">Nos encargamos de todo el proceso de selección por ti. Incluye una jornada Outdoor Day donde conocemos a fondo a tus candidatos — en un solo día, cara a cara.</div>
+      <div class="pc-features">
+        <div class="pc-feature"><span class="pc-feature-icon">🔍</span><span>Buscamos, filtramos y entrevistamos por ti</span></div>
+        <div class="pc-feature"><span class="pc-feature-icon">🏕️</span><span>Jornada Outdoor Day: dinámicas y conocimiento profundo en un día</span></div>
+        <div class="pc-feature"><span class="pc-feature-icon">✅</span><span>Te entregamos una shortlist final lista para decidir</span></div>
+      </div>
+      <div class="pc-price-tag">💬 Precio a medida — solicita información</div>
+      <button class="pc-btn outdoor-btn" onclick="toggleForm('outdoor')">Solicitar Proceso Externalizado</button>
+      <div class="form-box" id="form-outdoor">
+        <div class="form-label">¿Qué perfil necesitas cubrir?</div>
+        <input class="form-input" id="out-puesto" placeholder="Ej: Cap d'equip de producció" />
+        <div class="form-label">¿Cuántas posiciones?</div>
+        <input class="form-input" id="out-num" placeholder="Ej: 1" type="number" min="1" />
+        <div class="form-label">Cuéntanos más (opcional)</div>
+        <textarea class="form-textarea" id="out-notas" placeholder="Plazos, ubicación, requisitos clave..."></textarea>
+        <button class="form-send" onclick="enviarSolicitud('outdoor')">✓ Enviar solicitud</button>
+      </div>
+      <div class="sent-msg" id="sent-outdoor">
+        <div class="sent-icon">🎉</div>
+        <div class="sent-text">¡Solicitud enviada! Nuestro equipo se pondrá en contacto contigo en menos de 48h para diseñar tu proceso.</div>
       </div>
     </div>
 
-    <!-- REPTES DEL DIA -->
-    <div class="section">
-      <div class="section-title">⚡ Retos del día</div>
-      <div class="reptes-list">
-
-        <div class="repte-card">
-          <div class="repte-icon">🤝</div>
-          <div class="repte-info">
-            <div class="repte-name">Reto de equipo</div>
-            <div class="repte-desc">Resolvéis un problema real de NextGen en grupos de 2-3. Sin instrucciones previas.</div>
-            <div class="repte-time">30 min</div>
-          </div>
-        </div>
-
-        <div class="repte-card">
-          <div class="repte-icon">🎯</div>
-          <div class="repte-info">
-            <div class="repte-name">Pitch individual</div>
-            <div class="repte-desc">3 minutos para convencer al equipo de NextGen de que eres la mejor elección.</div>
-            <div class="repte-time">15 min por persona</div>
-          </div>
-        </div>
-
-        <div class="repte-card">
-          <div class="repte-icon">⚡</div>
-          <div class="repte-info">
-            <div class="repte-name">Decisiones bajo presión</div>
-            <div class="repte-desc">Situaciones reales de la empresa. Decides en 30 segundos. El equipo observa.</div>
-            <div class="repte-time">20 min</div>
-          </div>
-        </div>
-
-        <div class="repte-card">
-          <div class="repte-icon">🎨</div>
-          <div class="repte-info">
-            <div class="repte-name">Reto creativo</div>
-            <div class="repte-desc">Diseñad en 20 minutos una solución a un problema que os plantea la empresa.</div>
-            <div class="repte-time">20 min</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- QUÈ MESURA LA IA -->
-    <div class="section">
-      <div class="section-title">🤖 Qué analiza Talpot IA</div>
-      <div class="mesura-grid">
-        <div class="mesura-card">
-          <div class="mesura-icon">🤝</div>
-          <div class="mesura-name">Trabajo en equipo</div>
-          <div class="mesura-desc">Cómo colaboras y qué rol tomas de forma natural</div>
-        </div>
-        <div class="mesura-card">
-          <div class="mesura-icon">⚡</div>
-          <div class="mesura-name">Presión real</div>
-          <div class="mesura-desc">Cómo reaccionas cuando el tiempo y las apuestas son altas</div>
-        </div>
-        <div class="mesura-card">
-          <div class="mesura-icon">🎯</div>
-          <div class="mesura-name">Liderazgo</div>
-          <div class="mesura-desc">Si lideras o sigues — y cuándo haces cada cosa</div>
-        </div>
-        <div class="mesura-card">
-          <div class="mesura-icon">💡</div>
-          <div class="mesura-name">Creatividad</div>
-          <div class="mesura-desc">Cómo generas ideas cuando no hay respuesta correcta</div>
-        </div>
-      </div>
-    </div>
-
+    <div class="info-note">Estos son servicios gestionados directamente por el equipo de Talpot.<br>Te contactaremos por email o desde Mensajes.</div>
   </div>
 
-  <!-- ACCIONS -->
-  <div class="actions-fixed">
-    <button class="action-btn btn-confirm">🏆 Confirmar asistencia</button>
-    <button class="action-btn btn-decline">No puedo asistir</button>
-  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
+    let myUser = null;
+
+    let candidatosPreseleccionados = [];
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'index.html'; return; }
+      myUser = user;
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('preseleccion') === '1') {
+        try {
+          const ids = JSON.parse(sessionStorage.getItem('champions_candidatos') || '[]');
+          if (ids.length > 0) {
+            candidatosPreseleccionados = ids;
+            const { data: profiles } = await sb.from('profiles').select('id, full_name, avatar_url').in('id', ids);
+            const box = document.getElementById('champ-preseleccion');
+            const list = document.getElementById('champ-preseleccion-list');
+            box.style.display = 'block';
+            list.innerHTML = (profiles || []).map(p => `
+              <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:700;color:#fff;">
+                <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#FFD60A,#FF6B00);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:900;color:#020B18;overflow:hidden;">${p.avatar_url ? '<img src="'+p.avatar_url+'" style="width:100%;height:100%;object-fit:cover;">' : p.full_name.charAt(0).toUpperCase()}</div>
+                ${p.full_name}
+              </div>`).join('');
+            document.getElementById('champ-num').value = ids.length;
+            document.getElementById('form-champions').classList.add('open');
+            sessionStorage.removeItem('champions_candidatos');
+          }
+        } catch(e) {}
+      }
+    }
+
+    function toggleForm(tipo) {
+      const box = document.getElementById('form-' + tipo);
+      box.classList.toggle('open');
+    }
+
+    async function enviarSolicitud(tipo) {
+      let detalles = {};
+      if (tipo === 'champions') {
+        detalles = {
+          num_finalistas: document.getElementById('champ-num').value || null,
+          puesto: document.getElementById('champ-puesto').value || null,
+          notas: document.getElementById('champ-notas').value || null,
+          candidatos_ids: candidatosPreseleccionados.length ? candidatosPreseleccionados : null,
+        };
+      } else {
+        detalles = {
+          puesto: document.getElementById('out-puesto').value || null,
+          num_posiciones: document.getElementById('out-num').value || null,
+          notas: document.getElementById('out-notas').value || null,
+        };
+      }
+      try {
+        await sb.from('solicitudes_premium').insert({
+          seeker_id: myUser.id,
+          producto: tipo,
+          detalles: detalles,
+          estado: 'pendiente'
+        });
+        document.getElementById('form-' + tipo).classList.remove('open');
+        document.getElementById('sent-' + tipo).classList.add('show');
+      } catch(e) {
+        alert('⚠️ Error enviando la solicitud: ' + e.message);
+      }
+    }
+
+    init();
+  </script>
 
 </body>
 </html>

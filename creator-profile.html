@@ -675,11 +675,21 @@
       pregunta: '❓ Un Seeker t\'ha enviat una pregunta. Respon-la des dels missatges.',
       jocs: '🎮 Un Seeker et demana més partides per afinar el teu perfil. Juga al Repte Diari!',
     };
+    function conteContacte(text) {
+      const telefonRe = /(\+?\d[\s.-]?){9,}/;
+      const emailRe = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+      return telefonRe.test(text) || emailRe.test(text);
+    }
+
     async function demanar(el, tipus) {
       let extra = '';
       if (tipus === 'video' || tipus === 'pregunta') {
         extra = prompt(tipus === 'video' ? 'Sobre quin tema vols el vídeo?' : 'Escriu la teva pregunta:') || '';
         if (!extra) return;
+        if (conteContacte(extra)) {
+          alert('⚠️ No es pot compartir telèfon ni email pel xat. Fes servir 🎬 Showtime per connectar de forma segura.');
+          return;
+        }
       }
       el.classList.add('sent');
       el.innerHTML = '<span>✓</span><span>Solicitud enviada al candidato</span>';

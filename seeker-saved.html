@@ -59,6 +59,7 @@
     <div class="header">
       <div class="h-title">🔖 Candidatos guardados</div>
       <div class="h-sub">Tu propia lista, con tus etiquetas y valoración de interés.</div>
+      <button id="champ-mode-btn" onclick="toggleChampMode()" style="margin-top:0.9rem;padding:0.7rem 1.1rem;border-radius:100px;border:1px solid rgba(255,214,10,0.35);background:rgba(255,214,10,0.1);color:#FFD60A;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer;">🏆 Seleccionar para Champions</button>
     </div>
 
     <div class="tag-filters" id="tag-filters" style="display:none;"></div>
@@ -66,6 +67,16 @@
     <div class="section">
       <div id="saved-list"><div style="font-size:0.85rem;color:rgba(255,255,255,0.5);padding:1rem 0;">⏳ Cargando...</div></div>
     </div>
+
+    <div style="height:5rem;"></div>
+  </div>
+
+  <div id="champ-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));background:rgba(6,20,38,0.97);backdrop-filter:blur(18px);border-top:1px solid rgba(255,214,10,0.3);z-index:60;">
+    <div style="display:flex;align-items:center;gap:0.8rem;">
+      <div style="flex:1;font-size:0.82rem;font-weight:700;color:#FFD60A;" id="champ-count">0 seleccionados</div>
+      <button onclick="enviarAChampions()" style="padding:0.75rem 1.3rem;border-radius:100px;border:none;background:#FFD60A;color:#020B18;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:0.85rem;cursor:pointer;">🏆 Crear Champions →</button>
+    </div>
+  </div>
 
     <div class="footer-space"></div>
   </div>
@@ -95,6 +106,30 @@
     let myId = null;
     let guardats = [];
     let filtreTag = null;
+    let champMode = false;
+    let champSeleccionats = [];
+
+    function toggleChampMode() {
+      champMode = !champMode;
+      champSeleccionats = [];
+      document.getElementById('champ-mode-btn').textContent = champMode ? '✕ Cancelar selección' : '🏆 Seleccionar para Champions';
+      document.getElementById('champ-bar').style.display = champMode ? 'block' : 'none';
+      load();
+    }
+    function toggleChampSel(candidatId) {
+      if (champSeleccionats.includes(candidatId)) champSeleccionats = champSeleccionats.filter(x => x !== candidatId);
+      else {
+        if (champSeleccionats.length >= 10) { alert('Máximo 10 candidatos por Champions.'); return; }
+        champSeleccionats.push(candidatId);
+      }
+      document.getElementById('champ-count').textContent = champSeleccionats.length + ' seleccionado' + (champSeleccionats.length !== 1 ? 's' : '');
+      load();
+    }
+    function enviarAChampions() {
+      if (champSeleccionats.length < 2) { alert('Selecciona al menos 2 candidatos para un Champions.'); return; }
+      sessionStorage.setItem('champions_candidatos', JSON.stringify(champSeleccionats));
+      window.location.href = 'champions.html?preseleccion=1';
+    }
 
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
@@ -130,16 +165,18 @@
         const avatarHtml = av ? '<img src="' + av + '">' : nom.charAt(0).toUpperCase();
         const estrelles = [1,2,3,4,5].map(s => '<span class="saved-star ' + (s <= (g.valoracion || 0) ? 'on' : '') + '" onclick="rate(\'' + g.id + '\',' + s + ')">★</span>').join('');
         const tags = (g.etiquetas || []).map(t => '<span class="saved-tag">' + t + '<span class="saved-tag-x" onclick="removeTag(\'' + g.id + '\',\'' + t.replace(/'/g,"\\'") + '\')">✕</span></span>').join('');
-        return '<div class="saved-card">' +
-          '<div class="saved-top" onclick="window.location.href=\'creator-profile.html?user=' + g.candidat_id + '\'">' +
+        const checked = champSeleccionats.includes(g.candidat_id);
+        return '<div class="saved-card" style="position:relative;">' +
+          (champMode ? '<div onclick="toggleChampSel(\'' + g.candidat_id + '\')" style="position:absolute;top:0.8rem;right:0.8rem;width:26px;height:26px;border-radius:8px;border:2px solid ' + (checked ? '#FFD60A' : 'rgba(255,255,255,0.3)') + ';background:' + (checked ? '#FFD60A' : 'transparent') + ';display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;font-weight:900;color:#020B18;">' + (checked ? '✓' : '') + '</div>' : '') +
+          '<div class="saved-top" onclick="' + (champMode ? 'toggleChampSel(\'' + g.candidat_id + '\')' : 'window.location.href=\'creator-profile.html?user=' + g.candidat_id + '\'') + '">' +
             '<div class="saved-avatar">' + avatarHtml + '</div>' +
             '<div class="saved-info"><div class="saved-nom">' + nom + '</div>' +
               (g.nota ? '<div class="saved-nota">"' + g.nota + '"</div>' : '') +
             '</div>' +
-            '<div class="saved-stars">' + estrelles + '</div>' +
+            (champMode ? '' : '<div class="saved-stars">' + estrelles + '</div>') +
           '</div>' +
-          '<div class="saved-tags-row">' + tags + '<span class="saved-add-tag" onclick="addTag(\'' + g.id + '\')">＋ etiqueta</span></div>' +
-          '<div class="remove-saved" onclick="removeSaved(\'' + g.id + '\')">Quitar de guardados</div>' +
+          (champMode ? '' : '<div class="saved-tags-row">' + tags + '<span class="saved-add-tag" onclick="addTag(\'' + g.id + '\')">＋ etiqueta</span></div>' +
+          '<div class="remove-saved" onclick="removeSaved(\'' + g.id + '\')">Quitar de guardados</div>') +
         '</div>';
       }).join('');
     }
