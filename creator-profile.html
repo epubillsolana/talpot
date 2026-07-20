@@ -328,9 +328,10 @@
 
       renderOfertaBanner(videos || [], challenges || []);
       renderVideos(videos || []);
-      alert('DEBUG: a punt de cridar renderEntrevista amb ' + (challenges?.length || 0) + ' challenges');
+      document.title = 'DEBUG-ANTES-' + (challenges?.length || 0);
       } catch(errMid) {
-        alert('❌ ERROR capturat: ' + errMid.message + ' | Stack: ' + (errMid.stack || '').substring(0,200));
+        document.title = 'ERROR: ' + errMid.message.substring(0,30);
+        alert('❌ ERROR capturat: ' + errMid.message);
         return;
       }
       renderEntrevista(challenges || []);
@@ -458,7 +459,7 @@
     }
 
     function renderEntrevista(challenges) {
-      alert('DEBUG: dentro de renderEntrevista, challenges.length = ' + challenges.length);
+      document.title = 'DEBUG-ENTREVISTA-' + challenges.length;
       const container = document.getElementById('mag-container');
       if (challenges.length === 0) { container.innerHTML = '<div class="empty-mini">Sin entrevista todavía</div>'; return; }
 
