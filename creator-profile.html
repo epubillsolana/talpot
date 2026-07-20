@@ -7,8 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
-    body { background: linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%); }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; background: #061426; }
+    body { background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%); }
 
     .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(2,11,24,0.7); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50; }
     .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -548,7 +548,7 @@
     }
 
     function renderRadarSVG(scores) {
-      const cx = 175, cy = 165, maxR = 92;
+      const cx = 190, cy = 190, maxR = 88;
       const n = scores.length;
       const angle = (i) => (Math.PI * 2 * i / n) - Math.PI / 2;
       const pt = (i, r) => [cx + r * Math.cos(angle(i)), cy + r * Math.sin(angle(i))];
@@ -571,15 +571,15 @@
       // Etiquetes
       let labels = '';
       scores.forEach((s, i) => {
-        const [x, y] = pt(i, maxR + 28);
-        const anchor = Math.abs(x - cx) < 8 ? 'middle' : (x > cx ? 'start' : 'end');
-        const xSafe = Math.max(38, Math.min(312, x));
-        labels += `<text x="${xSafe}" y="${y}" fill="${s.val === 0 ? 'rgba(255,69,58,0.8)' : 'rgba(255,255,255,0.85)'}" font-size="10.5" font-weight="800" text-anchor="${anchor}" font-family="Space Grotesk, sans-serif">${s.label}</text>`;
-        labels += `<text x="${xSafe}" y="${y+13}" fill="${s.val === 0 ? '#FF453A' : '#FFD60A'}" font-size="10" font-weight="900" text-anchor="${anchor}" font-family="Space Grotesk, sans-serif">${s.val === 0 ? 'Sin datos' : s.val.toFixed(1)}</text>`;
+        const [x, y] = pt(i, maxR + 34);
+        const anchor = Math.abs(x - cx) < 10 ? 'middle' : (x > cx ? 'start' : 'end');
+        const xSafe = Math.max(50, Math.min(330, x));
+        labels += `<text x="${xSafe}" y="${y}" fill="${s.val === 0 ? 'rgba(255,69,58,0.85)' : '#fff'}" font-size="13" font-weight="800" text-anchor="${anchor}" font-family="Space Grotesk, sans-serif">${s.label}</text>`;
+        labels += `<text x="${xSafe}" y="${y+16}" fill="${s.val === 0 ? '#FF453A' : '#FFD60A'}" font-size="12.5" font-weight="900" text-anchor="${anchor}" font-family="Space Grotesk, sans-serif">${s.val === 0 ? 'Sin datos' : s.val.toFixed(1)}</text>`;
       });
 
       return `
-        <svg viewBox="0 0 350 340" style="width:100%;max-width:100%;display:block;margin:0 auto;">
+        <svg viewBox="0 0 380 390" style="width:100%;max-width:100%;display:block;margin:0 auto;">
           ${rings}${axes}
           <polygon points="${dataPts}" fill="rgba(255,214,10,0.22)" stroke="#FFD60A" stroke-width="2"/>
           ${scores.map((s, i) => { const [x,y] = pt(i, (s.val/10)*maxR); return `<circle cx="${x}" cy="${y}" r="3" fill="${s.val===0?'#FF453A':'#FFD60A'}"/>`; }).join('')}
