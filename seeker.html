@@ -143,14 +143,12 @@
     <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:#FFD60A;cursor:pointer;">
       <div style="font-size:1.25rem;">🔭</div><span>Explorar</span>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="document.getElementById('perfil-input').focus();">
-      <div style="font-size:1.25rem;">🔍</div><span>Buscar</span>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;position:relative;" onclick="window.location.href='messages.html?from=seeker'">
+      <div style="font-size:1.25rem;">💬</div><span>Candidatos</span>
+      <div id="msg-dot" style="display:none;position:absolute;top:-2px;right:6px;width:8px;height:8px;border-radius:50%;background:#FF453A;"></div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='messages.html'">
-      <div style="font-size:1.25rem;">💬</div><span>Mensajes</span>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='profile.html'">
-      <div style="font-size:1.25rem;">👤</div><span>Mi perfil</span>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-panel.html'">
+      <div style="font-size:1.25rem;">⚙️</div><span>Mi cuenta</span>
     </div>
   </nav>
 

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Mi cuenta Seeker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="talpot-style.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body { background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%); }
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(6,20,38,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.07); z-index: 50; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
+    .scroll { position: fixed; inset: 0; padding: 70px 1.25rem 90px; overflow-y: auto; }
+    .h-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 1.2rem; }
+    .item { display: flex; align-items: center; gap: 0.9rem; padding: 1rem 1.1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; margin-bottom: 0.6rem; cursor: pointer; }
+    .item-icon { font-size: 1.4rem; }
+    .item-txt { flex: 1; }
+    .item-title { font-size: 0.9rem; font-weight: 800; }
+    .item-sub { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 0.1rem; }
+    .item-arrow { color: rgba(255,255,255,0.3); }
+    .switch-card { background: linear-gradient(135deg, rgba(255,214,10,0.14), rgba(255,107,0,0.06)); border: 1.5px solid rgba(255,214,10,0.35); border-radius: 18px; padding: 1.2rem; margin-top: 1.5rem; text-align: center; }
+    .switch-btn { margin-top: 0.8rem; padding: 0.85rem 1.6rem; border-radius: 100px; border: none; background: #FFD60A; color: #020B18; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.9rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" onclick="window.location.href='seeker.html'">← Explorar</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div style="width:60px;"></div>
+  </nav>
+
+  <div class="scroll">
+    <div class="h-title">⚙️ Mi cuenta Seeker</div>
+
+    <div class="item" onclick="window.location.href='champions.html'">
+      <div class="item-icon">🏆</div>
+      <div class="item-txt"><div class="item-title">Champions — Ranking de talento</div><div class="item-sub">Los perfiles más destacados de Talpot esta semana</div></div>
+      <div class="item-arrow">→</div>
+    </div>
+
+    <div class="item" onclick="window.location.href='messages.html'">
+      <div class="item-icon">💬</div>
+      <div class="item-txt"><div class="item-title">Mis conversaciones</div><div class="item-sub">Candidatos con los que has contactado</div></div>
+      <div class="item-arrow">→</div>
+    </div>
+
+    <div class="item" onclick="alert('Próximamente: histórico de búsquedas y candidatos guardados.')">
+      <div class="item-icon">🔖</div>
+      <div class="item-txt"><div class="item-title">Candidatos guardados</div><div class="item-sub">Perfiles que has marcado para seguir</div></div>
+      <div class="item-arrow">→</div>
+    </div>
+
+    <div class="item" onclick="alert('Próximamente: datos de facturación y plan.')">
+      <div class="item-icon">💳</div>
+      <div class="item-txt"><div class="item-title">Plan y facturación</div><div class="item-sub">Gestiona tu suscripción como Seeker</div></div>
+      <div class="item-arrow">→</div>
+    </div>
+
+    <div class="switch-card">
+      <div style="font-size:0.85rem;color:rgba(255,255,255,0.8);line-height:1.6;">¿Quieres volver a mostrar tu propio talento?</div>
+      <button class="switch-btn" onclick="window.location.href='profile.html'">👤 Volver a modo Creator</button>
+    </div>
+  </div>
+
+</body>
+</html>

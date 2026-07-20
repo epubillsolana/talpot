@@ -76,16 +76,22 @@
     </div>
   </div>
 
-  <nav class="nav-bottom">
+  <nav class="nav-bottom" id="nav-bottom-creator">
     <div class="nav-item" onclick="window.location.href='app.html'"><div class="nav-icon">🏠</div><span>Feed</span></div>
     <div class="nav-item" onclick="window.location.href='magic-room.html'"><div class="nav-icon">✨</div><span>Mi Room</span></div>
     <div class="nav-item active"><div class="nav-icon">💬</div><span>Mensajes</span></div>
     <div class="nav-item" onclick="window.location.href='profile.html'"><div class="nav-icon">👤</div><span>Perfil</span></div>
   </nav>
+  <nav class="nav-bottom" id="nav-bottom-seeker" style="display:none;">
+    <div class="nav-item" onclick="window.location.href='seeker.html'"><div class="nav-icon">🔭</div><span>Explorar</span></div>
+    <div class="nav-item active"><div class="nav-icon">💬</div><span>Candidatos</span></div>
+    <div class="nav-item" onclick="window.location.href='seeker-panel.html'"><div class="nav-icon">⚙️</div><span>Mi cuenta</span></div>
+  </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
+    const isSeeker = new URLSearchParams(window.location.search).get('from') === 'seeker';
     let myId = null;
     let msgs = [];
     let nomMap = {};
@@ -101,6 +107,11 @@
     }
 
     async function init() {
+      if (isSeeker) {
+        document.getElementById('nav-bottom-creator').style.display = 'none';
+        document.getElementById('nav-bottom-seeker').style.display = 'flex';
+        document.getElementById('nav-back').textContent = '← Explorar';
+      }
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'index.html'; return; }
       myId = user.id;
@@ -117,7 +128,7 @@
       msgs = data || [];
       const cont = document.getElementById('convs-container');
       if (msgs.length === 0) {
-        cont.innerHTML = '<div class="empty">💬<br>Encara no tens missatges.<br>Quan un Seeker et faci una petició o interactuïs amb altres creators, apareixeran aquí.</div>';
+        cont.innerHTML = '<div class="empty">💬<br>Aún no tienes mensajes.<br>Aquí verás tus conversaciones con Seekers o con candidatos, según el modo en que estés.</div>';
         return;
       }
       // Agrupar per interlocutor
@@ -189,11 +200,11 @@
     function goBack() {
       if (document.getElementById('view-xat').classList.contains('open')) {
         document.getElementById('view-xat').classList.remove('open');
-        document.getElementById('nav-back').textContent = '← Feed';
+        document.getElementById('nav-back').textContent = isSeeker ? '← Explorar' : '← Feed';
         if (pollInterval) clearInterval(pollInterval);
         loadConvs();
       } else {
-        window.location.href = 'app.html';
+        window.location.href = isSeeker ? 'seeker.html' : 'app.html';
       }
     }
 
