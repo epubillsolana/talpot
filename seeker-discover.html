@@ -34,10 +34,16 @@
     .loc-mini { width: 100%; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; outline: none; margin-bottom: 0.6rem; }
 
     .section { padding: 0 1.25rem; }
-    .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
-    .disc-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden; cursor: pointer; }
-    .disc-thumb { width: 100%; height: 100px; background: #0A2540; display: flex; align-items: center; justify-content: center; }
-    .disc-body { padding: 0.65rem; }
+    .list-cards { display: flex; flex-direction: column; gap: 0.6rem; }
+    .disc-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.9rem; cursor: pointer; transition: transform 0.15s; }
+    .disc-card:active { transform: scale(0.98); }
+    .disc-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+    .disc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .disc-info { flex: 1; min-width: 0; }
+    .disc-nom { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.2rem; }
+    .disc-meta { font-size: 0.78rem; color: #30D158; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .disc-loc { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.25rem; }
+    .disc-arrow { color: rgba(255,255,255,0.3); font-size: 1.1rem; flex-shrink: 0; }
     .disc-nom { font-size: 0.82rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .disc-meta { font-size: 0.68rem; color: #30D158; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .disc-loc { font-size: 0.65rem; color: rgba(255,255,255,0.45); margin-top: 0.1rem; }
@@ -241,17 +247,20 @@
         list.innerHTML = '<div class="empty"><div class="empty-icon">🔎</div><div class="empty-text">No hay candidatos con estos filtros.<br>Prueba quitando alguno.</div></div>';
         return;
       }
-      list.innerHTML = '<div class="grid-cards">' + candidats.map(v => {
+      list.innerHTML = '<div class="list-cards">' + candidats.map(v => {
         const p = allProfiles[v.user_id] || {};
         const nom = p.full_name || 'Talent Talpot';
         const kws = (v.keywords || v.extracted?.keywords || v.tags || []).slice(0, 2);
-        const thumb = p.avatar_url ? ('<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;">') : ('<span style="font-size:2rem;font-weight:900;color:rgba(255,255,255,0.25);">' + nom.charAt(0).toUpperCase() + '</span>');
+        const avatarHtml = p.avatar_url ? ('<img src="' + p.avatar_url + '">') : ('<span style="font-size:1.3rem;font-weight:900;color:#020B18;">' + nom.charAt(0).toUpperCase() + '</span>');
         return '<div class="disc-card" onclick="window.location.href=\'creator-profile.html?user=' + v.user_id + '\'">' +
-          '<div class="disc-thumb">' + thumb + '</div>' +
-          '<div class="disc-body"><div class="disc-nom">' + nom + '</div>' +
-          '<div class="disc-meta">' + (kws.join(' · ') || '🎬 Vídeo') + '</div>' +
-          (p.ubicacio ? '<div class="disc-loc">📍 ' + p.ubicacio + '</div>' : '') +
-          '</div></div>';
+          '<div class="disc-avatar">' + avatarHtml + '</div>' +
+          '<div class="disc-info">' +
+            '<div class="disc-nom">' + nom + '</div>' +
+            '<div class="disc-meta">' + (kws.join(' · ') || '✨ Perfil activo') + '</div>' +
+            (p.ubicacio ? '<div class="disc-loc">📍 ' + p.ubicacio + '</div>' : '') +
+          '</div>' +
+          '<div class="disc-arrow">›</div>' +
+          '</div>';
       }).join('') + '</div>';
     }
 
