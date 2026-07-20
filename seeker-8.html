@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Explorar Talento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="talpot-style.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body { background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%); }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(6,20,38,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.07); z-index: 50; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-back { font-size: 1.1rem; cursor: pointer; color: rgba(255,255,255,0.85); font-weight: 700; }
+    .seeker-badge { font-size: 0.62rem; font-weight: 800; padding: 0.3rem 0.7rem; border-radius: 100px; background: rgba(0,180,216,0.15); color: #00B4D8; border: 1px solid rgba(0,180,216,0.35); cursor:pointer; }
+
+    .scroll { position: fixed; inset: 0; padding-top: 56px; padding-bottom: 76px; overflow-y: auto; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .header { padding: 1.4rem 1.25rem 0.5rem; }
+    .h-title { font-size: 1.55rem; font-weight: 900; letter-spacing: -0.6px; margin-bottom: 0.3rem; }
+    .h-sub { font-size: 0.84rem; color: rgba(255,255,255,0.68); line-height: 1.5; }
+
+    .card-block { margin: 1rem 1.25rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 1.1rem; }
+    .block-label { font-size: 0.78rem; font-weight: 800; color: rgba(255,255,255,0.75); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
+
+    /* Autocompletar perfils */
+    .ac-wrap { position: relative; }
+    .ac-input { width: 100%; padding: 0.8rem 1rem; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; outline: none; }
+    .ac-input:focus { border-color: #FFD60A; }
+    .ac-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0D2A45; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; max-height: 220px; overflow-y: auto; z-index: 30; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .ac-item { padding: 0.7rem 1rem; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .ac-item:hover, .ac-item:active { background: rgba(255,214,10,0.1); }
+    .ac-item-custom { color: #00B4D8; font-weight: 700; }
+
+    .chips-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.65rem; }
+    .chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 0.5rem 0.4rem 0.85rem; border-radius: 100px; background: rgba(255,214,10,0.12); border: 1px solid rgba(255,214,10,0.3); color: #FFD60A; }
+    .chip.kw { background: rgba(0,180,216,0.12); border-color: rgba(0,180,216,0.3); color: #00B4D8; }
+    .chip-x { cursor: pointer; opacity: 0.6; font-weight: 900; padding: 0 0.2rem; }
+    .chip-x:hover { opacity: 1; }
+
+    .loc-input { width: 100%; padding: 0.8rem 1rem; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; outline: none; margin-bottom: 0.9rem; }
+    .slider-row { display: flex; align-items: center; gap: 0.8rem; }
+    .slider-row input[type=range] { flex: 1; accent-color: #FFD60A; height: 6px; }
+    .slider-val { font-size: 0.85rem; font-weight: 900; color: #FFD60A; min-width: 60px; text-align: right; }
+
+    .kw-input-row { display: flex; gap: 0.5rem; }
+    .kw-add-btn { padding: 0.8rem 1.1rem; border-radius: 12px; border: none; background: rgba(0,180,216,0.18); color: #00B4D8; font-weight: 900; cursor: pointer; }
+
+    .search-cta { margin: 1.2rem 1.25rem; padding: 1rem; border-radius: 100px; border: none; background: #FFD60A; color: #020B18; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 1rem; cursor: pointer; width: calc(100% - 2.5rem); box-shadow: 0 4px 20px rgba(255,214,10,0.3); }
+
+    .resum-box { margin: 0 1.25rem 1.2rem; background: rgba(0,180,216,0.06); border: 1px solid rgba(0,180,216,0.25); border-radius: 14px; padding: 0.9rem 1.1rem; font-size: 0.84rem; line-height: 1.7; color: rgba(255,255,255,0.85); }
+    .resum-box strong { color: #FFD60A; }
+
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .fam-title { font-size: 1.05rem; font-weight: 900; margin: 0 0 0.7rem; }
+
+    .cand-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1rem; margin-bottom: 0.6rem; }
+    .cand-top { display: flex; align-items: center; gap: 0.85rem; cursor: pointer; }
+    .cand-avatar { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; color: #020B18; flex-shrink: 0; overflow: hidden; }
+    .cand-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .cand-info { flex: 1; min-width: 0; }
+    .cand-nom { font-size: 0.96rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .cand-forts { font-size: 0.78rem; color: #30D158; line-height: 1.5; font-weight: 600; }
+    .cand-loc { font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-top: 0.15rem; }
+    .cand-scores { display: flex; gap: 0.55rem; flex-shrink: 0; }
+    .cand-match { text-align: center; }
+    .cand-match-val { font-size: 1.05rem; font-weight: 900; }
+    .cand-match-lbl { font-size: 0.6rem; color: rgba(255,255,255,0.45); text-transform: uppercase; font-weight: 700; }
+    .cand-total { text-align: center; padding-left: 0.55rem; border-left: 1px solid rgba(255,255,255,0.1); }
+    .cand-total-val { font-size: 1.4rem; font-weight: 900; color: #FFD60A; }
+
+    .fb-row { display: flex; align-items: center; gap: 0.5rem; width: 100%; margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.07); }
+
+    .empty { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2.5rem 1.5rem; text-align: center; }
+    .empty-icon { font-size: 2.8rem; margin-bottom: 0.7rem; }
+    .empty-text { font-size: 0.88rem; color: rgba(255,255,255,0.65); line-height: 1.7; }
+
+    .footer-space { height: 2rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-back" onclick="window.location.href='app.html'">← Feed</div>
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div class="seeker-badge" onclick="window.location.href='profile.html'">🔍 SEEKER · Volver a Creator</div>
+  </nav>
+
+  <div class="scroll">
+    <div class="header">
+      <div class="h-title">🔭 Explora talento</div>
+      <div class="h-sub">Define qué perfiles buscas, dónde y con qué palabras clave. La IA ordena por encaje y potencial.</div>
+    </div>
+
+    <!-- PERFILS DE FEINA -->
+    <div class="card-block">
+      <div class="block-label">💼 Perfiles de trabajo que buscas</div>
+      <div class="ac-wrap">
+        <input class="ac-input" id="perfil-input" placeholder="Escribe un perfil (ej: comercial, medio ambiente...)" oninput="acFilter(this.value)" onfocus="acFilter(this.value)" autocomplete="off" />
+        <div class="ac-dropdown" id="ac-dropdown" style="display:none;"></div>
+      </div>
+      <div class="chips-row" id="perfils-chips"></div>
+    </div>
+
+    <!-- UBICACIÓ -->
+    <div class="card-block">
+      <div class="block-label">📍 Ubicación</div>
+      <input class="loc-input" id="loc-input" placeholder="Ej: Reus, Barcelona..." />
+      <div class="slider-row">
+        <span style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Radio</span>
+        <input type="range" id="dist-slider" min="5" max="100" step="5" value="30" oninput="document.getElementById('dist-val').textContent = this.value + ' km'" />
+        <span class="slider-val" id="dist-val">30 km</span>
+      </div>
+    </div>
+
+    <!-- PARAULES CLAU -->
+    <div class="card-block">
+      <div class="block-label">🔑 Palabras clave</div>
+      <div class="kw-input-row">
+        <input class="loc-input" id="kw-input" placeholder="Ej: inglés, Excel, atención al cliente..." style="margin-bottom:0;" onkeydown="if(event.key==='Enter'){event.preventDefault();addKw();}" />
+        <button class="kw-add-btn" onclick="addKw()">＋</button>
+      </div>
+      <div class="chips-row" id="kw-chips"></div>
+    </div>
+
+    <button class="search-cta" onclick="buscar()">🔍 Buscar candidatos</button>
+
+    <div id="resum-container"></div>
+
+    <div class="section" id="results-section" style="display:none;">
+      <div class="fam-title" id="results-title"></div>
+      <div id="cand-list"></div>
+    </div>
+
+    <div class="footer-space"></div>
+  </div>
+
+  <nav class="nav-bottom" style="position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:0.6rem 0 calc(0.6rem + env(safe-area-inset-bottom));background:rgba(6,20,38,0.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.07);z-index:50;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:#FFD60A;cursor:pointer;">
+      <div style="font-size:1.25rem;">🔭</div><span>Explorar</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="document.getElementById('perfil-input').focus();">
+      <div style="font-size:1.25rem;">🔍</div><span>Buscar</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='messages.html'">
+      <div style="font-size:1.25rem;">💬</div><span>Mensajes</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='profile.html'">
+      <div style="font-size:1.25rem;">👤</div><span>Mi perfil</span>
+    </div>
+  </nav>
+
+  <script src="ofertes-data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
+    const OFERTES = window.TALPOT_OFERTES || [];
+    let candidats = [];
+
+    let perfilsElegits = []; // [{titol, kw[], soft[]}]
+    let kwElegides = []; // strings lliures
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'index.html'; return; }
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      try { await sb.from('profiles').upsert({ id: user.id, full_name: fullName }); } catch(e) {}
+      await loadCandidats();
+    }
+
+    async function loadCandidats() {
+      const { data: videos } = await sb.from('magic_room_videos').select('user_id, keywords, transcripcio, extracted, tags');
+      const { data: challenges } = await sb.from('challenge_respostes').select('user_id, transcripcio');
+      const { data: profiles } = await sb.from('profiles').select('id, full_name, ubicacio, avatar_url');
+      const { data: partides } = await sb.from('game_partides').select('user_id, ok');
+
+      const nomMap = {}, locMap = {}, avatarMap = {};
+      (profiles || []).forEach(p => { nomMap[p.id] = p.full_name; locMap[p.id] = p.ubicacio; avatarMap[p.id] = p.avatar_url; });
+
+      const jocsMap = {};
+      (partides || []).forEach(p => {
+        if (!jocsMap[p.user_id]) jocsMap[p.user_id] = { total: 0, enc: 0 };
+        jocsMap[p.user_id].total++;
+        if (p.ok === true) jocsMap[p.user_id].enc++;
+      });
+
+      const map = {};
+      (videos || []).forEach(v => {
+        if (!map[v.user_id]) map[v.user_id] = { user_id: v.user_id, kws: new Set(), text: '', anysExp: 0, nChall: 0, nVideos: 0 };
+        map[v.user_id].nVideos++;
+        (v.keywords || []).forEach(k => map[v.user_id].kws.add(k));
+        (v.tags || []).forEach(t => map[v.user_id].kws.add(t));
+        if (v.transcripcio) map[v.user_id].text += ' ' + v.transcripcio;
+        if (v.extracted) {
+          (v.extracted.keywords || []).forEach(k => map[v.user_id].kws.add(k));
+          (v.extracted.perfils_laborals || []).forEach(p => map[v.user_id].kws.add(p));
+          if (v.extracted.anys_experiencia_total) map[v.user_id].anysExp = Math.max(map[v.user_id].anysExp, v.extracted.anys_experiencia_total);
+        }
+      });
+      (challenges || []).forEach(c => {
+        if (!map[c.user_id]) map[c.user_id] = { user_id: c.user_id, kws: new Set(), text: '', anysExp: 0, nChall: 0, nVideos: 0 };
+        map[c.user_id].nChall++;
+        if (c.transcripcio) map[c.user_id].text += ' ' + c.transcripcio;
+      });
+
+      candidats = Object.values(map).map(c => {
+        const j = jocsMap[c.user_id] || { total: 0, enc: 0 };
+        const jocsScore = j.total > 0 ? Math.min(45, (j.enc / j.total) * 35 + Math.min(10, j.total / 10)) : 0;
+        const challScore = Math.min(30, c.nChall * 4);
+        const videoScore = Math.min(25, c.nVideos * 5);
+        return {
+          user_id: c.user_id,
+          nom: nomMap[c.user_id] || 'Talent Talpot',
+          ubicacio: locMap[c.user_id] || null,
+          avatar: avatarMap[c.user_id] || null,
+          kws: [...c.kws],
+          text: c.text.toLowerCase(),
+          anysExp: c.anysExp,
+          potencial: Math.round(jocsScore + challScore + videoScore),
+        };
+      });
+    }
+
+    // ═══ AUTOCOMPLETAR DE PERFILS ═══
+    function acFilter(val) {
+      const dd = document.getElementById('ac-dropdown');
+      const v = val.trim().toLowerCase();
+      let items = [];
+      if (v) {
+        items = OFERTES.filter(o => o.titol.toLowerCase().includes(v) || o.fam.toLowerCase().includes(v)).slice(0, 8);
+      } else {
+        items = OFERTES.slice(0, 6);
+      }
+      let html = items.map(o => `<div class="ac-item" onclick="pickPerfil('${o.id}')">${o.icon} ${o.titol} <span style="color:rgba(255,255,255,0.4);font-size:0.75rem;">· ${o.fam}</span></div>`).join('');
+      if (v) html += `<div class="ac-item ac-item-custom" onclick="pickPerfilCustom('${v.replace(/'/g,"\\'")}')">✨ Usar "${val.trim()}" como perfil personalizado</div>`;
+      dd.innerHTML = html || '<div class="ac-item" style="color:rgba(255,255,255,0.4);">Sin resultados — prueba escribir tu propio perfil</div>';
+      dd.style.display = 'block';
+    }
+    function pickPerfil(ofertaId) {
+      const o = OFERTES.find(x => x.id === ofertaId);
+      if (!o || perfilsElegits.some(p => p.titol === o.titol)) { closeAc(); return; }
+      perfilsElegits.push({ titol: o.titol, kw: o.kw, soft: o.soft || [] });
+      renderPerfilsChips();
+      closeAc();
+    }
+    function pickPerfilCustom(text) {
+      if (!text || perfilsElegits.some(p => p.titol.toLowerCase() === text.toLowerCase())) { closeAc(); return; }
+      // Perfil personalitzat: les keywords són les paraules del propi text
+      perfilsElegits.push({ titol: text.charAt(0).toUpperCase() + text.slice(1), kw: text.toLowerCase().split(/\s+/), soft: [] });
+      renderPerfilsChips();
+      closeAc();
+    }
+    function closeAc() {
+      document.getElementById('perfil-input').value = '';
+      document.getElementById('ac-dropdown').style.display = 'none';
+    }
+    function removePerfil(i) { perfilsElegits.splice(i, 1); renderPerfilsChips(); }
+    function renderPerfilsChips() {
+      document.getElementById('perfils-chips').innerHTML = perfilsElegits.map((p, i) =>
+        `<span class="chip">${p.titol}<span class="chip-x" onclick="removePerfil(${i})">✕</span></span>`
+      ).join('');
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.ac-wrap')) document.getElementById('ac-dropdown').style.display = 'none';
+    });
+
+    // ═══ PARAULES CLAU ═══
+    function addKw() {
+      const input = document.getElementById('kw-input');
+      const v = input.value.trim();
+      if (!v || kwElegides.includes(v.toLowerCase())) { input.value = ''; return; }
+      kwElegides.push(v.toLowerCase());
+      input.value = '';
+      renderKwChips();
+    }
+    function removeKw(i) { kwElegides.splice(i, 1); renderKwChips(); }
+    function renderKwChips() {
+      document.getElementById('kw-chips').innerHTML = kwElegides.map((k, i) =>
+        `<span class="chip kw">${k}<span class="chip-x" onclick="removeKw(${i})">✕</span></span>`
+      ).join('');
+    }
+
+    // ═══ CERCA I RÀNQUING ═══
+    function passaFiltreUbicacio(c, loc, dist) {
+      if (!loc) return true; // sense ubicació introduïda, no filtra
+      if (!c.ubicacio) return false;
+      // Coincidència aproximada per zona (no km exactes): mateixa ciutat/comarca al text
+      const a = loc.toLowerCase().trim();
+      const b = c.ubicacio.toLowerCase();
+      return b.includes(a) || a.includes(b);
+    }
+
+    function matchScore(c, terms) {
+      const searchText = (c.kws.join(' ') + ' ' + c.text).toLowerCase();
+      const hits = terms.filter(t => searchText.includes(t));
+      return { hits, cobertura: terms.length ? hits.length / terms.length : 0 };
+    }
+
+    function buscar() {
+      if (perfilsElegits.length === 0 && kwElegides.length === 0) {
+        alert('Añade al menos un perfil de trabajo o una palabra clave.');
+        return;
+      }
+      const loc = document.getElementById('loc-input').value.trim();
+      const dist = document.getElementById('dist-slider').value;
+
+      // Termes combinats: keywords de tots els perfils elegits + paraules clau soltes
+      const totsTermes = [...new Set([...perfilsElegits.flatMap(p => [...p.kw, ...p.soft]), ...kwElegides])];
+
+      const resultats = candidats
+        .filter(c => passaFiltreUbicacio(c, loc, dist))
+        .map(c => {
+          const { hits, cobertura } = matchScore(c, totsTermes);
+          const encaix = Math.round(Math.min(98, cobertura * 100));
+          const total = Math.round(encaix * 0.7 + c.potencial * 0.3);
+          return { ...c, encaix, hits, total };
+        })
+        .filter(c => c.encaix > 0 || c.potencial >= 40)
+        .sort((a, b) => b.total - a.total);
+
+      // RESUM
+      const perfilsTxt = perfilsElegits.map(p => p.titol).join(', ') || null;
+      const kwTxt = kwElegides.join(', ') || null;
+      let resum = 'Buscas ';
+      resum += perfilsTxt ? `perfiles: <strong>${perfilsTxt}</strong>` : 'candidatos';
+      if (loc) resum += ` · Ubicados en <strong>${loc}</strong> (máx. ${dist} km)`;
+      if (kwTxt) resum += ` · Con: <strong>${kwTxt}</strong>`;
+      document.getElementById('resum-container').innerHTML = `<div class="resum-box">🎯 ${resum}</div>`;
+
+      document.getElementById('results-section').style.display = 'block';
+      document.getElementById('results-title').textContent = `${resultats.length} candidato${resultats.length !== 1 ? 's' : ''} encontrado${resultats.length !== 1 ? 's' : ''}`;
+
+      const list = document.getElementById('cand-list');
+      if (resultats.length === 0) {
+        list.innerHTML = `<div class="empty"><div class="empty-icon">🔎</div><div class="empty-text">Aún no hay candidatos que cumplan estos criterios.<br>Prueba ampliando el radio o quitando alguna palabra clave.</div></div>`;
+        return;
+      }
+
+      list.innerHTML = resultats.map(c => {
+        const encaixColor = c.encaix >= 70 ? '#30D158' : c.encaix >= 40 ? '#FFD60A' : 'rgba(255,255,255,0.5)';
+        const potColor = c.potencial >= 60 ? '#00B4D8' : c.potencial >= 35 ? '#5B8DEF' : 'rgba(255,255,255,0.4)';
+        const esDescubrimiento = c.encaix === 0 && c.potencial >= 40;
+        const avatarHtml = c.avatar ? `<img src="${c.avatar}" alt="">` : c.nom.charAt(0).toUpperCase();
+        return `
+        <div class="cand-card" ${esDescubrimiento ? 'style="border-color:rgba(0,180,216,0.35);background:rgba(0,180,216,0.05);"' : ''}>
+          <div class="cand-top" onclick="window.location.href='creator-profile.html?user=${c.user_id}'">
+            <div class="cand-avatar">${avatarHtml}</div>
+            <div class="cand-info">
+              <div class="cand-nom">${c.nom}${c.anysExp > 0 ? ' <span style="font-size:0.7rem;color:rgba(255,255,255,0.5);font-weight:600;">· ' + c.anysExp + ' años exp.</span>' : ''}</div>
+              <div class="cand-forts">${esDescubrimiento ? '💎 Perfil potente — no coincide en palabras, pero destaca' : '💪 ' + (c.hits.slice(0,4).join(' · ') || 'coincidencia parcial')}</div>
+              ${c.ubicacio ? '<div class="cand-loc">📍 ' + c.ubicacio + '</div>' : ''}
+            </div>
+            <div class="cand-scores">
+              <div class="cand-match"><div class="cand-match-val" style="color:${encaixColor};">${c.encaix}%</div><div class="cand-match-lbl">Encaje</div></div>
+              <div class="cand-match"><div class="cand-match-val" style="color:${potColor};">${c.potencial}%</div><div class="cand-match-lbl">Potencial</div></div>
+              <div class="cand-total"><div class="cand-total-val">${c.total}</div><div class="cand-match-lbl">Total</div></div>
+            </div>
+          </div>
+          <div class="fb-row">
+            <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);font-weight:700;">Ajuste técnico:</span>
+            <span>${[1,2,3,4,5].map(s => `<span style="font-size:1.05rem;color:rgba(255,255,255,0.2);cursor:pointer;" onclick="fbRate('${c.user_id}',${c.encaix},${s},this)">★</span>`).join('')}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function fbRate(candidatId, scoreApp, estrelles, el) {
+      const wrap = el.parentElement;
+      [...wrap.children].forEach((s, i) => { s.style.color = i < estrelles ? '#FFD60A' : 'rgba(255,255,255,0.2)'; });
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const query = perfilsElegits.map(p => p.titol).join(', ') || kwElegides.join(', ');
+      try {
+        await sb.from('match_feedback').insert({ seeker_id: user.id, candidat_id: candidatId, oferta_id: query, oferta_titol: query, score_app: scoreApp, estrelles: estrelles });
+      } catch(e) {}
+    }
+
+    init();
+  </script>
+
+</body>
+</html>
