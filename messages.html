@@ -82,11 +82,24 @@
     <div class="nav-item active"><div class="nav-icon">💬</div><span>Mensajes</span></div>
     <div class="nav-item" onclick="window.location.href='profile.html'"><div class="nav-icon">👤</div><span>Perfil</span></div>
   </nav>
-  <nav class="nav-bottom" id="nav-bottom-seeker" style="display:none;">
-    <div class="nav-item" onclick="window.location.href='seeker.html'"><div class="nav-icon">🔭</div><span>Explorar</span></div>
-    <div class="nav-item active"><div class="nav-icon">💬</div><span>Candidatos</span></div>
-    <div class="nav-item" onclick="window.location.href='seeker-panel.html'"><div class="nav-icon">⚙️</div><span>Mi cuenta</span></div>
+  <nav class="nav-bottom" id="nav-bottom-seeker" style="display:none;" style="position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:0.55rem 0 calc(0.55rem + env(safe-area-inset-bottom));background:rgba(6,20,38,0.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.07);z-index:50;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker.html'">
+      <div style="font-size:1.15rem;">🎯</div><span>Buscar</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-discover.html'">
+      <div style="font-size:1.15rem;">🧭</div><span>Descubrir</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-saved.html'">
+      <div style="font-size:1.15rem;">🔖</div><span>Guardados</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:#FFD60A;cursor:pointer;position:relative;" onclick="window.location.href='messages.html?from=seeker'">
+      <div style="font-size:1.15rem;">💬</div><span>Candidatos</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-panel.html'">
+      <div style="font-size:1.15rem;">⚙️</div><span>Mi cuenta</span>
+    </div>
   </nav>
+
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
