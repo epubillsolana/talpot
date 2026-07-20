@@ -112,6 +112,7 @@
         || user.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       try { await sb.from('profiles').upsert({ id: user.id, full_name: fullName }); } catch(e) {}
       await loadCandidats();
+      await loadAjustos();
       renderOfertes();
     }
 
@@ -168,12 +169,27 @@
     }
 
     // Match candidat ↔ oferta: tècnic (fort) + soft (mitjà) + experiència
+    let AJUSTOS = {}; // oferta_id -> kw sospitoses (apreses del feedback)
+    async function loadAjustos() {
+      try {
+        const { data } = await sb.from('matching_ajustos').select('oferta_id, kw_sospitoses');
+        (data || []).forEach(a => {
+          if (!AJUSTOS[a.oferta_id]) AJUSTOS[a.oferta_id] = new Set();
+          (a.kw_sospitoses || []).forEach(k => AJUSTOS[a.oferta_id].add(k));
+        });
+      } catch(e) {}
+    }
+
     function matchOferta(cand, oferta) {
       const searchText = (cand.kws.join(' ') + ' ' + cand.perfilsIA.join(' ') + ' ' + cand.text).toLowerCase();
-      const kwHits = oferta.kw.filter(k => searchText.includes(k));
+      const sospitoses = AJUSTOS[oferta.id] || new Set();
+      // Les kw marcades pel feedback com a enganyoses puntuen a la meitat
+      const kwHitsRaw = oferta.kw.filter(k => searchText.includes(k));
+      const kwHits = kwHitsRaw.filter(k => !sospitoses.has(k));
+      const kwHitsPenal = kwHitsRaw.filter(k => sospitoses.has(k));
       const softHits = (oferta.soft || []).filter(s => searchText.includes(s.toLowerCase()));
-      if (kwHits.length === 0 && softHits.length === 0) return { score: 0, forts: [], softForts: [] };
-      const kwScore = (kwHits.length / oferta.kw.length) * 60;
+      if (kwHitsRaw.length === 0 && softHits.length === 0) return { score: 0, forts: [], softForts: [] };
+      const kwScore = ((kwHits.length + kwHitsPenal.length * 0.5) / oferta.kw.length) * 60;
       const softScore = oferta.soft?.length ? (softHits.length / oferta.soft.length) * 25 : 0;
       let expScore = 0;
       if (oferta.expMin === 0) expScore = 10;
@@ -181,7 +197,7 @@
       else if (cand.anysExp > 0) expScore = 7;
       return {
         score: Math.min(98, Math.round(kwScore + softScore + expScore)),
-        forts: kwHits,
+        forts: kwHitsRaw,
         softForts: softHits,
       };
     }
@@ -374,6 +390,34 @@
         seeker_id: user.id, candidat_id: candidatId, oferta_id: ofertaId,
         oferta_titol: ofertaTitol, score_app: scoreApp, estrelles: estrelles
       });
+      // APRENENTATGE: desajust gran (app deia molt i seeker poc, o al revés) → la IA analitza
+      const desajust = Math.abs(scoreApp / 20 - estrelles);
+      if (desajust >= 1.5) {
+        const cand = candidats.find(c => c.user_id === candidatId);
+        const o = OFERTES.find(x => x.id === ofertaId);
+        if (!cand || !o) return;
+        try {
+          const res = await fetch(WORKER_URL + '/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              oferta_titol: ofertaTitol, kw_oferta: o.kw, score_app: scoreApp, estrelles: estrelles,
+              contingut_candidat: cand.kws.join(', ') + '. ' + cand.text.substring(0, 1500)
+            })
+          });
+          const data = await res.json();
+          if (data.ok && data.analisi) {
+            await sb.from('matching_ajustos').insert({
+              oferta_id: ofertaId, veredicte: data.analisi.veredicte || null,
+              explicacio: data.analisi.explicacio || null,
+              kw_sospitoses: data.analisi.kw_sospitoses || [],
+              recomanacio: data.analisi.recomanacio || null
+            });
+            await loadAjustos();
+            alert('🧠 El sistema ha après d\'aquesta valoració:\n\n' + (data.analisi.explicacio || '') + (data.analisi.kw_sospitoses?.length ? '\n\n⚠️ Keywords revisades: ' + data.analisi.kw_sospitoses.join(', ') : ''));
+          }
+        } catch(e) {}
+      }
     }
 
     init();

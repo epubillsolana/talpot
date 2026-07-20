@@ -1834,96 +1834,156 @@
     }
 
 
-    // ═══════ 11. IDIOMES — gramàtica i vocabulari per nivell ═══════
+    // ═══════ 11. IDIOMES — variats, sense repetició, amb nivell CEFR ═══════
+    // Tipus: buit (gramàtica), sino (vocabulari), error (detecció), ordena (sintaxi), trad (traducció), expr (expressions/col·loquial)
     const IDIOMES_DATA = {
       en: { nom: 'Anglès', flag: '🇬🇧', q: [
-        { t:'buit', f:'She ___ to the office every day.', ops:['goes','go','going','gone'], a:'goes' },
-        { t:'buit', f:'If I ___ more time, I would learn French.', ops:['had','have','has','having'], a:'had' },
-        { t:'buit', f:'The report must ___ by Friday.', ops:['be finished','finish','finished','be finish'], a:'be finished' },
-        { t:'buit', f:'I look forward to ___ from you.', ops:['hearing','hear','heard','be heard'], a:'hearing' },
-        { t:'buit', f:'By next year, we ___ the project.', ops:['will have completed','will complete','completed','have completed'], a:'will have completed' },
-        { t:'sino', f:'Which word means the SAME as "increase"?', ops:['rise','fall','remain','drop'], a:'rise' },
-        { t:'sino', f:'Which word means the SAME as "achieve"?', ops:['accomplish','abandon','avoid','attempt'], a:'accomplish' },
-        { t:'error', f:'Find the INCORRECT sentence:', ops:['She don\'t like meetings','He works remotely','They have finished','We are ready'], a:'She don\'t like meetings' },
-        { t:'error', f:'Find the INCORRECT sentence:', ops:['I have went home','She has gone home','They went home','He goes home'], a:'I have went home' },
-        { t:'buit', f:'Despite ___ tired, she finished the presentation.', ops:['being','be','to be','been'], a:'being' },
-        { t:'sino', f:'Which word means the OPPOSITE of "profit"?', ops:['loss','gain','income','revenue'], a:'loss' },
-        { t:'buit', f:'The meeting was called ___ due to illness.', ops:['off','out','down','over'], a:'off' },
+        { t:'buit', lvl:'A2', f:'She ___ to the office every day.', ops:['goes','go','going','gone'], a:'goes' },
+        { t:'buit', lvl:'A2', f:'There ___ many people at the meeting.', ops:['were','was','is','be'], a:'were' },
+        { t:'buit', lvl:'B1', f:'If I ___ more time, I would learn French.', ops:['had','have','has','having'], a:'had' },
+        { t:'buit', lvl:'B1', f:'I have worked here ___ 2019.', ops:['since','for','during','from'], a:'since' },
+        { t:'buit', lvl:'B2', f:'The report must ___ by Friday.', ops:['be finished','finish','finished','be finish'], a:'be finished' },
+        { t:'buit', lvl:'B2', f:'I look forward to ___ from you.', ops:['hearing','hear','heard','be heard'], a:'hearing' },
+        { t:'buit', lvl:'C1', f:'___ had I arrived when the meeting started.', ops:['No sooner','As soon','Not only','Hardly ever'], a:'No sooner' },
+        { t:'buit', lvl:'C1', f:'By next year, we ___ the project.', ops:['will have completed','will complete','completed','have completed'], a:'will have completed' },
+        { t:'sino', lvl:'A2', f:'Which word means the SAME as "big"?', ops:['large','small','thin','short'], a:'large' },
+        { t:'sino', lvl:'B1', f:'Which word means the SAME as "increase"?', ops:['rise','fall','remain','drop'], a:'rise' },
+        { t:'sino', lvl:'B2', f:'Which word means the SAME as "achieve"?', ops:['accomplish','abandon','avoid','attempt'], a:'accomplish' },
+        { t:'sino', lvl:'C1', f:'Which word is closest to "meticulous"?', ops:['thorough','careless','quick','vague'], a:'thorough' },
+        { t:'error', lvl:'A2', f:'Find the INCORRECT sentence:', ops:["She don't like meetings",'He works remotely','They have finished','We are ready'], a:"She don't like meetings" },
+        { t:'error', lvl:'B1', f:'Find the INCORRECT sentence:', ops:['I have went home','She has gone home','They went home','He goes home'], a:'I have went home' },
+        { t:'error', lvl:'B2', f:'Find the INCORRECT sentence:', ops:['He suggested me to apply','He suggested applying','He suggested that I apply','He recommended applying'], a:'He suggested me to apply' },
+        { t:'ordena', lvl:'A2', f:'Order the sentence:', parts:['I','work','in','Barcelona'], a:'I work in Barcelona' },
+        { t:'ordena', lvl:'B1', f:'Order the sentence:', parts:['have','never','I','been','to','London'], a:'I have never been to London' },
+        { t:'ordena', lvl:'B2', f:'Order the sentence:', parts:['the','Had','known','I','truth,','differently','acted','have','would','I'], a:'Had I known the truth, I would have acted differently' },
+        { t:'trad', lvl:'A2', f:'"Tinc una reunió demà" in English:', ops:['I have a meeting tomorrow','I has a meeting tomorrow','I am a meeting tomorrow','I have meeting the tomorrow'], a:'I have a meeting tomorrow' },
+        { t:'trad', lvl:'B1', f:'"Porto tres anys treballant aquí" in English:', ops:["I've been working here for three years",'I work here since three years','I am working here for three years ago','I worked here three years'], a:"I've been working here for three years" },
+        { t:'trad', lvl:'B2', f:'"M\'ho hauria d\'haver pensat millor" in English:', ops:['I should have thought it through','I should think it better','I must have thought it better','I had to think it through'], a:'I should have thought it through' },
+        { t:'expr', lvl:'B1', f:'"To be on the same page" means:', ops:['to agree/understand each other','to read together','to work in the same office','to be bored'], a:'to agree/understand each other' },
+        { t:'expr', lvl:'B2', f:'"To cut corners" means:', ops:['to do something cheaply/carelessly','to drive fast','to divide work','to finish early'], a:'to do something cheaply/carelessly' },
+        { t:'expr', lvl:'C1', f:'"The elephant in the room" refers to:', ops:['an obvious problem nobody mentions','a very big office','an important boss','a surprising gift'], a:'an obvious problem nobody mentions' },
       ]},
       fr: { nom: 'Francès', flag: '🇫🇷', q: [
-        { t:'buit', f:'Je ___ au bureau tous les jours.', ops:['vais','va','aller','allé'], a:'vais' },
-        { t:'buit', f:'Si j\'avais le temps, je ___ l\'anglais.', ops:['apprendrais','apprends','apprendrai','appris'], a:'apprendrais' },
-        { t:'buit', f:'Le rapport doit ___ terminé vendredi.', ops:['être','est','étant','été'], a:'être' },
-        { t:'sino', f:'Quel mot signifie la MÊME chose que "augmenter" ?', ops:['accroître','diminuer','rester','baisser'], a:'accroître' },
-        { t:'error', f:'Trouvez la phrase INCORRECTE :', ops:['Elle ne aime pas les réunions','Il travaille à distance','Ils ont terminé','Nous sommes prêts'], a:'Elle ne aime pas les réunions' },
-        { t:'buit', f:'Nous ___ ce projet depuis deux mois.', ops:['préparons','préparer','préparé','préparions'], a:'préparons' },
-        { t:'sino', f:'Quel mot est le CONTRAIRE de "bénéfice" ?', ops:['perte','gain','revenu','profit'], a:'perte' },
-        { t:'buit', f:'Il faut que tu ___ à l\'heure.', ops:['sois','es','être','serais'], a:'sois' },
+        { t:'buit', lvl:'A2', f:'Je ___ au bureau tous les jours.', ops:['vais','va','aller','allé'], a:'vais' },
+        { t:'buit', lvl:'B1', f:"Si j'avais le temps, je ___ l'anglais.", ops:['apprendrais','apprends','apprendrai','appris'], a:'apprendrais' },
+        { t:'buit', lvl:'B2', f:'Il faut que tu ___ à l\'heure.', ops:['sois','es','être','serais'], a:'sois' },
+        { t:'buit', lvl:'C1', f:'___ les difficultés, nous avons réussi.', ops:['Malgré','Pendant','Depuis','Grâce'], a:'Malgré' },
+        { t:'sino', lvl:'B1', f:'Quel mot signifie la MÊME chose que "augmenter" ?', ops:['accroître','diminuer','rester','baisser'], a:'accroître' },
+        { t:'error', lvl:'B1', f:'Trouvez la phrase INCORRECTE :', ops:['Elle ne aime pas les réunions','Il travaille à distance','Ils ont terminé','Nous sommes prêts'], a:'Elle ne aime pas les réunions' },
+        { t:'ordena', lvl:'A2', f:'Ordonnez la phrase :', parts:['Je','travaille','à','Barcelone'], a:'Je travaille à Barcelone' },
+        { t:'trad', lvl:'B1', f:'"Tinc una reunió demà" en français :', ops:["J'ai une réunion demain","Je suis une réunion demain","J'ai la réunion de demain","Je vais une réunion demain"], a:"J'ai une réunion demain" },
+        { t:'expr', lvl:'B2', f:'"Mettre la main à la pâte" signifie :', ops:['participer au travail','faire la cuisine','se salir','abandonner'], a:'participer au travail' },
       ]},
       de: { nom: 'Alemany', flag: '🇩🇪', q: [
-        { t:'buit', f:'Ich ___ jeden Tag ins Büro.', ops:['gehe','gehst','geht','gehen'], a:'gehe' },
-        { t:'buit', f:'Der Bericht muss bis Freitag ___ werden.', ops:['fertiggestellt','fertigstellen','fertig','fertigstellt'], a:'fertiggestellt' },
-        { t:'sino', f:'Welches Wort bedeutet DASSELBE wie "erhöhen"?', ops:['steigern','senken','bleiben','fallen'], a:'steigern' },
-        { t:'error', f:'Finde den FALSCHEN Satz:', ops:['Sie arbeitet nicht gern Meetings','Er arbeitet von zu Hause','Sie haben es beendet','Wir sind bereit'], a:'Sie arbeitet nicht gern Meetings' },
-        { t:'buit', f:'Wenn ich Zeit ___, würde ich Spanisch lernen.', ops:['hätte','habe','hatte','haben'], a:'hätte' },
-        { t:'buit', f:'Das Meeting wurde ___ Krankheit abgesagt.', ops:['wegen','weil','denn','für'], a:'wegen' },
+        { t:'buit', lvl:'A2', f:'Ich ___ jeden Tag ins Büro.', ops:['gehe','gehst','geht','gehen'], a:'gehe' },
+        { t:'buit', lvl:'B1', f:'Wenn ich Zeit ___, würde ich Spanisch lernen.', ops:['hätte','habe','hatte','haben'], a:'hätte' },
+        { t:'buit', lvl:'B2', f:'Der Bericht muss bis Freitag ___ werden.', ops:['fertiggestellt','fertigstellen','fertig','fertigstellt'], a:'fertiggestellt' },
+        { t:'sino', lvl:'B1', f:'Welches Wort bedeutet DASSELBE wie "erhöhen"?', ops:['steigern','senken','bleiben','fallen'], a:'steigern' },
+        { t:'ordena', lvl:'A2', f:'Ordne den Satz:', parts:['Ich','arbeite','in','Barcelona'], a:'Ich arbeite in Barcelona' },
+        { t:'trad', lvl:'B1', f:'"Tinc una reunió demà" auf Deutsch:', ops:['Ich habe morgen ein Meeting','Ich bin morgen ein Meeting','Ich habe ein Meeting der morgen','Ich gehe morgen Meeting'], a:'Ich habe morgen ein Meeting' },
       ]},
       es: { nom: 'Castellà', flag: '🇪🇸', q: [
-        { t:'buit', f:'Si ___ más tiempo, aprendería alemán.', ops:['tuviera','tengo','tendré','tenía'], a:'tuviera' },
-        { t:'buit', f:'El informe debe ___ terminado el viernes.', ops:['estar','ser','estando','sido'], a:'estar' },
-        { t:'error', f:'Encuentra la frase INCORRECTA:', ops:['Habían muchas personas','Había muchas personas','Hubo un problema','Hay una solución'], a:'Habían muchas personas' },
-        { t:'sino', f:'¿Qué palabra significa LO MISMO que "incrementar"?', ops:['aumentar','reducir','mantener','disminuir'], a:'aumentar' },
-        { t:'buit', f:'Espero que ___ a la reunión mañana.', ops:['vengas','vienes','vendrás','venir'], a:'vengas' },
-        { t:'error', f:'Encuentra la frase INCORRECTA:', ops:['Volví en sí rápidamente','Volvió en sí rápidamente','Volvimos en nosotros','Me di cuenta del error'], a:'Volví en sí rápidamente' },
+        { t:'buit', lvl:'B1', f:'Si ___ más tiempo, aprendería alemán.', ops:['tuviera','tengo','tendré','tenía'], a:'tuviera' },
+        { t:'buit', lvl:'B2', f:'Espero que ___ a la reunión mañana.', ops:['vengas','vienes','vendrás','venir'], a:'vengas' },
+        { t:'error', lvl:'B2', f:'Encuentra la frase INCORRECTA:', ops:['Habían muchas personas','Había muchas personas','Hubo un problema','Hay una solución'], a:'Habían muchas personas' },
+        { t:'sino', lvl:'B1', f:'¿Qué palabra significa LO MISMO que "incrementar"?', ops:['aumentar','reducir','mantener','disminuir'], a:'aumentar' },
+        { t:'ordena', lvl:'B1', f:'Ordena la frase:', parts:['Nunca','había','visto','algo','así'], a:'Nunca había visto algo así' },
+        { t:'expr', lvl:'B2', f:'"Estar al pie del cañón" significa:', ops:['estar siempre trabajando/presente','estar en peligro','estar enfadado','estar de vacaciones'], a:'estar siempre trabajando/presente' },
       ]},
       ca: { nom: 'Català', flag: '🏴', q: [
-        { t:'buit', f:'Si ___ més temps, aprendria francès.', ops:['tingués','tinc','tindré','tenia'], a:'tingués' },
-        { t:'error', f:'Troba la frase INCORRECTA:', ops:['Hi han moltes persones','Hi ha moltes persones','Hi havia un problema','Hi haurà solució'], a:'Hi han moltes persones' },
-        { t:'sino', f:'Quina paraula vol dir EL MATEIX que "incrementar"?', ops:['augmentar','reduir','mantenir','disminuir'], a:'augmentar' },
-        { t:'buit', f:'Cal que ___ puntual a la reunió.', ops:['siguis','ets','seràs','ser'], a:'siguis' },
-        { t:'buit', f:'___ va dir que vindria.', ops:['Em','Me','Mi','Jo'], a:'Em' },
-        { t:'error', f:'Troba la frase INCORRECTA:', ops:['Tinc que anar-hi','He d\'anar-hi','Cal anar-hi','Hi haig d\'anar'], a:'Tinc que anar-hi' },
+        { t:'buit', lvl:'B1', f:'Si ___ més temps, aprendria francès.', ops:['tingués','tinc','tindré','tenia'], a:'tingués' },
+        { t:'error', lvl:'B1', f:'Troba la frase INCORRECTA:', ops:['Hi han moltes persones','Hi ha moltes persones','Hi havia un problema','Hi haurà solució'], a:'Hi han moltes persones' },
+        { t:'error', lvl:'B2', f:'Troba la frase INCORRECTA:', ops:['Tinc que anar-hi',"He d'anar-hi",'Cal anar-hi',"Hi haig d'anar"], a:'Tinc que anar-hi' },
+        { t:'sino', lvl:'B1', f:'Quina paraula vol dir EL MATEIX que "incrementar"?', ops:['augmentar','reduir','mantenir','disminuir'], a:'augmentar' },
+        { t:'ordena', lvl:'B1', f:'Ordena la frase:', parts:['Mai','no','havia','vist','res','semblant'], a:'Mai no havia vist res semblant' },
+        { t:'expr', lvl:'B2', f:'"Fer-ne cinc cèntims" vol dir:', ops:['explicar-ho breument','pagar poc','estalviar','comptar diners'], a:'explicar-ho breument' },
       ]},
     };
+    const LVL_NUM = { A2: 2, B1: 3, B2: 4, C1: 5 };
     let idiomaSel = localStorage.getItem('talpot_idioma_joc') || null;
+    let idiomaBossa = [];
 
     function renderIdiomes() {
       if (!idiomaSel) { renderIdiomaSelector(); return; }
       const data = IDIOMES_DATA[idiomaSel];
-      const q = data.q[Math.floor(Math.random() * data.q.length)];
-      const opts = [...q.ops].sort(() => Math.random() - .5);
+      // BOSSA sense repetició: es barregen tots i no es repeteix cap fins esgotar-los
+      if (idiomaBossa.length === 0) idiomaBossa = [...data.q].sort(() => Math.random() - .5);
+      const q = idiomaBossa.pop();
+      window._idiomaQ = q;
+
+      let cos = '';
+      if (q.t === 'ordena') {
+        window._ordenaSel = [];
+        const parts = [...q.parts].sort(() => Math.random() - .5);
+        cos = `
+          <div class="dr-situacio" style="font-size:1rem;">${q.f}</div>
+          <div id="ordena-res" style="min-height:2.6rem;padding:0.8rem;border-radius:12px;background:rgba(255,214,10,0.08);border:1px dashed rgba(255,214,10,0.35);margin-bottom:0.75rem;font-weight:700;font-size:0.95rem;"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            ${parts.map((p, i) => `<div class="dr-opcio" style="display:inline-block;padding:0.6rem 1rem;" id="op-${i}" onclick="ordenaAdd(${i}, \`${p}\`)">${p}</div>`).join('')}
+          </div>
+          <button class="tp-btn-primary" style="margin-top:1rem;padding:0.85rem 1.6rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;cursor:pointer;" onclick="ordenaCheck()">Comprovar</button>`;
+      } else {
+        const opts = [...q.ops].sort(() => Math.random() - .5);
+        cos = `
+          <div class="dr-situacio" style="font-size:1rem;">${q.f}</div>
+          ${opts.map(op => `<div class="dr-opcio" onclick="idiomaCheck(this, \`${op}\`)">${op}</div>`).join('')}`;
+      }
+
       document.getElementById('game-arena').innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-          <span style="font-size:0.85rem;font-weight:800;">${data.flag} ${data.nom}</span>
-          <span style="font-size:0.72rem;color:#00B4D8;font-weight:700;cursor:pointer;" onclick="idiomaSel=null;renderIdiomes();">Canviar idioma</span>
+          <span style="font-size:0.85rem;font-weight:800;">${data.flag} ${data.nom} · <span style="color:#00B4D8;">${q.lvl}</span></span>
+          <span style="font-size:0.72rem;color:#00B4D8;font-weight:700;cursor:pointer;" onclick="idiomaSel=null;idiomaBossa=[];renderIdiomes();">Canviar idioma</span>
         </div>
-        <div class="info-strip">🌍 Complementa els teus vídeos: <span class="accent">demostra constància i perfecciona el nivell</span></div>
-        <div class="dr-situacio" style="font-size:1rem;">${q.f}</div>
-        ${opts.map(op => `<div class="dr-opcio" onclick="idiomaCheck(this, \`${op}\`, \`${q.a}\`)">${op}</div>`).join('')}
-      `;
-    }
-    function renderIdiomaSelector() {
-      document.getElementById('game-arena').innerHTML = `
-        <div class="info-strip">🌍 Tria l'idioma que vols entrenar.<br><span class="accent">Aquest joc complementa els teus vídeos d'idiomes:</span> el Seeker veu el nivell als vídeos i la constància aquí.</div>
-        ${Object.entries(IDIOMES_DATA).map(([code, d]) => `
-          <div class="dr-opcio" style="display:flex;align-items:center;gap:0.75rem;font-size:1rem;" onclick="idiomaSel='${code}';localStorage.setItem('talpot_idioma_joc','${code}');renderIdiomes();">
-            <span style="font-size:1.5rem;">${d.flag}</span><span style="font-weight:800;">${d.nom}</span>
-            <span style="margin-left:auto;font-size:0.72rem;color:rgba(255,255,255,0.4);">${d.q.length} exercicis</span>
-          </div>`).join('')}
-      `;
-    }
-    function idiomaCheck(el, sel, ans) {
-      document.querySelectorAll('.dr-opcio').forEach(o => o.style.pointerEvents = 'none');
-      if (sel === ans) {
-        el.style.background = 'rgba(48,209,88,0.2)'; el.style.borderColor = '#30D158';
-        addEncert();
-      } else {
-        el.style.background = 'rgba(255,69,58,0.15)'; el.style.borderColor = '#FF453A';
-        addError();
-      }
-      setTimeout(renderIdiomes, 750);
+        <div class="info-strip">🌍 Complementa els teus vídeos: <span class="accent">el vídeo mostra el nivell, el joc mostra la constància</span></div>
+        ${cos}
+        <div style="margin-top:0.9rem;font-size:0.72rem;color:rgba(255,255,255,0.5);text-align:center;">${idiomaBossa.length} exercicis restants en aquesta ronda</div>`;
     }
 
+    function renderIdiomaSelector() {
+      document.getElementById('game-arena').innerHTML = `
+        <div class="info-strip">🌍 Tria l'idioma que vols entrenar.<br><span class="accent">Complementa els teus vídeos d'idiomes:</span> el Seeker veu el nivell als vídeos i la constància i domini aquí.</div>
+        ${Object.entries(IDIOMES_DATA).map(([code, d]) => `
+          <div class="dr-opcio" style="display:flex;align-items:center;gap:0.75rem;font-size:1rem;" onclick="idiomaSel='${code}';idiomaBossa=[];localStorage.setItem('talpot_idioma_joc','${code}');renderIdiomes();">
+            <span style="font-size:1.5rem;">${d.flag}</span><span style="font-weight:800;">${d.nom}</span>
+            <span style="margin-left:auto;font-size:0.72rem;color:rgba(255,255,255,0.4);">${d.q.length} exercicis</span>
+          </div>`).join('')}`;
+    }
+
+    function idiomaCheck(el, sel) {
+      const q = window._idiomaQ;
+      document.querySelectorAll('.dr-opcio').forEach(o => o.style.pointerEvents = 'none');
+      if (sel === q.a) {
+        el.style.background = 'rgba(48,209,88,0.2)'; el.style.borderColor = '#30D158';
+        addEncert(LVL_NUM[q.lvl] || 3, 'cefr');
+      } else {
+        el.style.background = 'rgba(255,69,58,0.15)'; el.style.borderColor = '#FF453A';
+        document.querySelectorAll('.dr-opcio').forEach(o => { if (o.textContent === q.a) { o.style.background = 'rgba(48,209,88,0.12)'; o.style.borderColor = 'rgba(48,209,88,0.5)'; } });
+        addError(LVL_NUM[q.lvl] || 3, 'cefr');
+      }
+      setTimeout(renderIdiomes, 1100);
+    }
+
+    function ordenaAdd(i, paraula) {
+      const el = document.getElementById('op-' + i);
+      if (el.style.opacity === '0.25') return;
+      el.style.opacity = '0.25'; el.style.pointerEvents = 'none';
+      window._ordenaSel.push(paraula);
+      document.getElementById('ordena-res').textContent = window._ordenaSel.join(' ');
+    }
+    function ordenaCheck() {
+      const q = window._idiomaQ;
+      const res = window._ordenaSel.join(' ');
+      const box = document.getElementById('ordena-res');
+      if (res === q.a) {
+        box.style.borderColor = '#30D158'; box.style.background = 'rgba(48,209,88,0.15)';
+        addEncert(LVL_NUM[q.lvl] || 3, 'cefr');
+      } else {
+        box.style.borderColor = '#FF453A'; box.style.background = 'rgba(255,69,58,0.12)';
+        box.innerHTML = res + '<div style="margin-top:0.4rem;color:#30D158;font-size:0.8rem;">✓ ' + q.a + '</div>';
+        addError(LVL_NUM[q.lvl] || 3, 'cefr');
+      }
+      setTimeout(renderIdiomes, 1400);
+    }
 
     renderGameList();
   </script>

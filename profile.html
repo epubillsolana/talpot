@@ -302,6 +302,20 @@
       document.getElementById(id).classList.remove('hidden');
     }
 
+    async function esborrarVideo(videoId, storagePath, e) {
+      if (e) e.stopPropagation();
+      if (!confirm('Segur que vols esborrar aquest vídeo? No es pot desfer.')) return;
+      try {
+        await sb.from('magic_room_videos').delete().eq('id', videoId);
+        if (storagePath) {
+          try { await sb.storage.from('magic-room-videos').remove([decodeURIComponent(storagePath)]); } catch(e2) {}
+        }
+        location.reload();
+      } catch(err) {
+        alert('⚠️ No s\'ha pogut esborrar: ' + err.message);
+      }
+    }
+
     function goBack() {
       const ent = document.getElementById('view-entrevista');
       if (!ent.classList.contains('hidden')) {
@@ -374,6 +388,7 @@
               <div class="sc-play-overlay" id="ov-${i}" onclick="playStackVideo(${i}, event)">
                 <div class="sc-play-btn">▶</div>
               </div>
+              <div onclick="esborrarVideo('${video.id}', '${video.video_url.split('/magic-room-videos/')[1] || ''}', event)" style="position:absolute;top:0.6rem;right:0.6rem;width:34px;height:34px;border-radius:50%;background:rgba(2,11,24,0.65);border:1px solid rgba(255,69,58,0.4);display:flex;align-items:center;justify-content:center;font-size:0.9rem;cursor:pointer;z-index:5;">🗑️</div>
             </div>`;
         } else {
           videoArea = `

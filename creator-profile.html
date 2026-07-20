@@ -619,15 +619,72 @@
         `;
       }
 
-      // JOCS
+      // JOCS — partides reals
+      let jocsTxt = `${nom} aún no ha completado suficientes partidas para un análisis cognitivo fiable. Cuando juegue, aquí verás su rendimiento en ${hlB('lógica')}, ${hlB('memoria')}, ${hlB('velocidad')} y ${hlB('decisiones bajo presión')} — datos imposibles de falsear.`;
+      let partidesAll = [];
+      try {
+        const { data: pd } = await sb.from('game_partides').select('game_id, ok, val, unit').eq('user_id', targetUserId);
+        partidesAll = pd || [];
+      } catch(e) {}
+      if (partidesAll.length >= 10) {
+        const total = partidesAll.length;
+        const ambResultat = partidesAll.filter(p => p.ok !== null);
+        const encerts = ambResultat.filter(p => p.ok === true).length;
+        const pct = ambResultat.length ? Math.round(encerts / ambResultat.length * 100) : 0;
+        const jocsJugats = [...new Set(partidesAll.map(p => p.game_id))].length;
+        jocsTxt = `${nom} acumula ${hl(total + ' partidas')} en ${hl(jocsJugats + ' juegos distintos')} con un ${pct >= 70 ? hlG(pct + '% de acierto') : hl(pct + '% de acierto')}. ${total >= 50 ? 'El volumen de juego indica ' + hlG('constancia y compromiso') + ' con la plataforma. ' : ''}Estos datos son ${hlB('imposibles de falsear')}: reflejan capacidad cognitiva real medida en decenas de micro-decisiones.`;
+      }
       html += `
         <div class="an-section">
           <div class="an-title">🎮 Lo que revelan los juegos</div>
-          <div class="an-text">
-            ${nom} aún no ha completado suficientes partidas para un análisis cognitivo fiable. Cuando juegue, aquí verás su rendimiento en ${hlB('lógica')}, ${hlB('memoria')}, ${hlB('velocidad de procesamiento')} y ${hlB('toma de decisiones bajo presión')} — datos imposibles de falsear que complementan la entrevista.
-          </div>
+          <div class="an-text">${jocsTxt}</div>
         </div>
       `;
+
+      // ═══ DOMINI D'IDIOMES — vídeos (nivell IA) + joc (constància) ═══
+      const vidsIdioma = videos.filter(v => v.categoria === 'idioma');
+      const partIdioma = partidesAll.filter(p => p.game_id === 'idiomes');
+      if (vidsIdioma.length > 0 || partIdioma.length > 0) {
+        let idiomaTxt = '';
+        vidsIdioma.forEach(v => {
+          const ex = v.extracted || {};
+          const nivell = ex.nivell || ex.nivell_idioma?.nivell;
+          const idm = ex.idioma_detectat || v.idioma || 'Idioma';
+          if (nivell) {
+            idiomaTxt += `${hlB(idm)}: nivel ${hl(nivell)} evaluado por IA sobre habla espontánea. ${ex.justificacio ? ex.justificacio + ' ' : ''}`;
+          } else if (v.idioma) {
+            idiomaTxt += `Tiene vídeo en ${hlB(v.idioma)} pendiente de evaluación de nivel. `;
+          }
+        });
+        if (partIdioma.length > 0) {
+          const encI = partIdioma.filter(p => p.ok === true).length;
+          const pctI = Math.round(encI / partIdioma.length * 100);
+          const nivells = partIdioma.filter(p => p.ok === true && p.val).map(p => Number(p.val));
+          const maxLvl = nivells.length ? Math.max(...nivells) : 0;
+          const lvlName = { 2:'A2', 3:'B1', 4:'B2', 5:'C1' }[maxLvl] || '';
+          idiomaTxt += `Además, entrena idiomas en la plataforma: ${hl(partIdioma.length + ' ejercicios')} con ${pctI >= 70 ? hlG(pctI + '% de acierto') : hl(pctI + '% de acierto')}${lvlName ? ', resolviendo correctamente ejercicios hasta nivel ' + hl(lvlName) : ''}. La ${hlG('constancia en el entrenamiento')} refuerza la credibilidad del nivel mostrado en vídeo.`;
+        }
+        html += `
+          <div class="an-section">
+            <div class="an-title">🌍 Dominio de idiomas</div>
+            <div class="an-text">${idiomaTxt || 'Contenido de idiomas en construcción.'}</div>
+          </div>
+        `;
+      }
+
+      // ═══ MI MUNDO — actualitat i criteri ═══
+      const vidsMon = videos.filter(v => v.categoria === 'actualitat');
+      if (vidsMon.length > 0) {
+        const tags = [...new Set(vidsMon.flatMap(v => v.tags || []))];
+        html += `
+          <div class="an-section">
+            <div class="an-title">🌍 Visión del mundo y criterio</div>
+            <div class="an-text">
+              ${nom} publica análisis de actualidad (${hl(vidsMon.length + ' vídeos')})${tags.length ? ' sobre: ' + tags.slice(0,5).map(t => hlB(t)).join(', ') : ''}. Esto muestra ${hlG('curiosidad activa')}, capacidad de ${hl('análisis y síntesis')} y seguimiento del entorno — cualidades valiosas en roles con exposición a cliente o toma de decisiones.
+            </div>
+          </div>
+        `;
+      }
 
       // CONCLUSIÓ
       html += `
