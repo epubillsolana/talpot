@@ -81,8 +81,8 @@
 
     .mc-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
     .mc-info { flex: 1; }
-    .mc-title { font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
-    .mc-desc { font-size: 0.75rem; color: rgba(255,255,255,0.65); line-height: 1.4; }
+    .mc-title { font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mc-desc { font-size: 0.75rem; color: rgba(255,255,255,0.65); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mc-right { flex-shrink: 0; }
     .mc-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 100px; }
     .badge-new { background: rgba(255,45,85,0.15); color: #FF2D55; border: 1px solid rgba(255,45,85,0.3); }
@@ -230,7 +230,7 @@
         <div class="mission-card priority" onclick="window.location.href='video-upload.html?cat=actualitat'">
           <div class="mc-icon" style="background:rgba(191,90,242,0.12);">🌍</div>
           <div class="mc-info">
-            <div class="mc-title">Tu Opinión Importa</div>
+            <div class="mc-title">Mi Mundo</div>
             <div class="mc-desc">Comparte tu visión · Vídeo diario</div>
           </div>
           <div class="mc-right"><span class="mc-badge badge-pending" id="mis-mundo">→</span></div>
