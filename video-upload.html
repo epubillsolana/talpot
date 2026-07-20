@@ -81,14 +81,17 @@
 
     .rec-badge {
       position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
-      display: flex; align-items: center; gap: 0.35rem;
-      background: rgba(255,45,85,0.2); border: 1px solid rgba(255,45,85,0.4);
-      border-radius: 100px; padding: 0.25rem 0.65rem;
-      font-size: 0.72rem; font-weight: 700; color: #FF2D55;
+      display: flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,45,85,0.9); border: 1.5px solid #fff;
+      border-radius: 100px; padding: 0.5rem 1rem;
+      font-size: 0.85rem; font-weight: 900; color: #fff;
+      letter-spacing: 0.05em;
       animation: recBlink 1s infinite; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(255,45,85,0.5);
+      z-index: 10;
     }
-    .rec-dot { width: 6px; height: 6px; border-radius: 50%; background: #FF2D55; }
-    @keyframes recBlink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .rec-dot { width: 9px; height: 9px; border-radius: 50%; background: #fff; }
+    @keyframes recBlink { 0%,100%{opacity:1} 50%{opacity:0.55} }
 
     .upload-btns { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; }
     .ubtn {
@@ -264,6 +267,14 @@
 
   <!-- FASE 3 — RESULTAT -->
   <div class="fase hidden" id="fase-result">
+
+    <!-- OVERLAY DE GUARDAT — cobreix tota la pantalla mentre es puja -->
+    <div id="saving-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(2,11,24,0.96);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;">
+      <div class="ia-spinner" style="margin-bottom:1.5rem;"></div>
+      <div style="font-size:1.3rem;font-weight:900;margin-bottom:0.6rem;">Guardando tu vídeo<span style="color:#FFD60A;">...</span></div>
+      <div style="font-size:0.85rem;color:rgba(255,255,255,0.65);line-height:1.6;max-width:280px;">No cierres ni salgas de la app.<br>Esto puede tardar unos segundos.</div>
+    </div>
+
     <div class="result-scroll">
       <div class="result-header">
         <div class="result-icon">🌟</div>
@@ -342,6 +353,7 @@
     let lastExtracted = null;
 
     document.getElementById('cat-badge').textContent = icon + ' ' + name;
+    document.getElementById('ua-hint').textContent = 'Se graba aquí, en la app · Dura ' + secs + ' segundos';
 
     const motivations = {
       presentacion: "¡Cuéntanos quién eres! 👋 Sé tú mismo — divertido, espontáneo, real. Nada de discursos corporativos. Esto no es una entrevista, es tu momento.",
@@ -642,10 +654,12 @@
     }
 
     async function saveVideo() {
-      // Feedback visual: el vídeo pot trigar a pujar
+      // Overlay de pantalla completa — impossible d'ignorar que s'està guardant
+      const overlay = document.getElementById('saving-overlay');
+      if (overlay) overlay.style.display = 'flex';
       const btn = document.querySelector('.btn-save');
-      if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = '⏳ Pujant vídeo... no tanquis'; }
-      const restoreBtn = () => { if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '✨ Guardar en mi Magic Room'; } };
+      if (btn) { btn.disabled = true; }
+      const restoreBtn = () => { if (btn) { btn.disabled = false; } if (overlay) overlay.style.display = 'none'; };
       try {
         const { data: { user } } = await sb.auth.getUser();
         if (user && videoChunks.length > 0) {
