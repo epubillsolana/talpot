@@ -34,7 +34,7 @@
     .avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #020B18; overflow: hidden; position: relative; cursor: pointer; }
     .avatar img { width: 100%; height: 100%; object-fit: cover; }
     .avatar-edit-badge { position: absolute; bottom: 0; right: 0; width: 24px; height: 24px; border-radius: 50%; background: #00B4D8; border: 2px solid #061426; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
-    .hero-name { font-size: 1.3rem; font-weight: 900; }
+    .hero-name { font-size: 1.65rem; font-weight: 900; letter-spacing: -0.5px; }
     .hero-email { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
 
     .rob-card { margin: 0 1.25rem 1rem; background: rgba(255,214,10,0.06); border: 1px solid rgba(255,214,10,0.15); border-radius: 16px; padding: 1rem; }
@@ -224,6 +224,16 @@
       <div class="stat-card"><div class="stat-num" id="stat-keywords">0</div><div class="stat-label">Keywords</div></div>
     </div>
 
+    <!-- RESUM IA -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🧠 Lo que has contado</div>
+      </div>
+      <div id="resum-ia-card" style="background:rgba(255,214,10,0.06);border:1px solid rgba(255,214,10,0.2);border-radius:16px;padding:1.1rem;font-size:0.86rem;line-height:1.7;color:rgba(255,255,255,0.85);">
+        ⏳ Generando resumen...
+      </div>
+    </div>
+
     <!-- MAGIC ROOM -->
     <div class="section">
       <div class="section-header">
@@ -232,6 +242,14 @@
       <div class="stack-hint">← Llisca per veure les cartes</div>
       <div class="stack-wrap" id="stack-wrap"></div>
       <div class="stack-dots" id="stack-dots"></div>
+    </div>
+
+    <!-- MI MUNDO / TU OPINIÓN -->
+    <div class="section" id="mi-mundo-section" style="display:none;">
+      <div class="section-header">
+        <div class="section-title">🌍 Tu Opinión</div>
+      </div>
+      <div id="mi-mundo-list"></div>
     </div>
 
     <!-- ENTREVISTA -->
@@ -443,8 +461,59 @@
       document.getElementById('rob-fill').style.width = rob + '%';
       document.getElementById('rob-status').textContent = rob === 0 ? '🔴 Perfil nuevo' : rob < 40 ? '🟡 En construcción' : '🟢 Perfil consolidado';
 
-      renderMagicRoom(videos || []);
+      renderMagicRoom((videos || []).filter(v => v.categoria !== 'actualitat'));
+      renderMiMundo((videos || []).filter(v => v.categoria === 'actualitat'));
       renderEntrevistaTeaser();
+      generarResumIA(videos || []);
+    }
+
+    function renderMiMundo(videos) {
+      const section = document.getElementById('mi-mundo-section');
+      const list = document.getElementById('mi-mundo-list');
+      if (videos.length === 0) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      list.innerHTML = videos.map((v, i) => {
+        const fecha = new Date(v.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' });
+        const tags = (v.tags || []).length ? v.tags.map(t => `<span style="font-size:0.68rem;font-weight:700;padding:0.25rem 0.6rem;border-radius:100px;background:rgba(0,180,216,0.12);color:#00B4D8;border:1px solid rgba(0,180,216,0.3);">${t}</span>`).join(' ') : '<span style="font-size:0.72rem;color:rgba(255,255,255,0.4);">Sin etiquetas</span>';
+        return `
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:0.9rem;margin-bottom:0.6rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+            <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);font-weight:700;">📅 ${fecha}</span>
+            <span style="font-size:0.72rem;color:#FFD60A;cursor:pointer;font-weight:700;" onclick="playMiMundo(${i})">▶ Ver</span>
+          </div>
+          <video id="mm-vid-${i}" src="${v.video_url}" playsinline preload="metadata" style="display:none;width:100%;border-radius:10px;margin-bottom:0.5rem;"></video>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">${tags}</div>
+        </div>`;
+      }).join('');
+    }
+    function playMiMundo(i) {
+      const vid = document.getElementById('mm-vid-' + i);
+      if (vid.style.display === 'none') { vid.style.display = 'block'; vid.play(); }
+      else { vid.pause(); vid.style.display = 'none'; }
+    }
+
+    async function generarResumIA(videos, challs) {
+      const el = document.getElementById('resum-ia-card');
+      // Només vídeos amb contingut real — fora idioma (mesura domini, no aporta info) i fora entrevista (ja té el seu espai propi)
+      const textos = videos
+        .filter(v => v.categoria !== 'idioma')
+        .map(v => v.transcripcio)
+        .filter(Boolean);
+      if (textos.length === 0) {
+        el.innerHTML = 'Aún no has grabado nada. Empieza por tu Magic Room y aquí verás un resumen de lo que cuentas sobre ti. 🎬';
+        return;
+      }
+      try {
+        const res = await fetch('https://talpot-ai-v2.e-pubill.workers.dev/resumen-perfil', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ textos })
+        });
+        const data = await res.json();
+        el.innerHTML = data.ok && data.resumen ? data.resumen.replace(/\n/g, '<br><br>') : 'No se ha podido generar el resumen ahora mismo.';
+      } catch(e) {
+        el.innerHTML = 'No se ha podido generar el resumen ahora mismo.';
+      }
     }
 
     let stackIdx = 0;
