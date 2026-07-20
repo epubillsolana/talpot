@@ -212,10 +212,6 @@
   <script src="ofertes-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    window.onerror = function(msg, url, line, col, error) {
-      alert('❌ ERROR GLOBAL: ' + msg + ' (línea ' + line + ')');
-    };
-
     const sb = window.supabase.createClient(
       'https://dlxeqzdgsejoywwwnchi.supabase.co',
       'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo'
@@ -279,12 +275,6 @@
     }
 
     async function loadCreator() {
-      const dbg = document.createElement('div');
-      dbg.id = 'debug-banner';
-      dbg.style.cssText = 'position:fixed;top:60px;left:0;right:0;z-index:999;background:#FF453A;color:#fff;padding:0.6rem;font-size:0.75rem;font-weight:800;text-align:center;';
-      dbg.textContent = 'DEBUG: loadCreator() iniciado. targetUserId=' + targetUserId;
-      document.body.appendChild(dbg);
-
       if (!targetUserId) {
         const { data: { user } } = await sb.auth.getUser();
         if (!user) { window.location.href = 'index.html'; return; }
@@ -302,14 +292,8 @@
       document.getElementById('hero-name').textContent = userName;
       if (!document.getElementById('avatar').innerHTML.includes('img')) document.getElementById('avatar').textContent = userName.charAt(0).toUpperCase();
 
-      document.getElementById('debug-banner').textContent = 'DEBUG: nombre cargado (' + userName + '). Pidiendo vídeos y challenges...';
-
       const { data: videos, error: errV } = await sb.from('magic_room_videos').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false });
       const { data: challenges, error: errC } = await sb.from('challenge_respostes').select('*').eq('user_id', targetUserId).order('created_at', { ascending: true });
-
-      document.getElementById('debug-banner').textContent = 'DEBUG: videos=' + (videos?.length ?? 'ERROR') + (errV ? ' [errV: '+errV.message+']' : '') + ' · challenges=' + (challenges?.length ?? 'ERROR') + (errC ? ' [errC: '+errC.message+']' : '');
-
-      try {
 
       // CV
       let hasCV = false;
@@ -328,12 +312,6 @@
 
       renderOfertaBanner(videos || [], challenges || []);
       renderVideos(videos || []);
-      document.title = 'DEBUG-ANTES-' + (challenges?.length || 0);
-      } catch(errMid) {
-        document.title = 'ERROR: ' + errMid.message.substring(0,30);
-        alert('❌ ERROR capturat: ' + errMid.message);
-        return;
-      }
       renderEntrevista(challenges || []);
       renderJocs();
       generateAnalisi(challenges || [], videos || [], allKws, hasCV);
@@ -459,7 +437,6 @@
     }
 
     function renderEntrevista(challenges) {
-      document.title = 'DEBUG-ENTREVISTA-' + challenges.length;
       const container = document.getElementById('mag-container');
       if (challenges.length === 0) { container.innerHTML = '<div class="empty-mini">Sin entrevista todavía</div>'; return; }
 
@@ -495,7 +472,6 @@
             <div class="pb-num">Pregunta ${i + 1}</div>
             <div class="pb-pregunta">${c.pregunta}</div>
             ${c.transcripcio ? '<div class="pb-transcripcio">«' + c.transcripcio + '»</div>' : ''}
-            <div style="font-size:0.6rem;color:#FF453A;word-break:break-all;">DEBUG audio_url: [${c.audio_url}]</div>
             <div class="pb-bottom">
               ${c.audio_url ? `<div class="pb-audio" onclick="playAudio('${c.audio_url}', this)"><span>▶️</span><span class="pb-audio-text">Escuchar</span></div>` : '<div></div>'}
               <div class="pb-stars">${[1,2,3,4,5].map(s => `<span class="star ${(c.estrelles||0) >= s ? 'active' : ''}" onclick="rate('${c.id}', ${s}, this)">★</span>`).join('')}</div>
@@ -505,9 +481,6 @@
       });
       html += '</div>';
       container.innerHTML = html;
-      container.style.border = '4px solid lime';
-      container.style.minHeight = '50px';
-      document.title = 'DEBUG-FIN-OK-' + challenges.length;
     }
 
     function toggleEntrevista(btn) {
