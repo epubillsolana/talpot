@@ -53,8 +53,8 @@
     .rank-strip strong { color: #FFD60A; }
 
     /* DECISIONS */
-    .dr-situacio { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.15rem; margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.65; min-height: 90px; }
-    .dr-opcio { padding: 0.95rem 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); cursor: pointer; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.5rem; transition: all 0.15s; }
+    .dr-situacio { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); border-left: 4px solid #00B4D8; border-radius: 16px; padding: 1.15rem; margin-bottom: 1.1rem; font-size: 0.95rem; line-height: 1.65; min-height: 90px; font-weight: 600; }
+    .dr-opcio { padding: 0.95rem 1.1rem; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); cursor: pointer; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.55rem; transition: all 0.15s; }
     .dr-opcio:active { background: rgba(255,214,10,0.15); border-color: #FFD60A; }
 
     /* MEMÒRIA */
@@ -83,6 +83,7 @@
     /* SUDOKU */
     .sdk-diff { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 800; padding: 0.3rem 0.85rem; border-radius: 100px; margin-bottom: 0.75rem; }
     .sdk-grid { display: grid; grid-template-columns: repeat(9,1fr); gap: 1px; background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.28); border-radius: 8px; overflow: hidden; max-width: 400px; margin: 0 auto 0.85rem; }
+    .sdk-grid-6 { grid-template-columns: repeat(6,1fr); max-width: 320px; }
     .sdk-cell { background: #041426; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; font-size: clamp(0.85rem, 3.4vw, 1.1rem); font-weight: 700; cursor: pointer; }
     .sdk-cell.given { color: #7FDBEE; }
     .sdk-cell.user { color: #FFD60A; }
@@ -251,18 +252,30 @@
     const daily = loadDaily();
     let dailyMode = false;
 
+    const DAILY_LIMITS = { sudoku:1, blocs:1, zip:1, memoria:3, sequencies:3, detall:3, reflexos:1, decisions:99, prioritats:99, emocional:99 };
+    function dailyCount(id) {
+      const r = daily.done[id];
+      if (!r) return 0;
+      if (typeof r === 'string') return r === todayStr() ? 1 : 0;
+      if (r.date !== todayStr()) return 0;
+      return r.count || 1;
+    }
     function dailyRecord(id) {
       const r = daily.done[id];
       if (!r) return null;
       if (typeof r === 'string') return r === todayStr() ? { date: r, val: null, ok: true } : null;
       return r.date === todayStr() ? r : null;
     }
-    function isDailyDone(id) { return dailyRecord(id) !== null; }
+    function isDailyDone(id) {
+      const limit = DAILY_LIMITS[id] || 1;
+      return dailyCount(id) >= limit;
+    }
 
     const NOMS = ['Marc V.','Laia P.','Pau R.','Anna S.','Jordi M.','Núria C.','Àlex F.','Clara B.','Oriol T.','Marta G.','Joan D.','Emma L.'];
 
     function completeDaily(ok, val, unit) {
-      daily.done[currentGame] = { date: todayStr(), ok, val: val ?? null, unit: unit || '' };
+      const prevCount = dailyCount(currentGame);
+      daily.done[currentGame] = { date: todayStr(), ok, val: val ?? null, unit: unit || '', count: prevCount + 1 };
       const avui = todayStr();
       if (daily.lastDate !== avui) {
         const ahir = new Date(); ahir.setDate(ahir.getDate() - 1);
@@ -445,13 +458,16 @@
         return;
       }
       if (g.daily) {
+        const limit = DAILY_LIMITS[id] || 1;
+        const fetes = dailyCount(id);
         dailyMode = true;
-        RNG = mulberry32(seedFrom(todayStr() + '-' + id));
+        RNG = mulberry32(seedFrom(todayStr() + '-' + id + '-' + fetes));
+        const restants = limit - fetes;
         document.getElementById('game-arena').innerHTML = `
           <div class="daily-result">
             <div style="font-size:3rem;margin-bottom:0.6rem;">🌟</div>
             <div style="font-size:1.25rem;font-weight:900;margin-bottom:0.4rem;">Repte diari</div>
-            <div style="font-size:0.85rem;color:rgba(255,255,255,0.65);line-height:1.6;">Tothom juga exactament el mateix avui.<br>Una sola oportunitat. 🔥 Ratxa: <strong style="color:#FFD60A;">${daily.streak}</strong></div>
+            <div style="font-size:0.85rem;color:rgba(255,255,255,0.65);line-height:1.6;">${limit > 1 ? 'Tienes <strong style="color:#FFD60A;">' + restants + ' de ' + limit + '</strong> intentos hoy.' : 'Una sola oportunidad hoy.'}<br>🔥 Ratxa: <strong style="color:#FFD60A;">${daily.streak}</strong></div>
             <button style="padding:1rem 2.2rem;border-radius:100px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1rem;background:#FF6B00;color:#fff;cursor:pointer;margin-top:1.4rem;box-shadow:0 4px 18px rgba(255,107,0,0.35);" onclick="renderCurrentGame()">⚡ Començar el repte</button>
             <div class="ranking-list" id="rank-joc" style="margin-top:1.4rem;"></div>
           </div>`;
@@ -578,7 +594,8 @@
       const d = DECISIONS[idx];
       document.getElementById('game-arena').innerHTML = `
         <div class="info-strip">⚡ No hi ha resposta correcta — <span class="accent">només la teva</span>. Cal contestar per passar a la següent.</div>
-        <div class="dr-situacio">${d.s}</div>
+        <div class="dr-situacio"><div style="font-size:0.68rem;font-weight:800;letter-spacing:0.1em;color:#00B4D8;margin-bottom:0.5rem;">📋 SITUACIÓN</div>${d.s}</div>
+        <div style="font-size:0.68rem;font-weight:800;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin:0.9rem 0 0.5rem;">¿QUÉ HARÍAS?</div>
         ${d.ops.map(op => `<div class="dr-opcio" onclick="drSelect(this, ${idx})">${op}</div>`).join('')}
       `;
       startAT(15, () => { flash('⏱', '#FF453A'); setTimeout(renderDecisions, 600); });
@@ -956,27 +973,30 @@
       if (!dailyMode) setTimeout(renderSequencies, 700);
     }
 
-    // ═══════ 4. SUDOKU — pistes distribuïdes + etiqueta dificultat ═══════
+    // ═══════ 4. SUDOKU 6x6 — caixes 3x2, ràpid i intens ═══════
     let sdkSol = [], sdkGrid = [], sdkGiven = [], sdkSel = null;
     const SDK_DIFFS = [
-      { nom:'🟢 Fàcil', pistes: 42, color:'#30D158' },
-      { nom:'🟡 Mitjà', pistes: 34, color:'#FFD60A' },
-      { nom:'🔴 Difícil', pistes: 28, color:'#FF453A' },
-      { nom:'⚫ Super difícil', pistes: 24, color:'#BF5AF2' },
+      { nom:'🟢 Fàcil', pistes: 20, color:'#30D158' },
+      { nom:'🟡 Mitjà', pistes: 15, color:'#FFD60A' },
+      { nom:'🔴 Difícil', pistes: 12, color:'#FF453A' },
+      { nom:'⚫ Super difícil', pistes: 10, color:'#BF5AF2' },
     ];
 
-    function genSudoku9() {
+    function genSudoku6() {
+      // Base vàlida 6x6, caixes de 3 columnes x 2 files
       const base = [];
-      for (let r = 0; r < 9; r++) {
+      for (let r = 0; r < 6; r++) {
         base.push([]);
-        for (let c = 0; c < 9; c++) base[r].push((r*3 + Math.floor(r/3) + c) % 9 + 1);
+        for (let c = 0; c < 6; c++) base[r].push((r*3 + Math.floor(r/2) + c) % 6 + 1);
       }
+      // Barreja bandes de 2 files (mantenint validesa de caixes)
       for (let band = 0; band < 3; band++) {
-        const rows = [band*3, band*3+1, band*3+2].sort(() => RNG()-.5);
+        const rows = [band*2, band*2+1].sort(() => RNG()-.5);
         const copy = rows.map(r => base[r]);
-        for (let i = 0; i < 3; i++) base[band*3+i] = copy[i];
+        for (let i = 0; i < 2; i++) base[band*2+i] = copy[i];
       }
-      for (let pile = 0; pile < 3; pile++) {
+      // Barreja piles de 3 columnes
+      for (let pile = 0; pile < 2; pile++) {
         const cols = [pile*3, pile*3+1, pile*3+2].sort(() => RNG()-.5);
         base.forEach(row => {
           const copy = cols.map(c => row[c]);
@@ -988,34 +1008,34 @@
 
     function renderSudoku() {
       partidaActiva = true;
-      sdkSol = genSudoku9();
+      sdkSol = genSudoku6();
       sdkGrid = sdkSol.map(r => [...r]);
       const diff = SDK_DIFFS[Math.floor(RNG() * SDK_DIFFS.length)];
-      // Distribució EQUILIBRADA: repartir pistes per caixes 3x3
-      const perBox = Math.floor(diff.pistes / 9);
-      const extra = diff.pistes % 9;
+      // Distribució equilibrada per les 6 caixes (3 cols x 2 files)
+      const perBox = Math.floor(diff.pistes / 6);
+      const extra = diff.pistes % 6;
       const keep = new Set();
-      for (let box = 0; box < 9; box++) {
-        const br = Math.floor(box / 3) * 3, bc = (box % 3) * 3;
+      for (let box = 0; box < 6; box++) {
+        const br = Math.floor(box / 3) * 2, bc = (box % 3) * 3;
         const cells = [];
-        for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) cells.push([br+r, bc+c]);
+        for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) cells.push([br+r, bc+c]);
         cells.sort(() => RNG()-.5);
         const n = perBox + (box < extra ? 1 : 0);
-        cells.slice(0, n).forEach(([r,c]) => keep.add(r*9+c));
+        cells.slice(0, n).forEach(([r,c]) => keep.add(r*6+c));
       }
-      for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
-        if (!keep.has(r*9+c)) sdkGrid[r][c] = 0;
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) {
+        if (!keep.has(r*6+c)) sdkGrid[r][c] = 0;
       }
       sdkGiven = sdkGrid.map(row => row.map(v => v !== 0));
       sdkSel = null;
 
       document.getElementById('game-arena').innerHTML = `
         <div style="text-align:center;"><span class="sdk-diff" style="background:${diff.color}20;color:${diff.color};border:1px solid ${diff.color}50;">${diff.nom} · ${diff.pistes} pistes</span></div>
-        <div class="info-strip">🔲 1-9 per fila, columna i caixa · <span class="accent" id="sdk-timer">0s</span></div>
+        <div class="info-strip">🔲 1-6 per fila, columna i caixa · <span class="accent" id="sdk-timer">0s</span></div>
         ${rankStrip('sudoku','s')}
-        <div class="sdk-grid" id="sdk-grid"></div>
+        <div class="sdk-grid sdk-grid-6" id="sdk-grid"></div>
         <div class="sdk-pad">
-          ${[1,2,3,4,5,6,7,8,9].map(n => `<div class="sdk-num" onclick="sdkInput(${n})">${n}</div>`).join('')}
+          ${[1,2,3,4,5,6].map(n => `<div class="sdk-num" onclick="sdkInput(${n})">${n}</div>`).join('')}
           <div class="sdk-num sdk-erase" onclick="sdkInput(0)">✕</div>
         </div>`;
       renderSdkGrid();
@@ -1025,11 +1045,11 @@
       const grid = document.getElementById('sdk-grid');
       if (!grid) return;
       grid.innerHTML = '';
-      for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) {
         const cell = document.createElement('div');
         cell.className = 'sdk-cell' + (sdkGiven[r][c] ? ' given' : ' user')
           + (sdkSel && sdkSel[0] === r && sdkSel[1] === c ? ' selected' : '')
-          + ((c === 2 || c === 5) ? ' br' : '') + ((r === 2 || r === 5) ? ' bb' : '');
+          + (c === 2 ? ' br' : '') + (r === 1 || r === 3 ? ' bb' : '');
         if (sdkGrid[r][c] !== 0) cell.textContent = sdkGrid[r][c];
         if (!sdkGiven[r][c]) cell.onclick = () => { sdkSel = [r,c]; renderSdkGrid(); };
         grid.appendChild(cell);
@@ -1041,7 +1061,7 @@
       sdkGrid[r][c] = n;
       renderSdkGrid();
       let complete = true;
-      for (let rr = 0; rr < 9; rr++) for (let cc = 0; cc < 9; cc++) if (sdkGrid[rr][cc] === 0) complete = false;
+      for (let rr = 0; rr < 6; rr++) for (let cc = 0; cc < 6; cc++) if (sdkGrid[rr][cc] === 0) complete = false;
       if (complete) {
         const correct = sdkGrid.every((row, rr) => row.every((v, cc) => v === sdkSol[rr][cc]));
         clearInterval(gameTimerInterval);
@@ -1100,9 +1120,9 @@
 
     function renderZip() {
       partidaActiva = true;
-      zipSize = 7;
+      zipSize = 8;
       const path = genZipPath(zipSize);
-      const nNums = [6, 9, 12][Math.floor(RNG() * 3)];
+      const nNums = [5, 6, 7][Math.floor(RNG() * 3)];
       zipNums = {};
       for (let i = 0; i < nNums; i++) {
         const pos = i === 0 ? 0 : i === nNums-1 ? path.length-1 : Math.floor(i * (path.length-1) / (nNums-1));
@@ -1513,7 +1533,7 @@
       const seed = dailyMode ? seedFrom(todayStr() + '-diff') : Math.floor(Math.random()*1e9);
       const rngA = mulberry32(seed);
       const els = buildScene(rngA);
-      // Tria diferències (elements modificables)
+      // Tria diferències (elements modificables, garantint que cadascuna sigui detectable)
       const modificables = els.map((e, i) => ({ e, i })).filter(x => x.e.t !== 'sky');
       modificables.sort(() => rngA()-.5);
       const nDiffs = Math.min(7, modificables.length);
@@ -1521,16 +1541,16 @@
       const elsB = els.map((e, i) => {
         if (!diffIdxs.includes(i)) return e;
         const m = { ...e };
-        if (e.t === 'sun') m.r = e.r * 1.3;
-        if (e.t === 'cloud') m.s = e.s * 1.35;
+        if (e.t === 'sun') m.r = e.r * 1.5;
+        if (e.t === 'cloud') m.s = e.s * 1.6;
         if (e.t === 'house') { m.c = e.c === '#E8794A' ? '#5B8DEF' : '#E8794A'; m.win = 1; m.fum = !e.fum; }
-        if (e.t === 'tree') m.s = e.s * 1.3;
+        if (e.t === 'tree') m.s = e.s * 1.5;
         if (e.t === 'flower') m.c = e.c === '#FFD60A' ? '#FF5E7A' : '#FFD60A';
-        if (e.t === 'bird') m.y = e.y + 16;
-        if (e.t === 'mountain') m.s = e.s * 1.25;
-        if (e.t === 'fence') m.y = e.y - 10;
+        if (e.t === 'bird') m.y = e.y + 28;
+        if (e.t === 'mountain') m.s = e.s * 1.45;
+        if (e.t === 'fence') m.y = e.y - 22;
         if (e.t === 'cat') m.flip = !e.flip;
-        if (e.t === 'butterfly') m.c = e.c === '#FFD60A' ? '#BF5AF2' : '#FFD60A';
+        if (e.t === 'butterfly') { m.c = e.c === '#FFD60A' ? '#BF5AF2' : '#FFD60A'; m.y = e.y - 18; }
         return m;
       });
       diffFound = 0; diffTotal = nDiffs;
@@ -1744,7 +1764,7 @@
       { c:'#5B8DEF', m:[[1,0,0],[1,1,1]] },
       { c:'#FF9F0A', m:[[0,0,1],[1,1,1]] },
     ];
-    let ttBoard = [], ttPiece = null, ttX = 0, ttY = 0, ttScore = 0, ttLines = 0, ttLevel = 1, ttLoop = null, ttActive = false, ttRng = null;
+    let ttBoard = [], ttPiece = null, ttNext = null, ttX = 0, ttY = 0, ttScore = 0, ttLines = 0, ttLevel = 1, ttLoop = null, ttActive = false, ttRng = null;
 
     function stopTetris() { if (ttLoop) { clearInterval(ttLoop); ttLoop = null; } ttActive = false; }
 
@@ -1757,6 +1777,10 @@
       document.getElementById('game-arena').innerHTML = `
         <div class="tetris-wrap">
           <div class="tetris-hud"><span>Punts: <strong id="tt-score">0</strong></span><span>Línies: <strong id="tt-lines">0</strong></span><span>Nivell: <strong id="tt-level">1</strong></span></div>
+          <div style="display:flex;align-items:center;gap:0.5rem;justify-content:center;margin-bottom:0.5rem;">
+            <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);font-weight:700;">SIGUIENTE</span>
+            <div id="tt-next" style="display:grid;gap:1px;background:rgba(255,255,255,0.05);padding:3px;border-radius:6px;"></div>
+          </div>
           <div class="tetris-board" id="tt-board" style="grid-template-columns:repeat(${TT_COLS},${cellPx}px);grid-auto-rows:${cellPx}px;"></div>
           <div class="tetris-pad">
             <button class="tp-btn tp-rotate" ontouchstart="event.preventDefault();ttRotate()" onclick="ttRotate()">↺ ROTAR</button>
@@ -1783,11 +1807,21 @@
       ttLoop = setInterval(() => { if (ttActive) ttStep(); }, speed);
     }
     function ttSpawn() {
-      const p = TT_PIECES[Math.floor(ttRng() * TT_PIECES.length)];
+      const p = ttNext || TT_PIECES[Math.floor(ttRng() * TT_PIECES.length)];
       ttPiece = { c: p.c, m: p.m.map(r => [...r]) };
       ttX = Math.floor((TT_COLS - ttPiece.m[0].length) / 2);
       ttY = 0;
+      ttNext = TT_PIECES[Math.floor(ttRng() * TT_PIECES.length)];
+      ttRenderNext();
       if (ttCollide(ttX, ttY, ttPiece.m)) ttGameOver();
+    }
+    function ttRenderNext() {
+      const box = document.getElementById('tt-next');
+      if (!box || !ttNext) return;
+      const m = ttNext.m;
+      const cols = m[0].length;
+      box.style.gridTemplateColumns = `repeat(${cols}, 12px)`;
+      box.innerHTML = m.flat().map(v => `<div style="width:12px;height:12px;background:${v ? ttNext.c : 'transparent'};border-radius:2px;"></div>`).join('');
     }
     function ttCollide(x, y, m) {
       for (let r = 0; r < m.length; r++) for (let c = 0; c < m[0].length; c++) {
