@@ -212,6 +212,10 @@
   <script src="ofertes-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    window.onerror = function(msg, url, line, col, error) {
+      alert('❌ ERROR GLOBAL: ' + msg + ' (línea ' + line + ')');
+    };
+
     const sb = window.supabase.createClient(
       'https://dlxeqzdgsejoywwwnchi.supabase.co',
       'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo'
@@ -324,9 +328,9 @@
 
       renderOfertaBanner(videos || [], challenges || []);
       renderVideos(videos || []);
-      document.getElementById('debug-banner').textContent = 'DEBUG: llegando a renderEntrevista con ' + (challenges?.length || 0) + ' challenges...';
+      alert('DEBUG: a punt de cridar renderEntrevista amb ' + (challenges?.length || 0) + ' challenges');
       } catch(errMid) {
-        document.getElementById('debug-banner').textContent = '❌ ERROR antes de entrevista: ' + errMid.message;
+        alert('❌ ERROR capturat: ' + errMid.message + ' | Stack: ' + (errMid.stack || '').substring(0,200));
         return;
       }
       renderEntrevista(challenges || []);
