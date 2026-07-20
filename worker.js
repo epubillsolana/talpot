@@ -214,6 +214,28 @@ Respon NOMÉS JSON:
         return json({ ok: true, informe: gData.choices[0].message.content }, 200, cors);
       }
 
+      // ═══ /resumen-perfil — resum breu de tot el que ha explicat el Creator ═══
+      if (url.pathname === '/resumen-perfil') {
+        const { textos } = await request.json();
+        if (!textos || !textos.length) return json({ ok: false, error: 'No textos' }, 400, cors);
+
+        const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            temperature: 0.4,
+            messages: [
+              { role: 'system', content: `Ets un assistent que ajuda una persona a veure's reflectida. A partir de transcripcions dels seus propis vídeos (experiència, habilitats, objectius, hobbies...), escriu un resum breu (60-100 paraules) en castellà, en segona persona ("Cuentas que...", "Has hablado de..."), càlid però professional, que li permeti veure de cop tot el que ha explicat de si mateix. No inventis res que no estigui al text.` },
+              { role: 'user', content: textos.join('\n\n---\n\n').substring(0, 6000) },
+            ],
+          }),
+        });
+        if (!gRes.ok) { const eb = await gRes.text(); return json({ ok: false, error: 'GPT ' + gRes.status + ': ' + eb.substring(0,300) }, 500, cors); }
+        const gData = await gRes.json();
+        return json({ ok: true, resumen: gData.choices[0].message.content }, 200, cors);
+      }
+
       return json({ ok: false, error: 'Not found' }, 404, cors);
     } catch (err) {
       return json({ ok: false, error: err.message }, 500, cors);
