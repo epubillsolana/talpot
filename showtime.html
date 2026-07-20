@@ -201,139 +201,154 @@
 </head>
 <body>
 
-  <!-- FASE 1 — ESPERA -->
+  <!-- FASE 1 — PROGRAMAR / SALA DE ESPERA -->
   <div class="fase" id="fase-waiting">
     <div class="waiting-bg"></div>
     <div class="waiting-content">
       <div class="logo">tal<span>pot</span></div>
       <div class="avatar-ring">
-        <div class="avatar-big">E</div>
+        <div class="avatar-big" id="my-avatar">?</div>
       </div>
-      <div class="waiting-title">Tu <span>Showtime</span><br>empieza pronto.</div>
-      <div class="waiting-company">
-        <div class="wc-avatar">TK</div>
-        <div class="wc-info">
-          <div class="wc-name">TechKorp</div>
-          <div class="wc-role">Se está conectando...</div>
+      <div class="waiting-title" id="waiting-title">Tu <span>Showtime</span><br>con <span id="other-name">...</span></div>
+
+      <div id="no-call-yet" style="width:100%;max-width:340px;">
+        <div class="waiting-company" style="justify-content:center;margin-bottom:1rem;">
+          <div class="wc-info" style="text-align:center;">
+            <div class="wc-role">Aún no hay ninguna llamada programada.</div>
+          </div>
         </div>
-        <div class="waiting-dots">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
+        <button class="btn-cancel" style="background:#FFD60A;color:#020B18;border:none;width:100%;" onclick="generarSala()">🎬 Generar sala de Showtime</button>
       </div>
-      <button class="btn-cancel" onclick="startCall()">🎬 Empezar Showtime</button>
-      <button class="btn-cancel" style="font-size:0.8rem;padding:0.6rem 1.5rem;" onclick="window.location.href='messages.html'">← Volver</button>
+
+      <div id="has-call" style="display:none;width:100%;max-width:340px;">
+        <div class="waiting-company">
+          <div class="wc-avatar" id="wc-avatar">?</div>
+          <div class="wc-info">
+            <div class="wc-name" id="wc-name">—</div>
+            <div class="wc-role" id="wc-status">Sala lista</div>
+          </div>
+        </div>
+        <a id="join-link" href="#" target="_blank" style="display:block;text-decoration:none;">
+          <button class="btn-cancel" style="background:#30D158;color:#020B18;border:none;width:100%;margin-top:0.9rem;" onclick="marcarUnido()">🎥 Unirse a la videollamada</button>
+        </a>
+      </div>
+
+      <button class="btn-cancel" style="font-size:0.8rem;padding:0.6rem 1.5rem;margin-top:0.5rem;" onclick="window.location.href='messages.html'">← Volver</button>
     </div>
   </div>
 
-  <!-- FASE 2 — VIDEOTRUCADA -->
-  <div class="fase hidden" id="fase-call" style="padding:0;">
-    <div class="video-main">
-      <div class="video-main-avatar">TK</div>
-    </div>
-
-    <!-- Vídeo propi -->
-    <div class="video-self">
-      <div class="video-self-avatar">E</div>
-    </div>
-
-    <!-- Info dalt -->
-    <div class="call-top">
-      <div class="call-info">
-        <div class="call-company">TechKorp · Showtime</div>
-        <div class="call-timer-badge">
-          <div class="rec-dot-small"></div>
-          <span id="call-timer">0:00</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Info Talpot -->
-    <div class="call-talpot-info">
-      <div class="cti-label">🌟 Talpot recuerda</div>
-      <div class="cti-text">No es una entrevista. Es tu show. Sé tú mismo.</div>
-    </div>
-
-    <!-- Controls -->
-    <div class="call-controls">
-      <input class="call-notes" type="text" placeholder="✏️ Toma notas rápidas..." />
-      <div class="controls-row">
-        <button class="ctrl-btn" id="btn-micro" onclick="toggleMicro()">🎙️</button>
-        <button class="ctrl-btn" id="btn-cam" onclick="toggleCam()">📷</button>
-        <button class="ctrl-btn danger" onclick="endCall()">📵</button>
-        <button class="ctrl-btn" onclick="toggleChat()">💬</button>
-        <button class="ctrl-btn" onclick="toggleProfile()">👤</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- FASE 3 — FI -->
+  <!-- FASE 3 — CONFIRMAR REALIZADO -->
   <div class="fase hidden" id="fase-fi">
     <div class="fi-bg"></div>
     <div class="fi-content">
       <div class="fi-icon">🌟</div>
-      <div class="fi-title">¡Showtime<br>completado!</div>
-      <p class="fi-desc">Has tenido tu momento en el escenario. El Seeker decidirá los próximos pasos.</p>
+      <div class="fi-title">¿Cómo fue<br>tu Showtime?</div>
+      <p class="fi-desc">Marca la videollamada como realizada para que quede registrada en la conversación.</p>
       <div class="fi-summary">
-        <div class="fis-title">Resumen del Showtime</div>
-        <div class="fis-row"><span class="fis-label">Empresa</span><span class="fis-value">TechKorp</span></div>
-        <div class="fis-row"><span class="fis-label">Duración</span><span class="fis-value" id="fi-duracion">—</span></div>
-        <div class="fis-row"><span class="fis-label">Estado</span><span class="fis-value" style="color:#30D158;">Completado ✓</span></div>
+        <div class="fis-title">Resumen</div>
+        <div class="fis-row"><span class="fis-label">Con</span><span class="fis-value" id="fi-nombre">—</span></div>
+        <div class="fis-row"><span class="fis-label">Sala</span><span class="fis-value">Google Meet</span></div>
       </div>
       <div class="fi-actions">
-        <button class="fi-btn fi-btn-primary" onclick="window.location.href='app.html'">🏠 Volver al Feed</button>
-        <button class="fi-btn fi-btn-secondary" onclick="window.location.href='messages.html'">← Mensajes</button>
+        <button class="fi-btn fi-btn-primary" onclick="marcarCompletado()">✓ Marcar como realizado</button>
+        <button class="fi-btn fi-btn-secondary" onclick="window.location.href='app.html'">🏠 Volver al Feed</button>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let callSeconds = 0;
-    let callInterval = null;
-    let microOn = true;
-    let camOn = true;
+    const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
+    const params = new URLSearchParams(window.location.search);
+    const otherUserId = params.get('user');
+    let myUser = null;
+    let otherName = 'Talent Talpot';
+    let currentSala = null;
 
     function showFase(id) {
       document.querySelectorAll('.fase').forEach(f => f.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
     }
 
-    function startCall() {
-      showFase('fase-call');
-      callSeconds = 0;
-      callInterval = setInterval(() => {
-        callSeconds++;
-        const m = Math.floor(callSeconds / 60);
-        const s = callSeconds % 60;
-        document.getElementById('call-timer').textContent = m + ':' + String(s).padStart(2, '0');
-      }, 1000);
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'index.html'; return; }
+      myUser = user;
+      if (!otherUserId) { window.location.href = 'messages.html'; return; }
+
+      const myName = user.user_metadata?.full_name || user.email.split('@')[0];
+      document.getElementById('my-avatar').textContent = myName.charAt(0).toUpperCase();
+
+      try {
+        const { data: prof } = await sb.from('profiles').select('full_name').eq('id', otherUserId).single();
+        otherName = prof?.full_name || 'Talent Talpot';
+      } catch(e) {}
+      document.getElementById('other-name').textContent = otherName;
+      document.getElementById('wc-name').textContent = otherName;
+      document.getElementById('wc-avatar').textContent = otherName.charAt(0).toUpperCase();
+      document.getElementById('fi-nombre').textContent = otherName;
+
+      // Comprovar si ja hi ha una sala oberta entre aquests dos usuaris
+      try {
+        const { data: salas } = await sb.from('showtime_salas')
+          .select('*')
+          .or('and(from_user.eq.' + myUser.id + ',to_user.eq.' + otherUserId + '),and(from_user.eq.' + otherUserId + ',to_user.eq.' + myUser.id + ')')
+          .eq('estado', 'abierta')
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (salas && salas.length > 0) {
+          mostrarSala(salas[0]);
+        }
+      } catch(e) {}
     }
 
-    function toggleMicro() {
-      microOn = !microOn;
-      const btn = document.getElementById('btn-micro');
-      btn.textContent = microOn ? '🎙️' : '🔇';
-      btn.classList.toggle('active', !microOn);
+    function mostrarSala(sala) {
+      currentSala = sala;
+      document.getElementById('no-call-yet').style.display = 'none';
+      document.getElementById('has-call').style.display = 'block';
+      document.getElementById('join-link').href = sala.meet_url;
+      document.getElementById('wc-status').textContent = 'Sala lista — toca para unirte';
     }
 
-    function toggleCam() {
-      camOn = !camOn;
-      const btn = document.getElementById('btn-cam');
-      btn.textContent = camOn ? '📷' : '🚫';
-      btn.classList.toggle('active', !camOn);
+    async function generarSala() {
+      // Genera un enlace de Google Meet instantáneo (sin cuenta ni API — funciona directamente)
+      const meetUrl = 'https://meet.google.com/new';
+      try {
+        const { data: sala, error } = await sb.from('showtime_salas').insert({
+          from_user: myUser.id,
+          to_user: otherUserId,
+          meet_url: meetUrl,
+          estado: 'abierta'
+        }).select().single();
+        if (error) { alert('⚠️ Error: ' + error.message); return; }
+
+        await sb.from('missatges').insert({
+          from_user: myUser.id, to_user: otherUserId,
+          cos: '🎬 Te ha invitado a un Showtime — una videollamada para conoceros mejor. Toca para unirte cuando quieras.',
+          tipus: 'showtime'
+        });
+        await sb.from('notificacions').insert({
+          user_id: otherUserId, from_user: myUser.id, tipus: 'showtime',
+          titol: '🎬 Nuevo Showtime', cos: 'Te han invitado a una videollamada', link: 'showtime.html?user=' + myUser.id
+        });
+
+        mostrarSala(sala);
+      } catch(e) { alert('⚠️ Error: ' + e.message); }
     }
 
-    function toggleChat() { alert('Chat en construcción'); }
-    function toggleProfile() { window.location.href = 'creator-profile.html'; }
-
-    function endCall() {
-      clearInterval(callInterval);
-      const m = Math.floor(callSeconds / 60);
-      const s = callSeconds % 60;
-      document.getElementById('fi-duracion').textContent = m + ' min ' + s + ' seg';
-      showFase('fase-fi');
+    function marcarUnido() {
+      // Al hacer click se abre el link en nueva pestaña (target=_blank); tras volver, ofrecemos marcar como hecho
+      setTimeout(() => showFase('fase-fi'), 800);
     }
+
+    async function marcarCompletado() {
+      if (currentSala) {
+        try { await sb.from('showtime_salas').update({ estado: 'completada' }).eq('id', currentSala.id); } catch(e) {}
+      }
+      window.location.href = 'app.html';
+    }
+
+    init();
   </script>
 
 </body>

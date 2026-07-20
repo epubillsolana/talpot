@@ -40,6 +40,7 @@
     .msg.mine { align-self: flex-end; background: rgba(255,214,10,0.16); border: 1px solid rgba(255,214,10,0.3); border-bottom-right-radius: 4px; }
     .msg.theirs { align-self: flex-start; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-bottom-left-radius: 4px; }
     .msg.peticio { border-left: 3px solid #00B4D8; }
+    .msg.showtime { border-left: 3px solid #30D158; background: rgba(48,209,88,0.08); }
     .msg-time { font-size: 0.62rem; color: rgba(255,255,255,0.4); margin-top: 0.3rem; }
 
     .xat-input-bar { display: flex; gap: 0.5rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: rgba(6,20,38,0.95); border-top: 1px solid rgba(255,255,255,0.08); }
@@ -70,6 +71,9 @@
   <!-- XAT OBERT -->
   <div class="xat" id="view-xat">
     <div class="xat-msgs" id="xat-msgs"></div>
+    <div style="padding:0 1.25rem 0.5rem;">
+      <button id="showtime-btn" onclick="irAShowtime()" style="width:100%;padding:0.75rem;border-radius:100px;border:1px solid rgba(255,214,10,0.35);background:rgba(255,214,10,0.1);color:#FFD60A;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:0.85rem;cursor:pointer;">🎬 Iniciar Showtime</button>
+    </div>
     <div class="xat-input-bar">
       <input class="xat-input" id="xat-input" placeholder="Escriu un missatge..." onkeydown="if(event.key==='Enter')enviarMsg()" />
       <button class="xat-send" onclick="enviarMsg()">➤</button>
@@ -193,8 +197,8 @@
       const box = document.getElementById('xat-msgs');
       const conv = msgs.filter(m => m.from_user === xatAmb || m.to_user === xatAmb);
       box.innerHTML = conv.map(m => `
-        <div class="msg ${m.from_user === myId ? 'mine' : 'theirs'} ${m.tipus === 'peticio' ? 'peticio' : ''}">
-          ${m.cos}
+        <div class="msg ${m.from_user === myId ? 'mine' : 'theirs'} ${m.tipus === 'peticio' ? 'peticio' : ''} ${m.tipus === 'showtime' ? 'showtime' : ''}">
+          ${m.tipus === 'showtime' ? '<a href="showtime.html?user=' + (m.from_user === myId ? m.to_user : m.from_user) + '" style="color:#30D158;font-weight:800;text-decoration:none;">' + m.cos + '</a>' : m.cos}
           <div class="msg-time">${tempsRelatiu(m.created_at)}</div>
         </div>`).join('');
       box.scrollTop = box.scrollHeight;
@@ -212,6 +216,11 @@
         await sb.from('missatges').insert({ from_user: myId, to_user: xatAmb, cos, tipus: 'normal' });
         await sb.from('notificacions').insert({ user_id: xatAmb, from_user: myId, tipus: 'missatge', titol: '💬 Nou missatge', cos: cos.substring(0, 80), link: 'messages.html?user=' + myId });
       } catch(e) {}
+    }
+
+    function irAShowtime() {
+      if (!xatAmb) return;
+      window.location.href = 'showtime.html?user=' + xatAmb;
     }
 
     function goBack() {
