@@ -63,7 +63,7 @@
   </nav>
 
   <div class="scroll" id="view-list">
-    <div class="header"><div class="h-title">💬 Mensajes</div></div>
+    <div class="header"><div class="h-title" id="page-title">💬 Mensajes</div><div id="page-sub" style="font-size:0.8rem;color:rgba(255,255,255,0.55);margin-top:0.2rem;"></div></div>
     <div id="convs-container"><div class="empty">⏳ Carregant converses...</div></div>
   </div>
 
@@ -111,6 +111,10 @@
         document.getElementById('nav-bottom-creator').style.display = 'none';
         document.getElementById('nav-bottom-seeker').style.display = 'flex';
         document.getElementById('nav-back').textContent = '← Explorar';
+        document.getElementById('page-title').textContent = '💬 Candidatos';
+        document.getElementById('page-sub').textContent = 'Tus conversaciones con el talento que has contactado';
+      } else {
+        document.getElementById('page-sub').textContent = 'Tus conversaciones con Seekers y otros Creators';
       }
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'index.html'; return; }

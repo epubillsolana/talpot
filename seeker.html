@@ -85,9 +85,13 @@
 <body>
 
   <nav class="nav">
-    <div class="nav-back" onclick="window.location.href='app.html'">← Feed</div>
     <div class="nav-logo">tal<span>pot</span></div>
-    <div class="seeker-badge" onclick="window.location.href='profile.html'">🔍 SEEKER · Volver a Creator</div>
+    <div style="display:flex;align-items:center;gap:0.7rem;">
+      <div style="position:relative;cursor:pointer;font-size:1.2rem;" onclick="window.location.href='notifications.html?from=seeker'">
+        🔔<div id="seeker-notif-dot" style="display:none;position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:#FF453A;border:2px solid #061426;"></div>
+      </div>
+      <div class="seeker-badge">🔍 SEEKER</div>
+    </div>
   </nav>
 
   <div class="scroll">
@@ -95,6 +99,14 @@
       <div class="h-title">🔭 Explora talento</div>
       <div class="h-sub">Define qué perfiles buscas, dónde y con qué palabras clave. La IA ordena por encaje y potencial.</div>
     </div>
+
+    <!-- DESCOBERTA LLIURE -->
+    <div class="section" id="discovery-section">
+      <div class="fam-title">✨ Talento reciente</div>
+      <div id="discovery-list"><div style="font-size:0.82rem;color:rgba(255,255,255,0.5);">⏳ Cargando...</div></div>
+    </div>
+
+    <div class="fam-title" style="padding:0 1.25rem;margin-top:0.5rem;">🎯 O define una búsqueda concreta</div>
 
     <!-- PERFILS DE FEINA -->
     <div class="card-block">
@@ -168,6 +180,7 @@
       const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       try { await sb.from('profiles').upsert({ id: user.id, full_name: fullName }); } catch(e) {}
       await loadCandidats();
+      loadDiscovery();
     }
 
     async function loadCandidats() {
@@ -221,6 +234,36 @@
           potencial: Math.round(jocsScore + challScore + videoScore),
         };
       });
+    }
+
+    async function loadDiscovery() {
+      const box = document.getElementById('discovery-list');
+      try {
+        const { data: videos } = await sb.from('magic_room_videos').select('user_id, categoria, video_url, keywords, extracted, created_at').order('created_at', { ascending: false }).limit(12);
+        if (!videos || videos.length === 0) { box.innerHTML = '<div class="empty"><div class="empty-icon">🌱</div><div class="empty-text">Aún no hay talento en Talpot. ¡Vuelve pronto!</div></div>'; return; }
+        const { data: profiles } = await sb.from('profiles').select('id, full_name, avatar_url, ubicacio');
+        const nomMap = {}, avMap = {}, locMap = {};
+        (profiles || []).forEach(p => { nomMap[p.id] = p.full_name; avMap[p.id] = p.avatar_url; locMap[p.id] = p.ubicacio; });
+        // Un vídeo per candidat (el més recent), fins a 8
+        const vistos = new Set();
+        const unics = videos.filter(v => { if (vistos.has(v.user_id)) return false; vistos.add(v.user_id); return true; }).slice(0, 8);
+        box.innerHTML = '<div style="display:flex;gap:0.7rem;overflow-x:auto;padding-bottom:0.4rem;">' + unics.map(v => {
+          const nom = nomMap[v.user_id] || 'Talent Talpot';
+          const av = avMap[v.user_id];
+          const kws = (v.keywords || v.extracted?.keywords || []).slice(0, 2);
+          return `
+          <div style="flex-shrink:0;width:150px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;cursor:pointer;" onclick="window.location.href='creator-profile.html?user=${v.user_id}'">
+            <div style="width:100%;height:120px;background:#0A2540;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              ${av ? `<img src="${av}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:2.2rem;font-weight:900;color:rgba(255,255,255,0.25);">${nom.charAt(0).toUpperCase()}</span>`}
+            </div>
+            <div style="padding:0.6rem;">
+              <div style="font-size:0.8rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nom}</div>
+              <div style="font-size:0.68rem;color:#30D158;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${kws.join(' · ') || '🎬 Nuevo vídeo'}</div>
+              ${locMap[v.user_id] ? `<div style="font-size:0.65rem;color:rgba(255,255,255,0.45);margin-top:0.1rem;">📍 ${locMap[v.user_id]}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('') + '</div>';
+      } catch(e) { box.innerHTML = ''; }
     }
 
     // ═══ AUTOCOMPLETAR DE PERFILS ═══

@@ -111,7 +111,7 @@
 <body>
 
   <nav class="nav">
-    <div class="nav-back" onclick="window.location.href='app.html'">← Feed</div>
+    <div class="nav-back" id="nav-back-notif" onclick="window.location.href=isSeekerN?'seeker.html':'app.html'">← Feed</div>
     <div class="nav-title">Notificaciones</div>
     <div class="nav-clear" onclick="clearAll()">Marcar todo leído</div>
   </nav>
@@ -130,7 +130,7 @@
 
   </div>
 
-  <nav class="nav-bottom">
+  <nav class="nav-bottom" id="nav-bottom-creator">
     <div class="nav-item" onclick="window.location.href='app.html'">
       <div class="nav-icon">🏠</div>
       <span>Feed</span>
@@ -148,6 +148,11 @@
       <span>Perfil</span>
     </div>
   </nav>
+  <nav class="nav-bottom" id="nav-bottom-seeker" style="display:none;">
+    <div class="nav-item" onclick="window.location.href='seeker.html'"><div class="nav-icon">🔭</div><span>Explorar</span></div>
+    <div class="nav-item" onclick="window.location.href='messages.html?from=seeker'"><div class="nav-icon">💬</div><span>Candidatos</span></div>
+    <div class="nav-item" onclick="window.location.href='seeker-panel.html'"><div class="nav-icon">⚙️</div><span>Mi cuenta</span></div>
+  </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -160,6 +165,14 @@
       if (diff < 60) return 'Fa ' + Math.max(1, Math.round(diff)) + ' min';
       if (diff < 1440) return 'Fa ' + Math.round(diff/60) + ' h';
       return 'Fa ' + Math.round(diff/1440) + ' dies';
+    }
+
+    const isSeekerN = new URLSearchParams(window.location.search).get('from') === 'seeker';
+    if (isSeekerN) {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('nav-bottom-creator').style.display = 'none';
+        document.getElementById('nav-bottom-seeker').style.display = 'flex';
+      });
     }
 
     async function loadNotifs() {
