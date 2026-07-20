@@ -57,8 +57,8 @@
 
   <div class="scroll">
     <div class="header">
-      <div class="h-title">🧭 Descubre talento</div>
-      <div class="h-sub">Explora libremente sin buscar nada concreto. Filtra como quieras.</div>
+      <div class="h-title">🧭 Navegación libre</div>
+      <div class="h-sub">Sin vacante concreta en mente. Explora el talento disponible por zona, tipo de perfil o temas — los resultados se actualizan al momento.</div>
     </div>
 
     <div class="filters-scroll">
@@ -72,7 +72,11 @@
 
     <div class="subfilter-box" id="sub-ubicacion">
       <div class="subfilter-title">📍 Filtrar por ubicación</div>
-      <input class="loc-mini" id="disc-loc-input" placeholder="Ej: Reus, Barcelona..." oninput="applyFilters()" />
+      <div class="ac-wrap" style="position:relative;">
+        <input class="loc-mini" id="disc-loc-input" placeholder="Escribe: ciudad, provincia o comunidad..." style="margin-bottom:0;" oninput="geoAcFilter(this.value)" onfocus="geoAcFilter(this.value)" autocomplete="off" />
+        <div class="ac-dropdown" id="geo-ac-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#0D2A45;border:1px solid rgba(255,255,255,0.15);border-radius:12px;max-height:200px;overflow-y:auto;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
+      </div>
+      <div id="geo-selected" style="margin-top:0.6rem;"></div>
     </div>
 
     <div class="subfilter-box" id="sub-perfil">
@@ -123,6 +127,7 @@
   </nav>
 
 
+  <script src="geo-data.js"></script>
   <script src="ofertes-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -130,6 +135,30 @@
     const OFERTES = window.TALPOT_OFERTES || [];
     let allVideos = [], allProfiles = {}, allInteraccions = [];
     let modoActual = 'recientes';
+    let geoFiltre = null; // { nivell, valor }
+
+    function geoAcFilter(val) {
+      const dd = document.getElementById('geo-ac-dropdown');
+      const sugg = window.geoSuggest ? window.geoSuggest(val) : [];
+      if (!val.trim() || sugg.length === 0) { dd.style.display = 'none'; return; }
+      dd.innerHTML = sugg.map(s => `<div class="ac-item" style="padding:0.65rem 1rem;font-size:0.82rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);" onclick="pickGeo('${s.nivell}','${s.valor.replace(/'/g,"\\'")}','${s.label.replace(/'/g,"\\'")}')">${s.label}</div>`).join('');
+      dd.style.display = 'block';
+    }
+    function pickGeo(nivell, valor, label) {
+      geoFiltre = { nivell, valor };
+      document.getElementById('disc-loc-input').value = '';
+      document.getElementById('geo-ac-dropdown').style.display = 'none';
+      document.getElementById('geo-selected').innerHTML = `<span style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;font-weight:700;padding:0.4rem 0.5rem 0.4rem 0.85rem;border-radius:100px;background:rgba(255,214,10,0.14);border:1px solid rgba(255,214,10,0.3);color:#FFD60A;">📍 ${label}<span style="cursor:pointer;opacity:0.6;font-weight:900;" onclick="clearGeo()">✕</span></span>`;
+      render();
+    }
+    function clearGeo() {
+      geoFiltre = null;
+      document.getElementById('geo-selected').innerHTML = '';
+      render();
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.ac-wrap')) { const dd = document.getElementById('geo-ac-dropdown'); if (dd) dd.style.display = 'none'; }
+    });
     let videoCatsActives = [];
     let temaActiu = null;
     let famActiva = null;
@@ -183,9 +212,8 @@
 
     function render() {
       let videos = [...allVideos];
-      const loc = document.getElementById('disc-loc-input').value.trim().toLowerCase();
 
-      if (loc) videos = videos.filter(v => (allProfiles[v.user_id]?.ubicacio || '').toLowerCase().includes(loc));
+      if (geoFiltre) videos = videos.filter(v => window.geoMatch(allProfiles[v.user_id]?.ubicacio || '', geoFiltre));
       if (videoCatsActives.length) videos = videos.filter(v => videoCatsActives.includes(v.categoria));
       if (temaActiu) videos = videos.filter(v => (v.tags || []).includes(temaActiu));
       if (famActiva) {

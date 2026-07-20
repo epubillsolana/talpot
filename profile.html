@@ -282,6 +282,7 @@
     <div class="nav-item active"><div class="nav-icon">👤</div><span>Perfil</span></div>
   </nav>
 
+  <script src="geo-data.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const sb = window.supabase.createClient(
@@ -324,12 +325,24 @@
 
     async function editLocation() {
       const actual = document.getElementById('loc-text').textContent;
-      const nova = prompt('¿Dónde resides? (ciudad, comarca o zona)', actual === 'Añadir ubicación' ? '' : actual);
+      const nova = prompt('¿Dónde resides? Escribe tu ciudad (ej: Reus, Barcelona, Madrid...)', actual === 'Añadir ubicación' ? '' : actual);
       if (nova === null || !nova.trim()) return;
-      document.getElementById('loc-text').textContent = nova.trim();
+      const valor = nova.trim();
+      document.getElementById('loc-text').textContent = valor;
       try {
         const { data: { user } } = await sb.auth.getUser();
-        if (user) await sb.from('profiles').update({ ubicacio: nova.trim() }).eq('id', user.id);
+        if (!user) return;
+        // Si coincideix amb el dataset geogràfic, guardem l'estructura completa (ciutat, província, comunitat)
+        let geoInfo = { ubicacio: valor };
+        if (window.TALPOT_GEO) {
+          const match = window.TALPOT_GEO.find(g => g.ciutat.toLowerCase() === valor.toLowerCase());
+          if (match) {
+            geoInfo.ubicacio = match.ciutat;
+            geoInfo.provincia = match.provincia;
+            geoInfo.comunitat = match.comunitat;
+          }
+        }
+        await sb.from('profiles').update(geoInfo).eq('id', user.id);
       } catch(e) {}
     }
 
