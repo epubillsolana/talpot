@@ -320,10 +320,13 @@
     const WORKER_URL = 'https://talpot-ai-v2.e-pubill.workers.dev';
     const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
 
-    const cat = sessionStorage.getItem('upload_cat') || 'presentacion';
-    const icon = sessionStorage.getItem('upload_icon') || '🎤';
-    const name = sessionStorage.getItem('upload_name') || 'Presentación personal';
-    const secs = parseInt(sessionStorage.getItem('upload_secs') || '60');
+    const urlParams = new URLSearchParams(window.location.search);
+    const catUrl = urlParams.get('cat');
+    const CAT_DEFAULTS = { actualitat: { icon: '🌍', name: 'Mi Mundo · Actualidad y opinión', secs: 90 } };
+    const cat = catUrl || sessionStorage.getItem('upload_cat') || 'presentacion';
+    const icon = (catUrl && CAT_DEFAULTS[catUrl]?.icon) || sessionStorage.getItem('upload_icon') || '🎤';
+    const name = (catUrl && CAT_DEFAULTS[catUrl]?.name) || sessionStorage.getItem('upload_name') || 'Presentación personal';
+    const secs = (catUrl && CAT_DEFAULTS[catUrl]?.secs) || parseInt(sessionStorage.getItem('upload_secs') || '60');
     const langQuestion = sessionStorage.getItem('upload_question') || '';
     const langName = sessionStorage.getItem('upload_lang') || '';
 
@@ -692,14 +695,14 @@
       sessionStorage.removeItem('upload_secs');
       sessionStorage.removeItem('upload_question');
       sessionStorage.removeItem('upload_lang');
-      window.location.href = 'magic-room.html';
+      window.location.href = catUrl ? 'app.html' : 'magic-room.html';
     }
 
     function goBack() {
       if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
       sessionStorage.removeItem('upload_question');
       sessionStorage.removeItem('upload_lang');
-      window.location.href = 'magic-room.html';
+      window.location.href = catUrl ? 'app.html' : 'magic-room.html';
     }
     function retryVideo() {
       showFase('fase-upload');
