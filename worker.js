@@ -167,6 +167,33 @@ FORMAT:
         return json({ ok: true, oferta }, 200, cors);
       }
 
+
+      // ═══ /feedback — aprèn dels desajustos entre l'app i el Seeker ═══
+      if (url.pathname === '/feedback') {
+        const { oferta_titol, kw_oferta, score_app, estrelles, contingut_candidat } = await request.json();
+        const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            temperature: 0.2,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: `Ets l'auditor del sistema de matching de Talpot. L'algorisme va puntuar un candidat per a una oferta, i el Seeker (humà) el va valorar amb estrelles (1-5). Analitza el desajust i aprèn-ne.
+
+Respon NOMÉS JSON:
+{"veredicte":"seeker_te_rao"|"app_te_rao"|"empat","explicacio":"2-3 frases: per què hi ha desajust i què n'aprenem","kw_sospitoses":["keywords de l'oferta que van inflar o desinflar el match sense reflectir encaix real (màx 3, en minúscula)"],"recomanacio":"1 frase de millora concreta del matching"}` },
+              { role: 'user', content: `OFERTA: ${oferta_titol}\nKEYWORDS OFERTA: ${(kw_oferta||[]).join(', ')}\nSCORE DE L'APP: ${score_app}%\nESTRELLES DEL SEEKER: ${estrelles}/5\n\nCONTINGUT DEL CANDIDAT:\n${(contingut_candidat||'').substring(0,2000)}` },
+            ],
+          }),
+        });
+        if (!gRes.ok) { const eb = await gRes.text(); return json({ ok: false, error: 'GPT ' + gRes.status + ': ' + eb.substring(0, 300) }, 500, cors); }
+        const gData = await gRes.json();
+        let analisi = {};
+        try { analisi = JSON.parse(gData.choices[0].message.content); } catch(e) { return json({ ok: false, error: 'Parse error' }, 500, cors); }
+        return json({ ok: true, analisi }, 200, cors);
+      }
+
       return json({ ok: false, error: 'Not found' }, 404, cors);
     } catch (err) {
       return json({ ok: false, error: err.message }, 500, cors);
