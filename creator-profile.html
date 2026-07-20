@@ -175,6 +175,10 @@
         <div class="jocs-grid" id="jocs-grid"></div>
       </div>
 
+      <div class="section" id="save-section" style="display:none;">
+        <button id="save-btn" onclick="toggleGuardat()" style="width:100%;padding:0.9rem;border-radius:14px;border:1.5px solid rgba(255,214,10,0.35);background:rgba(255,214,10,0.1);color:#FFD60A;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;">🔖 Guardar candidato</button>
+      </div>
+
       <div class="section">
         <div class="section-title">✉️ Pedir más al candidato</div>
         <div class="demanar-card">
@@ -227,6 +231,39 @@
 
     const params = new URLSearchParams(window.location.search);
     let targetUserId = params.get('user');
+    let myUid = null;
+    let guardatId = null;
+
+    async function checkGuardat() {
+      if (!targetUserId) return; // el teu propi perfil, no cal
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user || user.id === targetUserId) return;
+      myUid = user.id;
+      document.getElementById('save-section').style.display = 'block';
+      try {
+        const { data } = await sb.from('candidatos_guardados').select('id').eq('seeker_id', myUid).eq('candidat_id', targetUserId).single();
+        if (data) { guardatId = data.id; setSaveBtn(true); }
+      } catch(e) {}
+    }
+    function setSaveBtn(guardat) {
+      const btn = document.getElementById('save-btn');
+      if (guardat) { btn.textContent = '✓ Guardado — quitar'; btn.style.background = 'rgba(48,209,88,0.15)'; btn.style.borderColor = 'rgba(48,209,88,0.4)'; btn.style.color = '#30D158'; }
+      else { btn.textContent = '🔖 Guardar candidato'; btn.style.background = 'rgba(255,214,10,0.1)'; btn.style.borderColor = 'rgba(255,214,10,0.35)'; btn.style.color = '#FFD60A'; }
+    }
+    async function toggleGuardat() {
+      if (!myUid || !targetUserId) return;
+      if (guardatId) {
+        try { await sb.from('candidatos_guardados').delete().eq('id', guardatId); } catch(e) {}
+        guardatId = null;
+        setSaveBtn(false);
+      } else {
+        try {
+          const { data } = await sb.from('candidatos_guardados').insert({ seeker_id: myUid, candidat_id: targetUserId }).select().single();
+          guardatId = data?.id || null;
+          setSaveBtn(true);
+        } catch(e) {}
+      }
+    }
     const ofertaParam = params.get('oferta');
     let userName = '';
 
@@ -701,6 +738,7 @@
     }
 
     loadCreator();
+    checkGuardat();
   </script>
 
 </body>

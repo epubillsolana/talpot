@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Descubrir</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="talpot-style.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; }
+    body { background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%); }
+    .nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; background: rgba(6,20,38,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.07); z-index: 50; }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-logo span { color: #FFD60A; }
+    .seeker-badge { font-size: 0.62rem; font-weight: 800; padding: 0.3rem 0.7rem; border-radius: 100px; background: rgba(0,180,216,0.15); color: #00B4D8; border: 1px solid rgba(0,180,216,0.35); }
+    .scroll { position: fixed; inset: 0; padding-top: 56px; padding-bottom: 78px; overflow-y: auto; }
+    .scroll::-webkit-scrollbar { display: none; }
+    .header { padding: 1.3rem 1.25rem 0.5rem; }
+    .h-title { font-size: 1.5rem; font-weight: 900; }
+    .h-sub { font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-top: 0.25rem; }
+
+    .filters-scroll { display: flex; gap: 0.5rem; padding: 0.9rem 1.25rem; overflow-x: auto; }
+    .filters-scroll::-webkit-scrollbar { display: none; }
+    .filter-chip { flex-shrink: 0; font-size: 0.8rem; font-weight: 700; padding: 0.55rem 1rem; border-radius: 100px; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.14); cursor: pointer; white-space: nowrap; }
+    .filter-chip.active { background: rgba(255,214,10,0.15); border-color: #FFD60A; color: #FFD60A; }
+
+    .subfilter-box { margin: 0 1.25rem 1rem; padding: 1rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; display: none; }
+    .subfilter-box.open { display: block; }
+    .subfilter-title { font-size: 0.75rem; font-weight: 800; color: rgba(255,255,255,0.6); margin-bottom: 0.6rem; }
+    .subfilter-options { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .subfilter-opt { font-size: 0.78rem; font-weight: 700; padding: 0.45rem 0.85rem; border-radius: 100px; background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: #00B4D8; cursor: pointer; }
+    .subfilter-opt.active { background: rgba(0,180,216,0.25); }
+    .loc-mini { width: 100%; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; outline: none; margin-bottom: 0.6rem; }
+
+    .section { padding: 0 1.25rem; }
+    .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .disc-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden; cursor: pointer; }
+    .disc-thumb { width: 100%; height: 100px; background: #0A2540; display: flex; align-items: center; justify-content: center; }
+    .disc-body { padding: 0.65rem; }
+    .disc-nom { font-size: 0.82rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .disc-meta { font-size: 0.68rem; color: #30D158; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .disc-loc { font-size: 0.65rem; color: rgba(255,255,255,0.45); margin-top: 0.1rem; }
+
+    .empty { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2.5rem 1.5rem; text-align: center; margin: 0 1.25rem; }
+    .empty-icon { font-size: 2.6rem; margin-bottom: 0.6rem; }
+    .empty-text { font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.6; }
+    .footer-space { height: 1.5rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div class="seeker-badge">🧭 DESCUBRIR</div>
+  </nav>
+
+  <div class="scroll">
+    <div class="header">
+      <div class="h-title">🧭 Descubre talento</div>
+      <div class="h-sub">Explora libremente sin buscar nada concreto. Filtra como quieras.</div>
+    </div>
+
+    <div class="filters-scroll">
+      <div class="filter-chip active" onclick="setFiltre('recientes', this)">🆕 Más recientes</div>
+      <div class="filter-chip" onclick="setFiltre('valorados', this)">⭐ Más valorados</div>
+      <div class="filter-chip" onclick="setFiltre('ubicacion', this)">📍 Ubicación</div>
+      <div class="filter-chip" onclick="setFiltre('perfil', this)">💼 Tipo de perfil</div>
+      <div class="filter-chip" onclick="setFiltre('video', this)">🎬 Tipo de vídeo</div>
+      <div class="filter-chip" onclick="setFiltre('actualidad', this)">🌍 Temas de actualidad</div>
+    </div>
+
+    <div class="subfilter-box" id="sub-ubicacion">
+      <div class="subfilter-title">📍 Filtrar por ubicación</div>
+      <input class="loc-mini" id="disc-loc-input" placeholder="Ej: Reus, Barcelona..." oninput="applyFilters()" />
+    </div>
+
+    <div class="subfilter-box" id="sub-perfil">
+      <div class="subfilter-title">💼 Familia de perfil</div>
+      <div class="subfilter-options" id="perfil-opts"></div>
+    </div>
+
+    <div class="subfilter-box" id="sub-video">
+      <div class="subfilter-title">🎬 Tipo de vídeo</div>
+      <div class="subfilter-options">
+        <div class="subfilter-opt" onclick="toggleVideoCat('presentacion', this)">🎤 Presentación</div>
+        <div class="subfilter-opt" onclick="toggleVideoCat('experiencia', this)">💼 Experiencia</div>
+        <div class="subfilter-opt" onclick="toggleVideoCat('estudios', this)">🎓 Estudios</div>
+        <div class="subfilter-opt" onclick="toggleVideoCat('habilidades', this)">🧠 Habilidades</div>
+        <div class="subfilter-opt" onclick="toggleVideoCat('idioma', this)">🌍 Idiomas</div>
+        <div class="subfilter-opt" onclick="toggleVideoCat('actualitat', this)">🌍 Mi Mundo</div>
+      </div>
+    </div>
+
+    <div class="subfilter-box" id="sub-actualidad">
+      <div class="subfilter-title">🌍 Temas que han comentado</div>
+      <div class="subfilter-options" id="temes-opts"></div>
+    </div>
+
+    <div class="section">
+      <div id="disc-list"><div style="font-size:0.85rem;color:rgba(255,255,255,0.5);padding:1rem 0;">⏳ Cargando...</div></div>
+    </div>
+
+    <div class="footer-space"></div>
+  </div>
+
+  <nav class="nav-bottom" style="position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:0.55rem 0 calc(0.55rem + env(safe-area-inset-bottom));background:rgba(6,20,38,0.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.07);z-index:50;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker.html'">
+      <div style="font-size:1.15rem;">🎯</div><span>Buscar</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:#FFD60A;cursor:pointer;" onclick="window.location.href='seeker-discover.html'">
+      <div style="font-size:1.15rem;">🧭</div><span>Descubrir</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-saved.html'">
+      <div style="font-size:1.15rem;">🔖</div><span>Guardados</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;position:relative;" onclick="window.location.href='messages.html?from=seeker'">
+      <div style="font-size:1.15rem;">💬</div><span>Candidatos</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-panel.html'">
+      <div style="font-size:1.15rem;">⚙️</div><span>Mi cuenta</span>
+    </div>
+  </nav>
+
+
+  <script src="ofertes-data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
+    const OFERTES = window.TALPOT_OFERTES || [];
+    let allVideos = [], allProfiles = {}, allInteraccions = [];
+    let modoActual = 'recientes';
+    let videoCatsActives = [];
+    let temaActiu = null;
+    let famActiva = null;
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'index.html'; return; }
+      const { data: videos } = await sb.from('magic_room_videos').select('*').order('created_at', { ascending: false });
+      const { data: profiles } = await sb.from('profiles').select('id, full_name, avatar_url, ubicacio');
+      const { data: ints } = await sb.from('interaccions').select('to_user, tipus');
+      allVideos = videos || [];
+      allInteraccions = ints || [];
+      (profiles || []).forEach(p => { allProfiles[p.id] = p; });
+
+      const fams = [...new Set(OFERTES.map(o => o.fam))];
+      document.getElementById('perfil-opts').innerHTML = fams.map(f => '<div class="subfilter-opt" onclick="setFam(\'' + f.replace(/'/g,"\\'") + '\', this)">' + f + '</div>').join('');
+      const temes = [...new Set(allVideos.flatMap(v => v.tags || []))].slice(0, 15);
+      document.getElementById('temes-opts').innerHTML = temes.length
+        ? temes.map(t => '<div class="subfilter-opt" onclick="setTema(\'' + t.replace(/'/g,"\\'") + '\', this)">' + t + '</div>').join('')
+        : '<div style="font-size:0.78rem;color:rgba(255,255,255,0.4);">Aún no hay temas de actualidad publicados.</div>';
+
+      render();
+    }
+
+    function setFiltre(m, el) {
+      modoActual = m;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.subfilter-box').forEach(b => b.classList.remove('open'));
+      const box = document.getElementById('sub-' + m);
+      if (box) box.classList.add('open');
+      if (m === 'recientes' || m === 'valorados') render();
+    }
+    function toggleVideoCat(cat, el) {
+      el.classList.toggle('active');
+      if (videoCatsActives.includes(cat)) videoCatsActives = videoCatsActives.filter(c => c !== cat);
+      else videoCatsActives.push(cat);
+      render();
+    }
+    function setTema(t, el) {
+      document.querySelectorAll('#temes-opts .subfilter-opt').forEach(o => o.classList.remove('active'));
+      if (temaActiu === t) { temaActiu = null; } else { temaActiu = t; el.classList.add('active'); }
+      render();
+    }
+    function setFam(f, el) {
+      document.querySelectorAll('#perfil-opts .subfilter-opt').forEach(o => o.classList.remove('active'));
+      if (famActiva === f) { famActiva = null; } else { famActiva = f; el.classList.add('active'); }
+      render();
+    }
+    function applyFilters() { render(); }
+
+    function render() {
+      let videos = [...allVideos];
+      const loc = document.getElementById('disc-loc-input').value.trim().toLowerCase();
+
+      if (loc) videos = videos.filter(v => (allProfiles[v.user_id]?.ubicacio || '').toLowerCase().includes(loc));
+      if (videoCatsActives.length) videos = videos.filter(v => videoCatsActives.includes(v.categoria));
+      if (temaActiu) videos = videos.filter(v => (v.tags || []).includes(temaActiu));
+      if (famActiva) {
+        const kwsFam = OFERTES.filter(o => o.fam === famActiva).flatMap(o => o.kw);
+        videos = videos.filter(v => {
+          const kws = (v.keywords || v.extracted?.keywords || []).join(' ').toLowerCase();
+          return kwsFam.some(k => kws.includes(k));
+        });
+      }
+
+      const perUser = {};
+      videos.forEach(v => { if (!perUser[v.user_id]) perUser[v.user_id] = v; });
+      let candidats = Object.values(perUser);
+
+      if (modoActual === 'valorados') {
+        const punts = {};
+        allInteraccions.forEach(i => { punts[i.to_user] = (punts[i.to_user] || 0) + 1; });
+        candidats.sort((a, b) => (punts[b.user_id] || 0) - (punts[a.user_id] || 0));
+      } else {
+        candidats.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      const list = document.getElementById('disc-list');
+      if (candidats.length === 0) {
+        list.innerHTML = '<div class="empty"><div class="empty-icon">🔎</div><div class="empty-text">No hay candidatos con estos filtros.<br>Prueba quitando alguno.</div></div>';
+        return;
+      }
+      list.innerHTML = '<div class="grid-cards">' + candidats.map(v => {
+        const p = allProfiles[v.user_id] || {};
+        const nom = p.full_name || 'Talent Talpot';
+        const kws = (v.keywords || v.extracted?.keywords || v.tags || []).slice(0, 2);
+        const thumb = p.avatar_url ? ('<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;">') : ('<span style="font-size:2rem;font-weight:900;color:rgba(255,255,255,0.25);">' + nom.charAt(0).toUpperCase() + '</span>');
+        return '<div class="disc-card" onclick="window.location.href=\'creator-profile.html?user=' + v.user_id + '\'">' +
+          '<div class="disc-thumb">' + thumb + '</div>' +
+          '<div class="disc-body"><div class="disc-nom">' + nom + '</div>' +
+          '<div class="disc-meta">' + (kws.join(' · ') || '🎬 Vídeo') + '</div>' +
+          (p.ubicacio ? '<div class="disc-loc">📍 ' + p.ubicacio + '</div>' : '') +
+          '</div></div>';
+      }).join('') + '</div>';
+    }
+
+    init();
+  </script>
+
+</body>
+</html>

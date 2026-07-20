@@ -100,13 +100,6 @@
       <div class="h-sub">Define qué perfiles buscas, dónde y con qué palabras clave. La IA ordena por encaje y potencial.</div>
     </div>
 
-    <!-- DESCOBERTA LLIURE -->
-    <div class="section" id="discovery-section">
-      <div class="fam-title">✨ Talento reciente</div>
-      <div id="discovery-list"><div style="font-size:0.82rem;color:rgba(255,255,255,0.5);">⏳ Cargando...</div></div>
-    </div>
-
-    <div class="fam-title" style="padding:0 1.25rem;margin-top:0.5rem;">🎯 O define una búsqueda concreta</div>
 
     <!-- PERFILS DE FEINA -->
     <div class="card-block">
@@ -151,16 +144,21 @@
     <div class="footer-space"></div>
   </div>
 
-  <nav class="nav-bottom" style="position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:0.6rem 0 calc(0.6rem + env(safe-area-inset-bottom));background:rgba(6,20,38,0.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.07);z-index:50;">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:#FFD60A;cursor:pointer;">
-      <div style="font-size:1.25rem;">🔭</div><span>Explorar</span>
+  <nav class="nav-bottom" style="position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:0.55rem 0 calc(0.55rem + env(safe-area-inset-bottom));background:rgba(6,20,38,0.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.07);z-index:50;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:#FFD60A;cursor:pointer;" onclick="window.location.href='seeker.html'">
+      <div style="font-size:1.15rem;">🎯</div><span>Buscar</span>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;position:relative;" onclick="window.location.href='messages.html?from=seeker'">
-      <div style="font-size:1.25rem;">💬</div><span>Candidatos</span>
-      <div id="msg-dot" style="display:none;position:absolute;top:-2px;right:6px;width:8px;height:8px;border-radius:50%;background:#FF453A;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-discover.html'">
+      <div style="font-size:1.15rem;">🧭</div><span>Descubrir</span>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;font-size:0.6rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-panel.html'">
-      <div style="font-size:1.25rem;">⚙️</div><span>Mi cuenta</span>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-saved.html'">
+      <div style="font-size:1.15rem;">🔖</div><span>Guardados</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;position:relative;" onclick="window.location.href='messages.html?from=seeker'">
+      <div style="font-size:1.15rem;">💬</div><span>Candidatos</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker-panel.html'">
+      <div style="font-size:1.15rem;">⚙️</div><span>Mi cuenta</span>
     </div>
   </nav>
 
@@ -180,7 +178,6 @@
       const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       try { await sb.from('profiles').upsert({ id: user.id, full_name: fullName }); } catch(e) {}
       await loadCandidats();
-      loadDiscovery();
     }
 
     async function loadCandidats() {
@@ -234,36 +231,6 @@
           potencial: Math.round(jocsScore + challScore + videoScore),
         };
       });
-    }
-
-    async function loadDiscovery() {
-      const box = document.getElementById('discovery-list');
-      try {
-        const { data: videos } = await sb.from('magic_room_videos').select('user_id, categoria, video_url, keywords, extracted, created_at').order('created_at', { ascending: false }).limit(12);
-        if (!videos || videos.length === 0) { box.innerHTML = '<div class="empty"><div class="empty-icon">🌱</div><div class="empty-text">Aún no hay talento en Talpot. ¡Vuelve pronto!</div></div>'; return; }
-        const { data: profiles } = await sb.from('profiles').select('id, full_name, avatar_url, ubicacio');
-        const nomMap = {}, avMap = {}, locMap = {};
-        (profiles || []).forEach(p => { nomMap[p.id] = p.full_name; avMap[p.id] = p.avatar_url; locMap[p.id] = p.ubicacio; });
-        // Un vídeo per candidat (el més recent), fins a 8
-        const vistos = new Set();
-        const unics = videos.filter(v => { if (vistos.has(v.user_id)) return false; vistos.add(v.user_id); return true; }).slice(0, 8);
-        box.innerHTML = '<div style="display:flex;gap:0.7rem;overflow-x:auto;padding-bottom:0.4rem;">' + unics.map(v => {
-          const nom = nomMap[v.user_id] || 'Talent Talpot';
-          const av = avMap[v.user_id];
-          const kws = (v.keywords || v.extracted?.keywords || []).slice(0, 2);
-          return `
-          <div style="flex-shrink:0;width:150px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;cursor:pointer;" onclick="window.location.href='creator-profile.html?user=${v.user_id}'">
-            <div style="width:100%;height:120px;background:#0A2540;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-              ${av ? `<img src="${av}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:2.2rem;font-weight:900;color:rgba(255,255,255,0.25);">${nom.charAt(0).toUpperCase()}</span>`}
-            </div>
-            <div style="padding:0.6rem;">
-              <div style="font-size:0.8rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nom}</div>
-              <div style="font-size:0.68rem;color:#30D158;margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${kws.join(' · ') || '🎬 Nuevo vídeo'}</div>
-              ${locMap[v.user_id] ? `<div style="font-size:0.65rem;color:rgba(255,255,255,0.45);margin-top:0.1rem;">📍 ${locMap[v.user_id]}</div>` : ''}
-            </div>
-          </div>`;
-        }).join('') + '</div>';
-      } catch(e) { box.innerHTML = ''; }
     }
 
     // ═══ AUTOCOMPLETAR DE PERFILS ═══
@@ -342,11 +309,11 @@
     }
 
     function buscar() {
-      if (perfilsElegits.length === 0 && kwElegides.length === 0) {
-        alert('Añade al menos un perfil de trabajo o una palabra clave.');
+      const loc = document.getElementById('loc-input').value.trim();
+      if (perfilsElegits.length === 0 && kwElegides.length === 0 && !loc) {
+        alert('Añade al menos un perfil, una palabra clave o una ubicación.');
         return;
       }
-      const loc = document.getElementById('loc-input').value.trim();
       const dist = document.getElementById('dist-slider').value;
 
       // Termes combinats: keywords de tots els perfils elegits + paraules clau soltes
@@ -360,7 +327,7 @@
           const total = Math.round(encaix * 0.7 + c.potencial * 0.3);
           return { ...c, encaix, hits, total };
         })
-        .filter(c => c.encaix > 0 || c.potencial >= 40)
+        .filter(c => totsTermes.length === 0 || c.encaix > 0 || c.potencial >= 40)
         .sort((a, b) => b.total - a.total);
 
       // RESUM
