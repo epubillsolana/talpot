@@ -313,7 +313,11 @@
       if (e) e.stopPropagation();
       if (!confirm('Segur que vols esborrar aquest vídeo? No es pot desfer.')) return;
       try {
-        await sb.from('magic_room_videos').delete().eq('id', videoId);
+        const { error: delErr } = await sb.from('magic_room_videos').delete().eq('id', videoId);
+        if (delErr) {
+          alert('⚠️ No s\'ha pogut esborrar: ' + delErr.message);
+          return;
+        }
         if (storagePath) {
           try { await sb.storage.from('magic-room-videos').remove([decodeURIComponent(storagePath)]); } catch(e2) {}
         }

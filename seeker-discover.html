@@ -52,6 +52,8 @@
     .empty-icon { font-size: 2.6rem; margin-bottom: 0.6rem; }
     .empty-text { font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.6; }
     .footer-space { height: 1.5rem; }
+    .apply-btn-fixed { position: fixed; bottom: 90px; left: 1.25rem; right: 1.25rem; z-index: 60; padding: 0.9rem; border-radius: 100px; border: none; background: #FFD60A; color: #020B18; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.4); display: none; }
+    .apply-btn-fixed.show { display: block; }
   </style>
 </head>
 <body>
@@ -68,7 +70,7 @@
     </div>
 
     <div class="filters-scroll">
-      <div class="filter-chip active" data-order onclick="setFiltre('recientes', this)">🆕 Más recientes</div>
+      <div class="filter-chip" data-order onclick="setFiltre('recientes', this)">🆕 Más recientes</div>
       <div class="filter-chip" data-order onclick="setFiltre('valorados', this)">⭐ Más valorados</div>
       <div class="filter-chip" onclick="setFiltre('ubicacion', this)">📍 Ubicación</div>
       <div class="filter-chip" onclick="setFiltre('perfil', this)">💼 Tipo de perfil</div>
@@ -115,6 +117,8 @@
     <div class="footer-space"></div>
   </div>
 
+  <button class="apply-btn-fixed" id="apply-btn" onclick="render()">✓ Aplicar filtros</button>
+
   <nav class="nav-bottom" style="position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:0.55rem 0 calc(0.55rem + env(safe-area-inset-bottom));background:rgba(6,20,38,0.94);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.07);z-index:50;">
     <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;font-size:0.58rem;font-weight:800;color:rgba(255,255,255,0.5);cursor:pointer;" onclick="window.location.href='seeker.html'">
       <div style="font-size:1.15rem;">🎯</div><span>Buscar</span>
@@ -156,12 +160,12 @@
       document.getElementById('disc-loc-input').value = '';
       document.getElementById('geo-ac-dropdown').style.display = 'none';
       document.getElementById('geo-selected').innerHTML = `<span style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;font-weight:700;padding:0.4rem 0.5rem 0.4rem 0.85rem;border-radius:100px;background:rgba(255,214,10,0.14);border:1px solid rgba(255,214,10,0.3);color:#FFD60A;">📍 ${label}<span style="cursor:pointer;opacity:0.6;font-weight:900;" onclick="clearGeo()">✕</span></span>`;
-      render();
+      showApplyBtn();
     }
     function clearGeo() {
       geoFiltre = null;
       document.getElementById('geo-selected').innerHTML = '';
-      render();
+      showApplyBtn();
     }
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.ac-wrap')) { const dd = document.getElementById('geo-ac-dropdown'); if (dd) dd.style.display = 'none'; }
@@ -207,21 +211,21 @@
       el.classList.toggle('active');
       if (videoCatsActives.includes(cat)) videoCatsActives = videoCatsActives.filter(c => c !== cat);
       else videoCatsActives.push(cat);
-      render();
+      showApplyBtn();
     }
     function setTema(t, el) {
       el.classList.toggle('active');
       if (temesActius.includes(t)) temesActius = temesActius.filter(x => x !== t);
       else temesActius.push(t);
-      render();
+      showApplyBtn();
     }
     function setFam(f, el) {
       el.classList.toggle('active');
       if (famsActives.includes(f)) famsActives = famsActives.filter(x => x !== f);
       else famsActives.push(f);
-      render();
+      showApplyBtn();
     }
-    function applyFilters() { render(); }
+    function applyFilters() { showApplyBtn(); }
 
     function clearAllFilters() {
       geoFiltre = null;
@@ -235,7 +239,23 @@
       render();
     }
 
+    function showApplyBtn() {
+      document.getElementById('apply-btn').classList.add('show');
+    }
+
+    function hasAnyFilter() {
+      return !!geoFiltre || videoCatsActives.length > 0 || temesActius.length > 0 || famsActives.length > 0;
+    }
+
     function render() {
+      document.getElementById('apply-btn').classList.remove('show');
+
+      if (!hasAnyFilter()) {
+        document.getElementById('active-filters-summary').style.display = 'none';
+        document.getElementById('disc-list').innerHTML = `<div class="empty"><div class="empty-icon">🧭</div><div class="empty-text">Activa uno o varios filtros arriba (ubicación, perfil, vídeo o temas) para ver candidatos.<br>Puedes combinarlos como quieras.</div></div>`;
+        return;
+      }
+
       let videos = [...allVideos];
 
       if (geoFiltre) videos = videos.filter(v => window.geoMatch(allProfiles[v.user_id]?.ubicacio || '', geoFiltre));
