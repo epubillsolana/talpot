@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Feed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; height: 100dvh; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow-x: hidden; }
+    body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,180,216,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 10% 60%, rgba(0,100,180,0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #020B18 0%, #041E3A 40%, #0D3B6E 75%, #1264B8 100%);
+      background-attachment: fixed;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem;
+      background: rgba(2,11,24,0.7); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 50;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    .nav-logo span { color: #FFD60A; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-notif { position: relative; cursor: pointer; font-size: 1.3rem; }
+    .nav-notif-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: #FF2D55; border: 2px solid #020B18; }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #FFD60A, #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #020B18; cursor: pointer; }
+
+    /* SCROLL */
+    .scroll { padding-top: 56px; padding-bottom: 80px; overflow-y: auto; min-height: 100dvh; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* SALUTACIÓ */
+    .greeting { padding: 1.5rem 1.25rem 1rem; }
+    .greeting-time { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+    .greeting-name { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 900; letter-spacing: -0.5px; color: #fff; }
+    .greeting-name span { color: #FFD60A; }
+
+    /* ROBUSTESA */
+    .rob-banner {
+      margin: 0 1.25rem 1.25rem;
+      background: rgba(255,214,10,0.06); border: 1px solid rgba(255,214,10,0.15);
+      border-radius: 16px; padding: 1rem;
+      display: flex; align-items: center; gap: 1rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .rob-banner:hover { background: rgba(255,214,10,0.1); }
+    .rob-left { flex: 1; }
+    .rob-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 0.4rem; }
+    .rob-bar { height: 8px; background: rgba(255,255,255,0.12); border-radius: 100px; overflow: hidden; margin-bottom: 0.35rem; }
+    .rob-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #00B4D8, #FFD60A); width: 0%; transition: width 1s ease; }
+    .rob-hint { font-size: 0.78rem; color: rgba(255,255,255,0.6); font-weight: 500; }
+    .rob-score { font-size: 2rem; font-weight: 900; color: #FFD60A; line-height: 1; text-shadow: 0 0 20px rgba(255,214,10,0.4); }
+
+    /* SECTION */
+    .section { padding: 0 1.25rem; margin-bottom: 1.5rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .section-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+    .section-link { font-size: 0.75rem; font-weight: 700; color: #FFD60A; cursor: pointer; }
+
+    /* MISSIONS */
+    .missions { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .mission-card {
+      border-radius: 16px; padding: 1rem 1.1rem;
+      display: flex; align-items: center; gap: 0.9rem;
+      cursor: pointer; transition: transform 0.15s, background 0.2s;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+    .mission-card:hover { background: rgba(255,255,255,0.08); transform: scale(1.01); }
+    .mission-card:active { transform: scale(0.99); }
+
+    .mission-card.priority { border-color: rgba(255,214,10,0.25); background: rgba(255,214,10,0.06); }
+    .mission-card.done { opacity: 0.5; }
+
+    .mc-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .mc-info { flex: 1; }
+    .mc-title { font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .mc-desc { font-size: 0.75rem; color: rgba(255,255,255,0.65); line-height: 1.4; }
+    .mc-right { flex-shrink: 0; }
+    .mc-badge { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 100px; }
+    .badge-new { background: rgba(255,45,85,0.15); color: #FF2D55; border: 1px solid rgba(255,45,85,0.3); }
+    .badge-pending { background: rgba(255,214,10,0.1); color: #FFD60A; border: 1px solid rgba(255,214,10,0.25); }
+    .badge-done { background: rgba(48,209,88,0.1); color: #30D158; border: 1px solid rgba(48,209,88,0.2); }
+
+    /* ACTIVITAT SEEKERS */
+    .seekers-activity {
+      background: rgba(0,180,216,0.06); border: 1px solid rgba(0,180,216,0.15);
+      border-radius: 16px; padding: 1rem 1.1rem;
+      display: flex; align-items: center; gap: 0.9rem;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .seekers-activity:hover { background: rgba(0,180,216,0.1); }
+    .sa-icon { font-size: 1.8rem; }
+    .sa-info { flex: 1; }
+    .sa-title { font-size: 0.92rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .sa-desc { font-size: 0.75rem; color: rgba(255,255,255,0.55); }
+    .sa-arrow { color: #00B4D8; font-size: 1rem; }
+
+    /* CREATORS ACTIUS */
+    .creators-row { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; }
+    .creators-row::-webkit-scrollbar { display: none; }
+
+    .creator-pill {
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      cursor: pointer; flex-shrink: 0; transition: transform 0.15s;
+    }
+    .creator-pill:hover { transform: scale(1.05); }
+    .creator-pill:active { transform: scale(0.97); }
+
+    .cp-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 800; color: #020B18;
+      border: 2px solid rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .cp-badge {
+      position: absolute; bottom: -2px; right: -2px;
+      font-size: 0.7rem; background: #020B18;
+      border-radius: 50%; width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cp-name { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.75); text-align: center; max-width: 56px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* JOCS */
+    .games-row { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.25rem; }
+    .games-row::-webkit-scrollbar { display: none; }
+
+    .game-pill {
+      flex-shrink: 0; width: 130px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 0.85rem; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .game-pill:hover { background: rgba(255,255,255,0.08); transform: scale(1.02); }
+    .gp-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .gp-name { font-size: 0.8rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; line-height: 1.2; }
+    .gp-model { font-size: 0.62rem; color: rgba(255,255,255,0.45); font-weight: 600; }
+    .gp-badge { display: inline-block; margin-top: 0.4rem; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 100px; background: rgba(0,180,216,0.12); color: #00B4D8; border: 1px solid rgba(0,180,216,0.2); }
+
+    /* NAV BOTTOM */
+    .nav-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+      display: flex; align-items: center; justify-content: space-around;
+      background: rgba(2,11,24,0.92); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.06); z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer; opacity: 0.35; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; transition: opacity 0.2s; }
+    .nav-item.active { opacity: 1; }
+    .nav-item.active .nav-icon { color: #FFD60A; }
+    .nav-icon { font-size: 1.3rem; line-height: 1; }
+
+  </style>
+  <link rel="stylesheet" href="talpot-style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo">tal<span>pot</span></div>
+    <div class="nav-right">
+      <div class="nav-notif" onclick="window.location.href='notifications.html'">
+        🔔<div class="nav-notif-dot"></div>
+      </div>
+      <div class="nav-avatar" onclick="window.location.href='profile.html'">E</div>
+    </div>
+  </nav>
+
+  <div class="scroll">
+
+    <!-- SALUTACIÓ -->
+    <div class="greeting">
+      <div class="greeting-name" style="font-size:2rem;font-weight:900;letter-spacing:-1px;line-height:1.1;">¡Bienvenido, <span id="greet-nom" style="color:#FFD60A;">Creator</span>! ⚡</div>
+    </div>
+
+    <!-- ROBUSTESA -->
+    <div class="rob-banner" onclick="window.location.href='profile.html'">
+      <div class="rob-left">
+        <div class="rob-label">Robustez del perfil</div>
+        <div class="rob-bar"><div class="rob-fill" id="rob-fill"></div></div>
+        <div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.35rem;">
+          <span style="font-size:0.7rem;">🔴</span>
+          <span style="font-size:0.75rem;color:rgba(255,255,255,0.55);font-weight:500;">Perfil nuevo · Sin historial aún</span>
+        </div>
+      </div>
+      <div class="rob-score">0%</div>
+    </div>
+
+    <!-- MISSIONS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Tus misiones</div>
+      </div>
+      <div class="missions">
+
+        <div class="mission-card priority" onclick="window.location.href='magic-room.html'">
+          <div class="mc-icon" style="background:rgba(255,214,10,0.12);">✨</div>
+          <div class="mc-info">
+            <div class="mc-title">Crea tu Magic Room</div>
+            <div class="mc-desc">Sube tu primer vídeo y empieza a ser descubierto</div>
+          </div>
+          <div class="mc-right"><span class="mc-badge badge-pending" id="mis-magic">→</span></div>
+        </div>
+
+        <div class="mission-card priority" onclick="window.location.href='challenge.html'">
+          <div class="mc-icon" style="background:rgba(255,107,0,0.12);">⚡</div>
+          <div class="mc-info">
+            <div class="mc-title">Challenge Room</div>
+            <div class="mc-desc">10 retos para empezar · Después 2 nuevos cada día</div>
+          </div>
+          <div class="mc-right"><span class="mc-badge badge-pending" id="mis-chall">→</span></div>
+        </div>
+
+        <div class="mission-card priority" onclick="window.location.href='game.html'">
+          <div class="mc-icon" style="background:rgba(0,180,216,0.12);">🎮</div>
+          <div class="mc-info">
+            <div class="mc-title">Mini-juegos</div>
+            <div class="mc-desc">Juega cada día · Cada partida construye tu perfil</div>
+          </div>
+          <div class="mc-right"><span class="mc-badge badge-pending" id="mis-jocs">→</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ACTIVITAT REAL (setmanal) -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">⚡ Tu semana</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.65rem;">
+        <div style="background:linear-gradient(160deg,rgba(255,214,10,0.18),rgba(255,214,10,0.04));border:1.5px solid rgba(255,214,10,0.4);border-radius:20px;padding:1.2rem 0.5rem 1rem;text-align:center;box-shadow:0 4px 20px rgba(255,214,10,0.12);">
+          <div style="font-size:1.9rem;line-height:1;margin-bottom:0.5rem;">🔥</div>
+          <div style="font-size:2.3rem;font-weight:900;line-height:1;color:#FFD60A;letter-spacing:-1px;" id="act-inter">0</div>
+          <div style="font-size:0.66rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:0.45rem;">Interacciones</div>
+        </div>
+        <div style="background:linear-gradient(160deg,rgba(0,180,216,0.18),rgba(0,180,216,0.04));border:1.5px solid rgba(0,180,216,0.4);border-radius:20px;padding:1.2rem 0.5rem 1rem;text-align:center;box-shadow:0 4px 20px rgba(0,180,216,0.12);">
+          <div style="font-size:1.9rem;line-height:1;margin-bottom:0.5rem;">⚡</div>
+          <div style="font-size:2.3rem;font-weight:900;line-height:1;color:#00B4D8;letter-spacing:-1px;" id="act-reptes">0</div>
+          <div style="font-size:0.66rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:0.45rem;">Retos</div>
+        </div>
+        <div style="background:linear-gradient(160deg,rgba(255,107,0,0.18),rgba(255,107,0,0.04));border:1.5px solid rgba(255,107,0,0.4);border-radius:20px;padding:1.2rem 0.5rem 1rem;text-align:center;box-shadow:0 4px 20px rgba(255,107,0,0.12);">
+          <div style="font-size:1.9rem;line-height:1;margin-bottom:0.5rem;">🔭</div>
+          <div style="font-size:2.3rem;font-weight:900;line-height:1;color:#FF6B00;letter-spacing:-1px;" id="act-seekers">0</div>
+          <div style="font-size:0.66rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:0.45rem;">Seekers</div>
+        </div>
+      </div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.45);text-align:center;margin-top:0.4rem;">Se reinicia cada lunes</div>
+    </div>
+
+    <!-- RANKING SETMANAL -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🏆 Top Creators de la semana</div>
+        <div class="section-link" onclick="window.location.href='creators-feed.html'">Ver feed →</div>
+      </div>
+      <div id="ranking-box" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1rem;">
+        <div style="font-size:0.85rem;color:rgba(255,255,255,0.72);line-height:1.6;">Los Creators que más interacciones reciben esta semana aparecerán aquí. ¡Sube contenido y participa para escalar! 🚀</div>
+      </div>
+    </div>
+
+    <!-- TALENT BADGES REBUTS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🏅 Tus Talent Badges</div>
+        <div class="section-link" onclick="window.location.href='creators-feed.html'">Consigue más →</div>
+      </div>
+      <div id="badges-box" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1rem;">
+        <div style="font-size:0.85rem;color:rgba(255,255,255,0.72);line-height:1.6;">Cuando otros Creators reconozcan tu talento, tus badges aparecerán aquí. La validación de tus iguales es la más honesta — y los Seekers la ven. 💥</div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="nav-bottom">
+    <div class="nav-item active">
+      <div class="nav-icon">🏠</div>
+      <span>Feed</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='magic-room.html'">
+      <div class="nav-icon">✨</div>
+      <span>Mi Room</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='creators-feed.html'">
+      <div class="nav-icon">👥</div>
+      <span>Creators</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+      <div class="nav-icon">👤</div>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb = window.supabase.createClient('https://dlxeqzdgsejoywwwnchi.supabase.co', 'sb_publishable_TVNU00LDMRirtOJ1dCg5vA_-PhbsDJo');
+
+    function iniciSetmana() {
+      const d = new Date();
+      const dia = (d.getDay() + 6) % 7; // dilluns = 0
+      d.setDate(d.getDate() - dia);
+      d.setHours(0, 0, 0, 0);
+      return d.toISOString();
+    }
+
+    async function initApp() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+
+      // NOM: primer de la taula profiles (el bo), fallback a metadata
+      let nomComplet = null;
+      try {
+        const { data: prof } = await sb.from('profiles').select('full_name').eq('id', user.id).single();
+        nomComplet = prof?.full_name;
+      } catch(e) {}
+      if (!nomComplet) nomComplet = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0].replace(/[._]/g, ' ');
+      const parts = nomComplet.trim().split(' ').filter(Boolean);
+      // Si el primer tros és una inicial ("E"), usar el següent
+      const nom = (parts[0] && parts[0].length > 1) ? parts[0] : (parts[1] || parts[0] || 'Creator');
+      document.getElementById('greet-nom').textContent = nom.charAt(0).toUpperCase() + nom.slice(1);
+      const avatar = document.querySelector('.nav-avatar');
+      if (avatar) avatar.textContent = nom.charAt(0).toUpperCase();
+
+      // ROBUSTESA EXIGENT — arribar a 100 costa molt
+      try {
+        const { count: nV } = await sb.from('magic_room_videos').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+        const { count: nC } = await sb.from('challenge_respostes').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+        const { count: nP } = await sb.from('game_partides').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+        const { count: nB } = await sb.from('interaccions').select('id', { count: 'exact', head: true }).eq('to_user', user.id).eq('tipus', 'badge');
+        // Vídeos: max 30 (calen 10) · Entrevista: max 30 (calen 30 respostes) · Jocs: max 25 (calen 250 partides) · Badges: max 15 (calen 15)
+        const rob = Math.min(100, Math.round(
+          Math.min(30, (nV || 0) * 3) +
+          Math.min(30, (nC || 0) * 1) +
+          Math.min(25, (nP || 0) * 0.1) +
+          Math.min(15, (nB || 0) * 1)
+        ));
+        // Progrés real a les missions
+        const mm = document.getElementById('mis-magic'); if (mm && nV > 0) mm.textContent = '🎥 ' + nV;
+        const mc = document.getElementById('mis-chall'); if (mc && nC > 0) mc.textContent = '🎤 ' + nC;
+        const mj = document.getElementById('mis-jocs'); if (mj && nP > 0) mj.textContent = '🎮 ' + nP;
+        document.getElementById('rob-fill').style.width = rob + '%';
+        const scoreEl = document.querySelector('.rob-score');
+        if (scoreEl) scoreEl.textContent = rob + '%';
+        const robTxt = document.querySelector('.rob-banner span[style*="0.75rem"], .rob-banner span[style*="0.8rem"]');
+        if (robTxt) robTxt.textContent = rob >= 75 ? 'Perfil sólido · Élite Talpot' : rob >= 40 ? 'Perfil en construcción · ¡Buen ritmo!' : rob >= 15 ? 'Perfil inicial · Sigue sumando contenido' : 'Perfil nuevo · Empieza por la Magic Room';
+      } catch(e) {}
+
+      // ACTIVITAT SETMANAL + RANKING
+      try {
+        const setmana = iniciSetmana();
+        const { data: intsAll } = await sb.from('interaccions').select('to_user, tipus, created_at').gte('created_at', setmana);
+        const { data: repsAll } = await sb.from('reptes').select('to_user, from_user, created_at').gte('created_at', setmana);
+        const { data: pets } = await sb.from('notificacions').select('id').eq('user_id', user.id).eq('tipus', 'peticio_seeker').gte('created_at', setmana);
+
+        const meves = (intsAll || []).filter(i => i.to_user === user.id).length
+                    + (repsAll || []).filter(r => r.to_user === user.id).length;
+        document.getElementById('act-inter').textContent = meves;
+        document.getElementById('act-reptes').textContent = (repsAll || []).filter(r => r.to_user === user.id || r.from_user === user.id).length;
+        document.getElementById('act-seekers').textContent = (pets || []).length;
+
+        // RANKING: interaccions rebudes per creator aquesta setmana
+        const punts = {};
+        (intsAll || []).forEach(i => { punts[i.to_user] = (punts[i.to_user] || 0) + 1; });
+        (repsAll || []).forEach(r => { punts[r.to_user] = (punts[r.to_user] || 0) + 1; });
+        const top = Object.entries(punts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        if (top.length > 0) {
+          const { data: profiles } = await sb.from('profiles').select('id, full_name');
+          const nomMap = {};
+          (profiles || []).forEach(p => { nomMap[p.id] = p.full_name; });
+          const medalles = ['🥇', '🥈', '🥉', '4º', '5º'];
+          document.getElementById('ranking-box').innerHTML = top.map(([uid, n], i) => {
+            const esJo = uid === user.id;
+            const rNom = nomMap[uid] || 'Talent Talpot';
+            return `<div style="display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0.3rem;${i < top.length-1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}${esJo ? 'background:rgba(255,214,10,0.07);border-radius:10px;padding-left:0.6rem;' : ''}">
+              <span style="font-size:1rem;width:2rem;font-weight:900;">${medalles[i]}</span>
+              <span style="flex:1;font-weight:800;font-size:0.9rem;">${rNom}${esJo ? ' <span style="color:#FFD60A;font-size:0.72rem;">(tú)</span>' : ''}</span>
+              <span style="font-weight:900;color:#FFD60A;">${n} 🔥</span>
+            </div>`;
+          }).join('');
+        }
+      } catch(e) {}
+    }
+    initApp();
+  </script>
+
+</body>
+</html>
