@@ -136,6 +136,14 @@
     }
     .grab-area.recording { border-color: #FF2D55; border-style: solid; }
 
+    .rec-badge-outside {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      background: rgba(255,45,85,0.9); border: 1.5px solid #fff;
+      border-radius: 100px; padding: 0.5rem 1rem; margin-bottom: 0.75rem;
+      font-size: 0.85rem; font-weight: 900; color: #fff;
+      letter-spacing: 0.05em; width: fit-content; margin-left: auto; margin-right: auto;
+      box-shadow: 0 4px 16px rgba(255,45,85,0.5);
+    }
     .rec-badge {
       position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
       display: flex; align-items: center; gap: 0.5rem;
@@ -273,6 +281,8 @@
     <div class="grab-wrap">
 
       <div class="grab-question" id="grab-question"></div>
+
+      <div class="rec-badge-outside hidden" id="rec-badge-outside"><div class="rec-dot"></div>GRAVANT</div>
 
       <div class="grab-area" id="grab-area">
         <div class="grab-timer" id="grab-timer">1:30</div>
@@ -497,8 +507,8 @@
 
       const area = document.getElementById('grab-area');
       area.classList.add('recording');
+      document.getElementById('rec-badge-outside').classList.remove('hidden');
       area.innerHTML = `
-        <div class="rec-badge"><div class="rec-dot"></div>GRAVANT</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
           <div style="font-size:3rem;">🎙️</div>
           <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Respon amb naturalitat</div>
@@ -524,6 +534,7 @@
 
     function stopRecording() {
       clearInterval(recTimer);
+      document.getElementById('rec-badge-outside').classList.add('hidden');
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.onstop = () => processAudio();
         mediaRecorder.stop();

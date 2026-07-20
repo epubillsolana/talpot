@@ -79,6 +79,15 @@
     .ua-text { font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.6); text-align: center; }
     .ua-hint { font-size: 0.72rem; color: rgba(255,255,255,0.35); text-align: center; }
 
+    .rec-badge-outside {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      background: rgba(255,45,85,0.9); border: 1.5px solid #fff;
+      border-radius: 100px; padding: 0.5rem 1rem; margin-bottom: 0.75rem;
+      font-size: 0.85rem; font-weight: 900; color: #fff;
+      letter-spacing: 0.05em; width: fit-content; margin-left: auto; margin-right: auto;
+      animation: recBlink 1s infinite;
+      box-shadow: 0 4px 16px rgba(255,45,85,0.5);
+    }
     .rec-badge {
       position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
       display: flex; align-items: center; gap: 0.5rem;
@@ -220,6 +229,8 @@
       <div id="upload-motivation" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:0.9rem 1rem;width:100%;text-align:center;">
         <div id="motivation-text" style="font-size:0.88rem;color:rgba(255,255,255,0.75);line-height:1.6;font-weight:500;"></div>
       </div>
+
+      <div class="rec-badge-outside hidden" id="rec-badge-outside"><div class="rec-dot"></div>GRABANDO</div>
 
       <div class="upload-area" id="upload-area">
         <div class="ua-icon" id="ua-icon">📹</div>
@@ -413,8 +424,9 @@
       const area = document.getElementById('upload-area');
       area.classList.add('recording');
       area.style.aspectRatio = '9/16';
-      area.innerHTML = '<div class="rec-badge"><div class="rec-dot"></div>GRABANDO</div><video id="preview-video" autoplay muted playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:18px;transform:scaleX(-1);"></video>';
+      area.innerHTML = '<video id="preview-video" autoplay muted playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:18px;transform:scaleX(-1);"></video>';
       document.getElementById('preview-video').srcObject = mediaStream;
+      document.getElementById('rec-badge-outside').classList.remove('hidden');
 
       document.getElementById('timer-display').classList.remove('hidden');
       updateTimer();
@@ -438,6 +450,7 @@
     function stopRecording() {
       clearInterval(recordingInterval);
       isRecording = false;
+      document.getElementById('rec-badge-outside').classList.add('hidden');
       if (window._audioRecorder && window._audioRecorder.state !== 'inactive') {
         window._audioRecorder.stop();
       }
