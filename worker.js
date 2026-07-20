@@ -194,6 +194,26 @@ Respon NOMÉS JSON:
         return json({ ok: true, analisi }, 200, cors);
       }
 
+      // ═══ /informe-jocs — informe executiu IA del perfil cognitiu ═══
+      if (url.pathname === '/informe-jocs') {
+        const { scores, totalPartides } = await request.json();
+        const gRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            temperature: 0.4,
+            messages: [
+              { role: 'system', content: `Ets un analista de talent que escriu informes executius breus (100-140 paraules) per a reclutadors, a partir de puntuacions 0-10 en competències extretes de minijocs cognitius. Escriu en castellà, professional però directe, en prosa (no llista). Destaca fortaleses, sigues honest amb les mancances, i si hi ha eixos a 0 explica que falten dades. No inventis res que no estigui a les dades.` },
+              { role: 'user', content: `Partidas totales: ${totalPartides}\nPuntuaciones (0-10): ${scores.map(s => s.label + ': ' + s.val).join(', ')}` },
+            ],
+          }),
+        });
+        if (!gRes.ok) { const eb = await gRes.text(); return json({ ok: false, error: 'GPT ' + gRes.status + ': ' + eb.substring(0,300) }, 500, cors); }
+        const gData = await gRes.json();
+        return json({ ok: true, informe: gData.choices[0].message.content }, 200, cors);
+      }
+
       return json({ ok: false, error: 'Not found' }, 404, cors);
     } catch (err) {
       return json({ ok: false, error: err.message }, 500, cors);
