@@ -30,14 +30,16 @@
     .fase {
       position: fixed; inset: 0; z-index: 10;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      align-items: center; justify-content: flex-start;
       padding: 5rem 1.5rem 2rem;
+      overflow-y: auto;
       transition: opacity 0.35s ease, transform 0.35s ease;
     }
+    .fase::-webkit-scrollbar { display: none; }
     .fase.hidden { opacity: 0; pointer-events: none; transform: translateY(16px); }
 
     /* FASE 1 — GRAVAR/PUJAR */
-    .upload-wrap { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 1.25rem; align-items: center; }
+    .upload-wrap { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 1.25rem; align-items: center; margin: auto 0; }
 
     .cat-badge {
       display: inline-flex; align-items: center; gap: 0.5rem;
@@ -114,7 +116,7 @@
     .ubtn-upload { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.15); }
 
     /* FASE 2 — PROCESSANT IA */
-    .ia-wrap { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 340px; text-align: center; width: 100%; }
+    .ia-wrap { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 340px; text-align: center; width: 100%; margin: auto 0; }
 
     .ia-spinner {
       width: 72px; height: 72px; border-radius: 50%;
