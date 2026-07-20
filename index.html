@@ -636,8 +636,22 @@
       if (el) { el.textContent = msg; el.style.display = 'block'; }
     }
 
-    function entrarApp(rol, user) {
-      window.location.href = rol === 'seeker' ? 'seeker.html' : 'app.html';
+    async function entrarApp(rol, user) {
+      // Assegurar que existeix el perfil a la nostra taula
+      let esNou = false;
+      try {
+        const { data: existent } = await sb.from('profiles').select('id').eq('id', user.id).single();
+        if (!existent) esNou = true;
+        const nom = user.user_metadata?.nom || user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
+        await sb.from('profiles').upsert({ id: user.id, full_name: nom });
+      } catch(e) { esNou = true; }
+
+      if (esNou) {
+        sessionStorage.setItem('talpot_onboarding', rol);
+        window.location.href = 'onboarding.html';
+      } else {
+        window.location.href = rol === 'seeker' ? 'seeker.html' : 'app.html';
+      }
     }
 
     function switchAbout(rol) {

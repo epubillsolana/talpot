@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talpot — Bienvenido</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="talpot-style.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; color: #fff; overflow: hidden; background: #061426; }
+    body { background: linear-gradient(180deg, #061426 0%, #0A2540 40%, #10406E 75%, #1264B8 100%); }
+    .scroll { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 4rem 1.5rem 2rem; overflow-y: auto; }
+    .scroll::-webkit-scrollbar { display: none; }
+    .wrap { max-width: 380px; width: 100%; margin: auto 0; }
+
+    .step { display: none; text-align: center; }
+    .step.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .step-icon { font-size: 3.5rem; margin-bottom: 1.2rem; }
+    .step-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.7rem; letter-spacing: -0.5px; }
+    .step-desc { font-size: 0.9rem; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 2rem; }
+    .step-desc strong { color: #FFD60A; }
+
+    .dots { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s; }
+    .dot.active { background: #FFD60A; width: 24px; border-radius: 100px; }
+
+    .btn-next { width: 100%; padding: 1rem; border-radius: 100px; border: none; background: #FFD60A; color: #020B18; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,214,10,0.35); }
+    .btn-skip { display: block; margin: 1rem auto 0; background: none; border: none; color: rgba(255,255,255,0.4); font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="scroll">
+    <div class="wrap">
+
+      <div class="dots" id="dots"></div>
+
+      <!-- CREATOR steps -->
+      <div class="step" id="step-c-1">
+        <div class="step-icon">🎬</div>
+        <div class="step-title">¡Bienvenido a Talpot!</div>
+        <div class="step-desc">Aquí no subes un CV. <strong>Te muestras tal como eres</strong> — con vídeos cortos que hablan de ti mejor que cualquier papel.</div>
+      </div>
+      <div class="step" id="step-c-2">
+        <div class="step-icon">✨</div>
+        <div class="step-title">Tu Magic Room</div>
+        <div class="step-desc">Graba vídeos sobre tu experiencia, idiomas, habilidades... <strong>La IA analiza lo que dices</strong> y construye tu perfil automáticamente.</div>
+      </div>
+      <div class="step" id="step-c-3">
+        <div class="step-icon">🎮</div>
+        <div class="step-title">Juega y demuestra</div>
+        <div class="step-desc">Minijuegos diarios que revelan tus puntos fuertes de verdad — lógica, memoria, decisión bajo presión. <strong>Cuanto más juegas, más robusto tu perfil.</strong></div>
+      </div>
+      <div class="step" id="step-c-4">
+        <div class="step-icon">🔭</div>
+        <div class="step-title">Te encontrarán</div>
+        <div class="step-desc">Los Seekers (empresas y reclutadores) te descubren por lo que realmente vales. <strong>Empieza subiendo tu primer vídeo.</strong></div>
+      </div>
+
+      <!-- SEEKER steps -->
+      <div class="step" id="step-s-1">
+        <div class="step-icon">🔭</div>
+        <div class="step-title">¡Bienvenido a Talpot!</div>
+        <div class="step-desc">Olvídate de los CVs planos. Aquí descubres talento <strong>viendo y escuchando a los candidatos de verdad.</strong></div>
+      </div>
+      <div class="step" id="step-s-2">
+        <div class="step-icon">🎯</div>
+        <div class="step-title">Búsqueda dirigida</div>
+        <div class="step-desc">Define el perfil, la ubicación y las palabras clave que buscas. <strong>La IA ordena los candidatos por encaje y potencial.</strong></div>
+      </div>
+      <div class="step" id="step-s-3">
+        <div class="step-icon">🧭</div>
+        <div class="step-title">O navega libremente</div>
+        <div class="step-desc">Sin buscar nada concreto — explora el talento disponible por zona, perfil o temas. <strong>A veces el mejor candidato no es el que buscabas.</strong></div>
+      </div>
+      <div class="step" id="step-s-4">
+        <div class="step-icon">💬</div>
+        <div class="step-title">Conecta con seguridad</div>
+        <div class="step-desc">Contacta candidatos, pide más información y agenda un <strong>Showtime</strong> — una videollamada para conoceros mejor.</div>
+      </div>
+
+      <button class="btn-next" id="btn-next" onclick="nextStep()">Empezar</button>
+      <button class="btn-skip" onclick="finish()">Saltar</button>
+    </div>
+  </div>
+
+  <script>
+    const rol = sessionStorage.getItem('talpot_onboarding') || 'creator';
+    const prefix = rol === 'seeker' ? 's' : 'c';
+    let step = 1;
+    const totalSteps = 4;
+
+    function render() {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + prefix + '-' + step).classList.add('active');
+      document.getElementById('dots').innerHTML = Array.from({length: totalSteps}, (_, i) =>
+        `<div class="dot ${i + 1 === step ? 'active' : ''}"></div>`
+      ).join('');
+      document.getElementById('btn-next').textContent = step === totalSteps
+        ? (rol === 'seeker' ? '🔭 Empezar a explorar' : '🎬 Crear mi primer vídeo')
+        : 'Siguiente';
+    }
+
+    function nextStep() {
+      if (step < totalSteps) { step++; render(); }
+      else finish();
+    }
+
+    function finish() {
+      sessionStorage.removeItem('talpot_onboarding');
+      window.location.href = rol === 'seeker' ? 'seeker.html' : 'magic-room.html';
+    }
+
+    render();
+  </script>
+
+</body>
+</html>
