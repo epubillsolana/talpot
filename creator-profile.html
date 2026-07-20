@@ -495,6 +495,7 @@
             <div class="pb-num">Pregunta ${i + 1}</div>
             <div class="pb-pregunta">${c.pregunta}</div>
             ${c.transcripcio ? '<div class="pb-transcripcio">«' + c.transcripcio + '»</div>' : ''}
+            <div style="font-size:0.6rem;color:#FF453A;word-break:break-all;">DEBUG audio_url: [${c.audio_url}]</div>
             <div class="pb-bottom">
               ${c.audio_url ? `<div class="pb-audio" onclick="playAudio('${c.audio_url}', this)"><span>▶️</span><span class="pb-audio-text">Escuchar</span></div>` : '<div></div>'}
               <div class="pb-stars">${[1,2,3,4,5].map(s => `<span class="star ${(c.estrelles||0) >= s ? 'active' : ''}" onclick="rate('${c.id}', ${s}, this)">★</span>`).join('')}</div>
