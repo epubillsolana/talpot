@@ -639,11 +639,11 @@
     async function entrarApp(rol, user) {
       // Assegurar que existeix el perfil a la nostra taula
       let esNou = false;
+      const nom = user.user_metadata?.nom || user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
       try {
         const { data: existent } = await sb.from('profiles').select('id').eq('id', user.id).single();
         if (!existent) esNou = true;
-        const nom = user.user_metadata?.nom || user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
-        await sb.from('profiles').upsert({ id: user.id, full_name: nom });
+        await sb.from('profiles').upsert({ id: user.id, full_name: nom, es_seeker_puro: rol === 'seeker' });
       } catch(e) { esNou = true; }
 
       if (esNou) {
