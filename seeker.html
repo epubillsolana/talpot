@@ -353,14 +353,19 @@
         const potColor = c.potencial >= 60 ? '#00B4D8' : c.potencial >= 35 ? '#5B8DEF' : 'rgba(255,255,255,0.4)';
         const esDescubrimiento = c.encaix === 0 && c.potencial >= 40;
         const avatarHtml = c.avatar ? `<img src="${c.avatar}" alt="">` : c.nom.charAt(0).toUpperCase();
+        const forts = c.hits.slice(0, 2);
         return `
         <div class="cand-card" ${esDescubrimiento ? 'style="border-color:rgba(0,180,216,0.35);background:rgba(0,180,216,0.05);"' : ''}>
           <div class="cand-top" onclick="window.location.href='creator-profile.html?user=${c.user_id}'">
             <div class="cand-avatar">${avatarHtml}</div>
             <div class="cand-info">
-              <div class="cand-nom">${c.nom}${c.anysExp > 0 ? ' <span style="font-size:0.7rem;color:rgba(255,255,255,0.5);font-weight:600;">· ' + c.anysExp + ' años exp.</span>' : ''}</div>
-              <div class="cand-forts">${esDescubrimiento ? '💎 Perfil potente — no coincide en palabras, pero destaca' : '💪 ' + (c.hits.slice(0,4).join(' · ') || 'coincidencia parcial')}</div>
+              <div class="cand-nom">${c.nom}${c.anysExp > 0 ? ' <span style="font-size:0.7rem;color:rgba(255,255,255,0.5);font-weight:600;">· ' + c.anysExp + ' años</span>' : ''}</div>
               ${c.ubicacio ? '<div class="cand-loc">📍 ' + c.ubicacio + '</div>' : ''}
+              <div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.35rem;">
+                ${esDescubrimiento
+                  ? '<span style="font-size:0.68rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:100px;background:rgba(0,180,216,0.15);color:#00B4D8;">💎 Fuera de perfil</span>'
+                  : forts.map(f => `<span style="font-size:0.68rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:100px;background:rgba(48,209,88,0.12);color:#30D158;">${f}</span>`).join('')}
+              </div>
             </div>
             <div class="cand-scores">
               <div class="cand-match"><div class="cand-match-val" style="color:${encaixColor};">${c.encaix}%</div><div class="cand-match-lbl">Encaje</div></div>
@@ -368,9 +373,9 @@
               <div class="cand-total"><div class="cand-total-val">${c.total}</div><div class="cand-match-lbl">Total</div></div>
             </div>
           </div>
-          <div class="fb-row">
-            <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);font-weight:700;">Ajuste técnico:</span>
-            <span>${[1,2,3,4,5].map(s => `<span style="font-size:1.05rem;color:rgba(255,255,255,0.2);cursor:pointer;" onclick="fbRate('${c.user_id}',${c.encaix},${s},this)">★</span>`).join('')}</span>
+          <div class="fb-row" style="opacity:0.6;">
+            <span style="font-size:0.64rem;color:rgba(255,255,255,0.5);">Ajuste:</span>
+            <span>${[1,2,3,4,5].map(s => `<span style="font-size:0.85rem;color:rgba(255,255,255,0.2);cursor:pointer;" onclick="fbRate('${c.user_id}',${c.encaix},${s},this)">★</span>`).join('')}</span>
           </div>
         </div>`;
       }).join('');
